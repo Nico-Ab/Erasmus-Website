@@ -28,6 +28,8 @@ Thumbs.db
 
 # test / coverage
 coverage/
+playwright-report/
+test-results/
 
 # local uploads
 storage/
@@ -35,3 +37,9 @@ uploads/
 
 # prisma generated artifacts if needed
 prisma/dev.db
+
+# local tooling
+.tools/
+
+# TypeScript cache
+*.tsbuildinfo
