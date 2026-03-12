@@ -69,6 +69,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt: async ({ token, user }) => {
       if (user) {
+        token.name = user.name;
+        token.email = user.email;
         token.role = user.role;
         token.status = user.status;
       }
@@ -76,10 +78,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { role: true, status: true }
+          select: {
+            name: true,
+            email: true,
+            role: true,
+            status: true
+          }
         });
 
         if (dbUser) {
+          token.name = dbUser.name;
+          token.email = dbUser.email;
           token.role = dbUser.role;
           token.status = dbUser.status;
         } else {
@@ -93,6 +102,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session: async ({ session, token }) => {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        session.user.name = token.name ?? session.user.name;
+        session.user.email = token.email ?? session.user.email;
         session.user.role = (token.role as UserRole | undefined) ?? UserRole.STAFF;
         session.user.status =
           (token.status as UserApprovalStatus | undefined) ?? UserApprovalStatus.PENDING;

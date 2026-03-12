@@ -12,7 +12,7 @@ type HomePageProps = {
 const rolePanels = [
   {
     title: "Staff workspace",
-    description: "Create and continue mobility cases, upload documents, and monitor officer feedback.",
+    description: "Maintain profile data, create mobility cases later, and monitor officer feedback.",
     href: "/dashboard/staff"
   },
   {
@@ -42,7 +42,7 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
               </CardTitle>
               <CardDescription className="max-w-2xl text-base leading-7 text-slate-600">
                 The current foundation now includes staff self-registration, approval-gated credentials authentication,
-                protected role areas for staff, officers, and admins, plus the local-first database and testing stack.
+                editable institutional profiles, admin-managed master data, and the local-first database and testing stack.
               </CardDescription>
             </div>
           </CardHeader>
@@ -81,8 +81,8 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-slate-200">
-            <p>Included now: registration, approval workflow, secure login, protected dashboard shell, health checks, and tests.</p>
-            <p>Not implemented yet: staff profile editing, case workflows, document handling, reporting, and broader admin operations.</p>
+            <p>Included now: registration, approval workflow, secure login, editable profiles, master data, health checks, and tests.</p>
+            <p>Not implemented yet: mobility cases, document handling, reporting, and broader operational workflows.</p>
           </CardContent>
         </Card>
       </section>

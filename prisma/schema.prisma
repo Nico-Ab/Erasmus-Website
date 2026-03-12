@@ -20,46 +20,134 @@ enum UserApprovalStatus {
   DEACTIVATED
 }
 
+enum SelectOptionCategory {
+  ACADEMIC_TITLE
+  MOBILITY_TYPE
+  DOCUMENT_TYPE
+}
+
 model User {
-  id              String              @id @default(cuid())
-  name            String?
-  firstName       String?
-  lastName        String?
-  academicTitle   String?
-  faculty         String?
-  department      String?
-  email           String              @unique
-  emailVerified   DateTime?
-  image           String?
-  passwordHash    String?
-  role            UserRole            @default(STAFF)
-  status          UserApprovalStatus  @default(PENDING)
-  reviewedAt      DateTime?
-  reviewedById    String?
-  reviewedBy      User?               @relation("UserApprovals", fields: [reviewedById], references: [id], onDelete: SetNull)
-  reviewedUsers   User[]              @relation("UserApprovals")
-  accounts        Account[]
-  sessions        Session[]
-  authenticators  Authenticator[]
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id                    String              @id @default(cuid())
+  name                  String?
+  firstName             String?
+  lastName              String?
+  academicTitleOptionId String?
+  facultyId             String?
+  departmentId          String?
+  email                 String              @unique
+  emailVerified         DateTime?
+  image                 String?
+  passwordHash          String?
+  role                  UserRole            @default(STAFF)
+  status                UserApprovalStatus  @default(PENDING)
+  reviewedAt            DateTime?
+  reviewedById          String?
+  academicTitleOption   SelectOption?       @relation("AcademicTitleAssignments", fields: [academicTitleOptionId], references: [id], onDelete: SetNull)
+  faculty               Faculty?            @relation(fields: [facultyId], references: [id], onDelete: SetNull)
+  department            Department?         @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  reviewedBy            User?               @relation("UserApprovals", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedUsers         User[]              @relation("UserApprovals")
+  accounts              Account[]
+  sessions              Session[]
+  authenticators        Authenticator[]
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([academicTitleOptionId])
+  @@index([facultyId])
+  @@index([departmentId])
+}
+
+model Faculty {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String       @unique
+  isActive    Boolean      @default(true)
+  departments Department[]
+  users       User[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  facultyId String
+  code      String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  faculty   Faculty  @relation(fields: [facultyId], references: [id], onDelete: Restrict)
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([facultyId, name])
+}
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  label     String   @unique
+  startYear Int
+  endYear   Int
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model CaseStatusDefinition {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  label       String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model SelectOption {
+  id                 String               @id @default(cuid())
+  category           SelectOptionCategory
+  key                String
+  label              String
+  sortOrder          Int                  @default(0)
+  isActive           Boolean              @default(true)
+  academicTitleUsers User[]               @relation("AcademicTitleAssignments")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@unique([category, key])
+  @@unique([category, label])
+  @@index([category, sortOrder])
+}
+
+model UploadSetting {
+  id                String   @id
+  maxUploadSizeMb   Int
+  allowedExtensions String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Account {
-  id                        String  @id @default(cuid())
-  userId                    String
-  type                      String
-  provider                  String
-  providerAccountId         String
-  refresh_token             String? @db.Text
-  access_token              String? @db.Text
-  expires_at                Int?
-  token_type                String?
-  scope                     String?
-  id_token                  String? @db.Text
-  session_state             String?
-  refresh_token_expires_in  Int?
-  user                      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }

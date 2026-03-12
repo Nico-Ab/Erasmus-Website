@@ -37,6 +37,12 @@ const dashboardNavigation: NavigationItem[] = [
     description: "Role-aware summary"
   },
   {
+    title: "My profile",
+    href: "/dashboard/profile",
+    description: "Institutional identity and assignment details",
+    roles: [UserRole.STAFF, UserRole.OFFICER, UserRole.ADMIN]
+  },
+  {
     title: "Staff area",
     href: "/dashboard/staff",
     description: "Profile, cases, and documents",
@@ -58,6 +64,12 @@ const dashboardNavigation: NavigationItem[] = [
     title: "User management",
     href: "/dashboard/admin/users",
     description: "Approve or reject staff registrations",
+    roles: [UserRole.ADMIN]
+  },
+  {
+    title: "Master data",
+    href: "/dashboard/admin/master-data",
+    description: "Faculties, departments, years, statuses, and settings",
     roles: [UserRole.ADMIN]
   }
 ];

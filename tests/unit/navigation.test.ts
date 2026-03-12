@@ -6,7 +6,7 @@ describe("getDashboardNavigation", () => {
   it("returns staff routes for staff users", () => {
     const items = getDashboardNavigation(UserRole.STAFF);
 
-    expect(items.map((item) => item.href)).toEqual(["/dashboard", "/dashboard/staff"]);
+    expect(items.map((item) => item.href)).toEqual(["/dashboard", "/dashboard/profile", "/dashboard/staff"]);
   });
 
   it("returns all routes for admin users", () => {
@@ -14,10 +14,12 @@ describe("getDashboardNavigation", () => {
 
     expect(items.map((item) => item.href)).toEqual([
       "/dashboard",
+      "/dashboard/profile",
       "/dashboard/staff",
       "/dashboard/officer",
       "/dashboard/admin",
-      "/dashboard/admin/users"
+      "/dashboard/admin/users",
+      "/dashboard/admin/master-data"
     ]);
   });
 });

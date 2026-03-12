@@ -25,7 +25,6 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
-docs/
 
 # test / coverage
 coverage/
