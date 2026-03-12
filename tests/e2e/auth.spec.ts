@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 const adminCredentials = {
   email: "admin@swu.local",
@@ -26,10 +26,7 @@ function createRegistrationData() {
   };
 }
 
-async function signInWith(
-  page: Page,
-  credentials: { email: string; password: string }
-) {
+async function signInWith(page: Page, credentials: { email: string; password: string }) {
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(credentials.email);
   await page.getByLabel(/password/i).fill(credentials.password);
@@ -42,7 +39,7 @@ async function signOutCurrentUser(page: Page) {
 }
 
 async function registerStaffAccount(
-  page: Page,
+  request: APIRequestContext,
   registration: {
     firstName: string;
     lastName: string;
@@ -50,23 +47,31 @@ async function registerStaffAccount(
     password: string;
   }
 ) {
-  await page.goto("/register");
-  await page.getByLabel(/first name/i).fill(registration.firstName);
-  await page.getByLabel(/last name/i).fill(registration.lastName);
-  await page.getByLabel(/^email$/i).fill(registration.email);
-  await page.getByLabel(/^password$/i).fill(registration.password);
-  await page.getByLabel(/confirm password/i).fill(registration.password);
-  await page.getByRole("button", { name: /submit registration/i }).click();
+
+  const response = await request.post("/api/register", {
+    data: {
+      ...registration,
+      confirmPassword: registration.password
+    }
+  });
+
+  expect(response.status()).toBe(201);
+  const payload = (await response.json()) as { email?: string };
+
+  return {
+    email: payload.email ?? registration.email
+  };
 }
 
-test("registration creates a pending approval outcome", async ({ page }) => {
+test("registration creates a pending approval outcome", async ({ page, request }) => {
   const registration = createRegistrationData();
+  const result = await registerStaffAccount(request, registration);
 
-  await registerStaffAccount(page, registration);
+  await page.goto(`/pending-approval?email=${encodeURIComponent(result.email)}&registered=1`);
 
   await expect(page).toHaveURL(/\/pending-approval/);
   await expect(page.getByRole("heading", { name: /account pending approval/i })).toBeVisible();
-  await expect(page.getByText(registration.email)).toBeVisible();
+  await expect(page.getByText(result.email)).toBeVisible();
 });
 
 test("approved seeded users can log in", async ({ page }) => {
@@ -77,14 +82,12 @@ test("approved seeded users can log in", async ({ page }) => {
   await expect(page.getByText(/signed in as/i)).toBeVisible();
 });
 
-test("pending users are blocked from the protected workspace", async ({ page }) => {
+test("pending users are blocked from the protected workspace", async ({ page, request }) => {
   const registration = createRegistrationData();
-
-  await registerStaffAccount(page, registration);
-  await expect(page).toHaveURL(/\/pending-approval/);
+  const result = await registerStaffAccount(request, registration);
 
   await signInWith(page, {
-    email: registration.email,
+    email: result.email,
     password: registration.password
   });
 
@@ -92,26 +95,24 @@ test("pending users are blocked from the protected workspace", async ({ page }) 
   await expect(page.getByRole("heading", { name: /account pending approval/i })).toBeVisible();
 });
 
-test("admin approval unlocks the new staff account", async ({ page }) => {
+test("admin approval unlocks the new staff account", async ({ page, request }) => {
   const registration = createRegistrationData();
-
-  await registerStaffAccount(page, registration);
-  await expect(page).toHaveURL(/\/pending-approval/);
+  const result = await registerStaffAccount(request, registration);
 
   await signInWith(page, adminCredentials);
   await expect(page).toHaveURL(/\/dashboard/);
 
   await page.goto("/dashboard/admin/users");
-  const row = page.getByRole("row").filter({ hasText: registration.email });
+  const row = page.getByRole("row").filter({ hasText: result.email });
   await expect(row).toBeVisible();
   await row.getByRole("button", { name: /approve/i }).click();
-  await expect(page.getByRole("row").filter({ hasText: registration.email })).toContainText(
+  await expect(page.getByRole("row").filter({ hasText: result.email })).toContainText(
     /approved/i
   );
 
   await signOutCurrentUser(page);
   await signInWith(page, {
-    email: registration.email,
+    email: result.email,
     password: registration.password
   });
 

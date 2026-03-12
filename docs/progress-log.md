@@ -2,9 +2,9 @@
 
 ## Status snapshot
 - Date: March 12, 2026
-- Overall phase: Foundation, authentication, staff profile baseline, and admin master data baseline implemented; larger product workflows still pending
-- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, admin-managed master data, and multi-layer automated tests
-- Active milestones: M4 completed for the current scope, M8 in progress through the current baseline
+- Overall phase: Foundation, authentication, staff profile baseline, dashboard baseline, and admin master data baseline implemented; larger product workflows still pending
+- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, and multi-layer automated tests
+- Active milestones: M4 completed for the current scope, M7 in progress through dashboard visibility, M8 in progress through the current baseline
 
 ## Foundation completed on March 11, 2026
 ### What was done
@@ -55,6 +55,18 @@
 - Added the `20260312110000_profile_master_data` schema update. Because Prisma `migrate dev` became non-interactive after destructive-column warnings, the change was applied through `prisma migrate diff`, `prisma db execute`, and `prisma migrate resolve` instead.
 - Added validation, integration, and E2E coverage for profile editing, faculty and department management, and unauthorized master-data edits.
 
+## First real role dashboards implemented on March 12, 2026
+### What was done
+- Added a shared server-side dashboard service layer that queries live registration, academic-year, faculty, department, and status data where it exists.
+- Added reusable formal list-panel widgets so dashboard pages can show structured queues and explicit empty states instead of placeholder prose.
+- Replaced the staff placeholder page with a real dashboard that shows profile-linked context, academic-year status, status areas sourced from master data, a missing-documents area, a latest-comments area, and open tasks with honest zero states where case data does not yet exist.
+- Replaced the officer placeholder page with a real review dashboard that shows new registrations, open reviews, current academic year overview metrics, and honest empty states for submitted-case, missing-document, and changes-required queues.
+- Replaced the admin placeholder page with a real operational dashboard that shows the same live oversight metrics plus direct actions into user management and master data.
+- Added component tests for dashboard panels and role dashboard content.
+- Added E2E tests that verify staff, officer, and admin users see the correct role dashboard visibility.
+- Tightened Playwright local execution for stability by using a single worker in the current local-first setup.
+- Adjusted auth E2E registration coverage to use the live `/api/register` endpoint plus browser pending-approval and approval-unlock flows because direct `/register` page navigation was unreliable in local Playwright dev mode, while the register form UI remains covered in integration tests.
+
 ### What is intentionally incomplete
 - Role changes and account deactivation controls in the admin UI
 - Password reset, email verification, and richer account recovery flows
@@ -62,12 +74,13 @@
 - Private document upload, versioning, and review workflows
 - Reporting, CSV export, archive management, and broader admin operations
 - Audit history for master data changes
-- Domain models beyond the current auth, profile, and master-data baseline
+- Domain models beyond the current auth, dashboard, profile, and master-data baseline
 
 ### Risks and follow-up notes
 - The current Prisma setup still emits a deprecation warning for `package.json#prisma`; it works now but should move to a dedicated Prisma config before Prisma 7.
 - The `20260312110000_profile_master_data` database change was applied through Prisma diff and execute commands instead of `migrate dev`; that is valid for the current local setup, but the team should keep the generated migration SQL under review because it included column-removal behavior.
 - Negative-path browser tests trigger expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
+- Direct browser navigation to `/register` was unreliable under the current local Playwright-plus-dev-server combination, so registration browser coverage currently exercises the live endpoint rather than the page UI itself.
 - Case-status and select-list master data now exist, but they are not yet connected to real case workflows because those modules remain out of scope for the current slice.
 - The admin surface currently provides create and update flows for master data, but not richer guardrails such as audit history, bulk actions, or change review.
 
@@ -88,34 +101,35 @@
 ### Covered now
 - unit coverage for login and registration validation, profile validation, master-data validation, navigation filtering, and shared formatting helpers
 - integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, and profile form behavior
-- component coverage for anonymous and authenticated home-page states
-- e2e coverage for registration, pending approval, approved login, admin approval, protected route access control, home, login, authenticated app shell rendering, staff profile editing, admin faculty and department management, and unauthorized admin-edit prevention
+- component coverage for anonymous and authenticated home-page states plus dashboard panels and role dashboard content
+- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, and unauthorized admin-edit prevention
 
 ### Still uncovered
+- direct browser interaction with the `/register` page in Playwright
 - rejection and deactivation actions in the admin UI
 - session behavior immediately after future role changes or deactivation actions
 - academic year, status, select-option, and upload-setting admin flows at the browser level
 - mobility case lifecycle and status transitions
 - document upload and download authorization
-- officer review actions
+- officer review actions beyond dashboard visibility
 - reporting and exports
 
 ## Milestone tracker
 | Milestone | Status | Notes |
 | --- | --- | --- |
 | M1 Workspace bootstrap and viewable shell | Completed | App shell, auth, status page, testing stack, migration, and seed are in place |
-| M2 Data foundation | In progress through current baseline | Core auth, profile, and master data models exist; case and document domain models are still missing |
+| M2 Data foundation | In progress through current baseline | Core auth, profile, dashboard, and master data models exist; case and document domain models are still missing |
 | M3 Authentication and access control | Completed for current scope | Registration, approval gating, login, role protection, and admin approval page are live |
-| M4 Staff identity and dashboard baseline | Completed for current scope | Staff can edit their own profile through the protected workspace |
+| M4 Staff identity and dashboard baseline | Completed for current scope | Staff can edit their own profile and see a real dashboard shell with honest operational states |
 | M5 Mobility case drafting and submission | Not started | No case model or workflow yet |
 | M6 Secure document management | Not started | No upload or storage workflow yet |
-| M7 Officer review workflow | Not started | Officer page is placeholder only |
-| M8 Admin controls and master data | In progress through current baseline | Approval/rejection page plus master-data management are live; broader admin controls remain unimplemented |
+| M7 Officer review workflow | In progress through dashboard visibility | Officer and admin dashboards now show live oversight metrics, but no case-review actions exist yet |
+| M8 Admin controls and master data | In progress through current baseline | Approval/rejection page plus master-data management and admin dashboard actions are live; broader admin controls remain unimplemented |
 | M9 Reporting, exports, and archive access | Not started | No reporting or export implementation yet |
-| M10 Hardening and release readiness | Not started | Foundation, auth, profile, and master-data verification exist; full product hardening remains ahead |
+| M10 Hardening and release readiness | Not started | Foundation, auth, dashboard, profile, and master-data verification exist; full product hardening remains ahead |
 
 ## Next recommended move
-Start the first real mobility-case slice so the new profile and master-data foundation begins feeding business workflows, while extending M8 only as needed to support that path.
+Start the first real mobility-case slice so the live dashboard shells can begin consuming actual case, document, comment, and task data instead of structured empty states.
 
 ## Update template
 Use this format for future entries:

@@ -51,15 +51,15 @@ Characteristics:
 ### End-to-end browser tests
 Use Playwright for:
 - basic route availability
-- registration and login reachability
-- approval-gated access behavior
-- role-based protected-route access
+- live auth outcomes and protected-route access behavior
 - authenticated app shell rendering
 - the first real protected workflows that connect UI, routing, auth, and persistence
+- role-aware workspace visibility across staff, officer, and admin dashboards
 
 Characteristics:
 - run against the local app at `http://localhost:3000`
 - can start the local dev server automatically through Playwright
+- currently uses a single browser worker locally for stability in this workspace
 - should stay small, stable, and high-signal
 - stored under `tests/e2e/`
 
@@ -83,6 +83,7 @@ Current shared testing utilities:
 - `tests/helpers/render.tsx`: wraps React Testing Library render with `userEvent`
 - `tests/factories/auth.ts`: provides stable login and registration fixtures for auth-related tests
 - `tests/factories/profile.ts`: provides stable profile inputs and reference data for profile-related tests
+- `tests/factories/dashboard.ts`: provides stable staff and review dashboard data for component tests
 
 Guidance:
 - add helpers when they remove repetition across multiple tests
@@ -111,28 +112,35 @@ Guidance:
 ### Component coverage
 - home page anonymous rendering
 - home page authenticated call-to-action rendering
+- dashboard list-panel rendering and empty states
+- staff dashboard content rendering
+- admin dashboard content rendering
 
 ### E2E browser coverage
 - home page loads
 - login page loads
-- registration submits into the pending approval state
+- live registration endpoint creates the pending approval outcome
 - pending accounts remain blocked from the protected workspace
 - approved seeded users can log in
 - admin approval unlocks a newly registered staff account
 - protected routes enforce authentication and role access
 - authenticated dashboard shell renders after sign-in
+- staff users see the correct staff dashboard visibility
+- officer users see the correct review dashboard visibility
+- admin users see the correct admin dashboard visibility and actions
 - staff users can edit their own profile
 - admins can create and edit faculties and departments
 - unauthorized users cannot edit admin master data
 
 ## What remains uncovered
 Critical flows still needing future coverage:
+- direct browser interaction with the `/register` page in Playwright
 - rejection and deactivation actions in the admin UI
 - session behavior after future role changes or account deactivation
 - academic year, status, select-option, and upload-setting management flows in browser coverage
 - mobility case draft and submission lifecycle
 - protected document upload and download authorization
-- officer review actions and status transitions
+- officer review actions and status transitions beyond dashboard visibility
 - reporting and CSV export behavior
 - audit-sensitive server actions in later workflow modules
 
