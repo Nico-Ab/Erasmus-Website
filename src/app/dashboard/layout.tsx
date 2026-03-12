@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { DashboardNav } from "@/components/app/dashboard-nav";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { getDashboardNavigation } from "@/lib/navigation";
-import { requireAuth } from "@/lib/auth/guards";
+import { requireApprovedAuth } from "@/lib/auth/guards";
 import { formatRoleLabel, formatStatusLabel } from "@/lib/utils";
 
 export default async function DashboardLayout({
@@ -10,7 +10,7 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await requireAuth();
+  const session = await requireApprovedAuth();
   const navigation = getDashboardNavigation(session.user.role);
 
   return (

@@ -25,11 +25,13 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+docs/
 
 # test / coverage
 coverage/
 playwright-report/
 test-results/
+AGENTS.md
 
 # local uploads
 storage/

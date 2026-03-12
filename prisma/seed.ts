@@ -5,15 +5,15 @@ const prisma = new PrismaClient();
 
 const users = [
   {
-    email: "staff@swu.local",
-    password: "StaffPass123!",
-    name: "Elena Petrova",
-    firstName: "Elena",
-    lastName: "Petrova",
-    academicTitle: "Dr.",
-    faculty: "Faculty of Economics",
-    department: "International Relations",
-    role: UserRole.STAFF,
+    email: "admin@swu.local",
+    password: "AdminPass123!",
+    name: "Ivana Dimitrova",
+    firstName: "Ivana",
+    lastName: "Dimitrova",
+    academicTitle: "Ms.",
+    faculty: "Rectorate",
+    department: "Systems Administration",
+    role: UserRole.ADMIN,
     status: UserApprovalStatus.APPROVED
   },
   {
@@ -29,25 +29,16 @@ const users = [
     status: UserApprovalStatus.APPROVED
   },
   {
-    email: "admin@swu.local",
-    password: "AdminPass123!",
-    name: "Ivana Dimitrova",
-    firstName: "Ivana",
-    lastName: "Dimitrova",
-    academicTitle: "Ms.",
-    faculty: "Rectorate",
-    department: "Systems Administration",
-    role: UserRole.ADMIN,
-    status: UserApprovalStatus.APPROVED
-  },
-  {
-    email: "pending@swu.local",
-    password: "PendingPass123!",
-    name: "Pending Applicant",
-    firstName: "Pending",
-    lastName: "Applicant",
+    email: "staff@swu.local",
+    password: "StaffPass123!",
+    name: "Elena Petrova",
+    firstName: "Elena",
+    lastName: "Petrova",
+    academicTitle: "Dr.",
+    faculty: "Faculty of Economics",
+    department: "International Relations",
     role: UserRole.STAFF,
-    status: UserApprovalStatus.PENDING
+    status: UserApprovalStatus.APPROVED
   }
 ];
 
@@ -60,11 +51,15 @@ async function main() {
       where: { email: profile.email },
       update: {
         ...profile,
-        passwordHash
+        passwordHash,
+        reviewedAt: profile.status === UserApprovalStatus.APPROVED ? new Date() : null,
+        reviewedById: null
       },
       create: {
         ...profile,
-        passwordHash
+        passwordHash,
+        reviewedAt: profile.status === UserApprovalStatus.APPROVED ? new Date() : null,
+        reviewedById: null
       }
     });
   }

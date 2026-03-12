@@ -1,5 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { authErrorCodes } from "@/lib/auth/error-codes";
 import { LoginForm } from "@/components/auth/login-form";
 import { createLoginInput } from "../factories/auth";
 import { renderWithUser } from "../helpers/render";
@@ -37,7 +38,7 @@ describe("LoginForm", () => {
   });
 
   it("submits valid credentials and redirects to the dashboard", async () => {
-    signInMock.mockResolvedValue({ error: undefined, url: "/dashboard" });
+    signInMock.mockResolvedValue({ error: undefined, code: undefined, url: "/dashboard" });
     const { user } = renderWithUser(<LoginForm />);
     const credentials = createLoginInput();
 
@@ -50,15 +51,40 @@ describe("LoginForm", () => {
         email: credentials.email,
         password: credentials.password,
         redirect: false,
-        callbackUrl: "/dashboard"
+        redirectTo: "/dashboard"
       });
     });
     expect(router.push).toHaveBeenCalledWith("/dashboard");
     expect(router.refresh).toHaveBeenCalled();
   });
 
+  it("routes pending users into the approval state screen", async () => {
+    signInMock.mockResolvedValue({
+      error: "CredentialsSignin",
+      code: authErrorCodes.pendingApproval,
+      url: null
+    });
+    const { user } = renderWithUser(<LoginForm />);
+    const credentials = createLoginInput({ email: "pending.staff@swu.local" });
+
+    await user.type(screen.getByLabelText(/email/i), credentials.email);
+    await user.type(screen.getByLabelText(/password/i), credentials.password);
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(router.push).toHaveBeenCalledWith(
+        "/pending-approval?email=pending.staff%40swu.local"
+      );
+    });
+    expect(router.refresh).toHaveBeenCalled();
+  });
+
   it("shows a form-level error when sign-in fails", async () => {
-    signInMock.mockResolvedValue({ error: "CredentialsSignin", url: null });
+    signInMock.mockResolvedValue({
+      error: "CredentialsSignin",
+      code: authErrorCodes.invalidCredentials,
+      url: null
+    });
     const { user } = renderWithUser(<LoginForm />);
     const credentials = createLoginInput();
 

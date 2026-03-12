@@ -22,6 +22,11 @@ export const publicNavigation: NavigationItem[] = [
     title: "Login",
     href: "/login",
     description: "Secure account access"
+  },
+  {
+    title: "Register",
+    href: "/register",
+    description: "Staff account request"
   }
 ];
 
@@ -47,6 +52,12 @@ const dashboardNavigation: NavigationItem[] = [
     title: "Admin area",
     href: "/dashboard/admin",
     description: "Users, settings, and master data",
+    roles: [UserRole.ADMIN]
+  },
+  {
+    title: "User management",
+    href: "/dashboard/admin/users",
+    description: "Approve or reject staff registrations",
     roles: [UserRole.ADMIN]
   }
 ];

@@ -41,9 +41,8 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
                 Erasmus staff mobility management with a formal institutional shell.
               </CardTitle>
               <CardDescription className="max-w-2xl text-base leading-7 text-slate-600">
-                This foundation provides a local-first Next.js application with secure credentials-based authentication,
-                PostgreSQL wiring, Prisma, testing infrastructure, and role-aware dashboard placeholders for staff,
-                officers, and admins.
+                The current foundation now includes staff self-registration, approval-gated credentials authentication,
+                protected role areas for staff, officers, and admins, plus the local-first database and testing stack.
               </CardDescription>
             </div>
           </CardHeader>
@@ -54,6 +53,11 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
+            {!isAuthenticated ? (
+              <Button asChild variant="outline">
+                <Link href="/register">Register staff account</Link>
+              </Button>
+            ) : null}
             <Button asChild variant="outline">
               <Link href="/status">Review local status</Link>
             </Button>
@@ -62,7 +66,11 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 Signed in as {userName ?? "portal user"}.
               </p>
-            ) : null}
+            ) : (
+              <p className="text-sm text-slate-600">
+                Newly registered staff accounts remain in a pending approval state until an administrator reviews them.
+              </p>
+            )}
           </CardContent>
         </Card>
         <Card className="border-slate-200 bg-slate-950 text-slate-50 shadow-panel">
@@ -73,8 +81,8 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-slate-200">
-            <p>Included now: app shell, auth, database wiring, health checks, tests, and dashboard placeholders.</p>
-            <p>Not implemented yet: registration flows, case workflows, document handling, reporting, and admin operations.</p>
+            <p>Included now: registration, approval workflow, secure login, protected dashboard shell, health checks, and tests.</p>
+            <p>Not implemented yet: staff profile editing, case workflows, document handling, reporting, and broader admin operations.</p>
           </CardContent>
         </Card>
       </section>

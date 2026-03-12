@@ -4,7 +4,7 @@ import { HomePage } from "@/components/home/home-page";
 import { renderWithUser } from "../helpers/render";
 
 describe("HomePage", () => {
-  it("renders the portal heading and login path for anonymous users", () => {
+  it("renders the portal heading plus login and registration paths for anonymous users", () => {
     renderWithUser(<HomePage isAuthenticated={false} />);
 
     expect(
@@ -13,6 +13,10 @@ describe("HomePage", () => {
       })
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open login/i })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: /register staff account/i })).toHaveAttribute(
+      "href",
+      "/register"
+    );
     expect(screen.getByRole("link", { name: /review local status/i })).toHaveAttribute(
       "href",
       "/status"

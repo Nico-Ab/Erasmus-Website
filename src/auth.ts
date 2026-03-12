@@ -1,9 +1,17 @@
-import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { UserApprovalStatus, UserRole } from "@prisma/client";
+import { authErrorCodes } from "@/lib/auth/error-codes";
+import {
+  AccountDeactivatedError,
+  AccountRejectedError,
+  InvalidCredentialsError,
+  PendingApprovalError
+} from "@/lib/auth/errors";
+import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { authenticateCredentials } from "@/lib/auth/service";
 import { loginSchema } from "@/lib/validation/auth";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -11,6 +19,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt"
   },
+  trustHost: env.trustHost,
+  secret: env.AUTH_SECRET,
   pages: {
     signIn: "/login"
   },
@@ -25,34 +35,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = loginSchema.safeParse(credentials);
 
         if (!parsed.success) {
-          return null;
+          throw new InvalidCredentialsError();
         }
 
-        const email = parsed.data.email.toLowerCase();
-        const user = await prisma.user.findUnique({
-          where: { email }
-        });
+        const result = await authenticateCredentials(parsed.data);
 
-        if (!user?.passwordHash) {
-          return null;
+        if (result.status === authErrorCodes.pendingApproval) {
+          throw new PendingApprovalError();
         }
 
-        if (user.status !== UserApprovalStatus.APPROVED) {
-          return null;
+        if (result.status === authErrorCodes.accountRejected) {
+          throw new AccountRejectedError();
         }
 
-        const isPasswordValid = await bcrypt.compare(parsed.data.password, user.passwordHash);
+        if (result.status === authErrorCodes.accountDeactivated) {
+          throw new AccountDeactivatedError();
+        }
 
-        if (!isPasswordValid) {
-          return null;
+        if (result.status !== "approved") {
+          throw new InvalidCredentialsError();
         }
 
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          status: user.status
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          role: result.user.role,
+          status: result.user.status
         };
       }
     })
@@ -64,7 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.status = user.status;
       }
 
-      if (token.sub && (!token.role || !token.status)) {
+      if (token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
           select: { role: true, status: true }
@@ -73,6 +82,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (dbUser) {
           token.role = dbUser.role;
           token.status = dbUser.status;
+        } else {
+          token.role = UserRole.STAFF;
+          token.status = UserApprovalStatus.DEACTIVATED;
         }
       }
 

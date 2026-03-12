@@ -16,7 +16,8 @@ describe("getDashboardNavigation", () => {
       "/dashboard",
       "/dashboard/staff",
       "/dashboard/officer",
-      "/dashboard/admin"
+      "/dashboard/admin",
+      "/dashboard/admin/users"
     ]);
   });
 });

@@ -19,6 +19,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
+  const navigation = session?.user
+    ? [
+        publicNavigation[0],
+        publicNavigation[1],
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          description: "Protected workspace"
+        }
+      ]
+    : publicNavigation;
 
   return (
     <html lang="en">
@@ -38,22 +49,18 @@ export default async function RootLayout({
                 </p>
               </div>
               <nav className="flex flex-wrap items-center gap-2 text-sm">
-                {publicNavigation.map((item) => {
-                  const isDashboardLink = item.href === "/login" && session?.user;
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={isDashboardLink ? "/dashboard" : item.href}
-                      className={cn(
-                        "rounded-full border border-slate-200 px-4 py-2 text-slate-700 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary",
-                        isDashboardLink && "border-primary/20 bg-primary/10 text-primary"
-                      )}
-                    >
-                      {isDashboardLink ? "Dashboard" : item.title}
-                    </Link>
-                  );
-                })}
+                {navigation.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "rounded-full border border-slate-200 px-4 py-2 text-slate-700 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary",
+                      item.href === "/dashboard" && "border-primary/20 bg-primary/10 text-primary"
+                    )}
+                  >
+                    {item.title}
+                  </Link>
+                ))}
               </nav>
             </div>
           </header>

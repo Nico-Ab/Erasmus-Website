@@ -38,17 +38,9 @@ The repository now contains the real app shell and toolchain, but it does not ye
 - `npm run test:e2e`
 - `npm run build`
 
-## Important repo guidance
-- Project instructions live in `AGENTS.md`
-- Product requirements live in `docs/requirements.md`
-- UI style guidance lives in `docs/ui-style.md`
-- Architecture guidance lives in `docs/architecture-notes.md`
-- Status rules live in `docs/status-model.md`
-- Execution planning lives in `docs/build-plan.md`, `docs/acceptance-criteria.md`, and `docs/implementation-runbook.md`
 
 ## Rules
 - Keep the project local-first.
 - Keep storage private.
 - Use environment variables.
 - Keep code maintainable.
-- Avoid AI-style comments.
