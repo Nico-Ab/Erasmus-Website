@@ -140,6 +140,17 @@
 - Added integration coverage for admin user actions and explicit audit-log creation across the main auth, case, document, review, and admin workflows.
 - Added E2E coverage for admin approval, role change, deactivation, and verifying that those actions appear in the audit log.
 
+## Critical automation expanded on March 13, 2026
+### What was done
+- Added shared Playwright helpers in `tests/e2e/helpers/portal.ts` for stable sign-in, approval, profile, case, upload, review, download, and route-navigation flows.
+- Added a high-value browser journey in `tests/e2e/critical-portal-journey.spec.ts` that runs from registration outcome through pending approval, admin approval, approved login, profile editing, draft save/resume, case submission, agreement upload, officer comment, document rejection with a reason, corrected re-upload, status progression, final certificate upload, completion, archive, reporting filters, CSV export, authorization boundaries, and audit visibility.
+- Strengthened browser stability by scoping test-only selectors to the existing register, profile, and reporting export surfaces and by making the shared navigation helper tolerant of transient local dev-route aborts.
+- Added direct integration coverage for final-certificate upload status progression in `tests/integration/document-storage-service.test.ts` so the `certificate_uploaded` transition is covered outside the browser as well.
+- Updated the testing strategy document to explain the new helper layer, the critical workflow coverage, the exact local full-suite commands, and the remaining gaps.
+
+### Follow-up notes
+- The critical E2E journey now exercises the live `/api/register` endpoint plus browser-visible pending-approval and approval-unlock behavior for local reliability. The `/register` page UI itself remains covered in integration tests because direct Playwright navigation to that route is still unstable in local Next.js dev mode.
+- Negative-path auth browser coverage continues to emit expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked before approval.
 ### What is intentionally incomplete
 - Bulk review actions, assignment queues, and pagination for larger officer workloads
 - Password reset, email verification, and richer account recovery flows
@@ -168,18 +179,18 @@
 - unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, document upload validation, navigation filtering, and shared formatting helpers
 - integration coverage for auth service login and registration outcomes, admin lifecycle actions, login form behavior, registration form behavior, profile form behavior, mobility-case create, edit, and submit behavior, document storage behavior, document versioning, secure download authorization handling, officer status transitions, officer comment creation, document review decisions, missing-document review actions, reporting aggregation, CSV generation, and explicit audit-log creation on major protected actions
 - component coverage for anonymous and authenticated home-page states, dashboard panels and role dashboard content, and readable staff case-table rendering
-- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, admin role change, admin deactivation, audit-log visibility for major admin actions, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, officer status changes, archive visibility, combined review filters, reporting filters, filtered CSV export, and missing-document report visibility
+- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, admin role change, admin deactivation, audit-log visibility for major admin actions, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, corrected re-upload, final-certificate upload, case completion, archive visibility, combined review filters, reporting filters, filtered CSV export, and the full cross-role critical journey through audit visibility
 
 ### Still uncovered
-- direct browser interaction with the `/register` page in Playwright
+- direct browser interaction with the `/register` page in Playwright; the register UI itself remains covered in integration tests, while the browser suite uses the live registration endpoint for local reliability
 - registration rejection browser coverage in the admin UI
 - session behavior after future role changes or account deactivation
 - academic year, status, select-option, and upload-setting management flows in browser coverage
 - bulk officer review actions and larger-list pagination behavior
+- browser coverage for yearly-summary and faculty-summary export links
 - structured requested-changes workflows beyond comments and document review states
-- certificate-of-attendance completion flow after mobility is finished
 - storage-missing recovery handling through the UI
-- broader report variants and export formats beyond the current filtered case list, yearly summary, and faculty summary CSV surfaces
+- broader report variants and export formats beyond the current CSV surfaces
 - audit-sensitive server actions in later workflow modules
 
 ## Milestone tracker

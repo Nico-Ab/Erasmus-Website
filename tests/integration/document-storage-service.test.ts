@@ -283,6 +283,70 @@ describe("document storage and metadata handling", () => {
     expect(prismaMock.__transaction.mobilityCaseStatusHistory.create).not.toHaveBeenCalled();
     expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledTimes(2);
   });
+  it("moves the case into certificate uploaded when staff adds the final certificate", async () => {
+    prismaMock.mobilityCase.findFirst.mockResolvedValue({
+      id: "case_2b",
+      statusDefinitionId: "status_mobility_ongoing",
+      statusDefinition: {
+        key: "mobility_ongoing"
+      }
+    });
+    prismaMock.selectOption.findFirst.mockResolvedValue({
+      id: "document_type_certificate",
+      key: "certificate_of_attendance",
+      label: "Final Certificate of Attendance"
+    });
+    prismaMock.caseStatusDefinition.findFirst.mockResolvedValue({
+      id: "status_certificate_uploaded",
+      key: "certificate_uploaded",
+      label: "Certificate Uploaded"
+    });
+    prismaMock.__transaction.mobilityCaseDocument.findUnique.mockResolvedValue(null);
+    prismaMock.__transaction.mobilityCaseDocument.create.mockResolvedValue({
+      id: "document_2b",
+      currentVersionId: null,
+      versions: []
+    });
+    prismaMock.__transaction.mobilityCaseDocumentVersion.create.mockResolvedValue({
+      id: "version_2b",
+      versionNumber: 1
+    });
+
+    const storage = new LocalFileStorage(storageRoot);
+    const result = await uploadDocumentVersionForStaff(
+      "staff_user",
+      "case_2b",
+      "certificate_of_attendance",
+      createUploadFile("final-certificate-v1.pdf", "final-certificate-v1"),
+      storage
+    );
+
+    expect(result).toEqual({
+      status: "uploaded",
+      caseId: "case_2b",
+      documentId: "document_2b",
+      versionId: "version_2b",
+      currentStatusKey: "certificate_uploaded"
+    });
+    expect(prismaMock.__transaction.mobilityCase.update).toHaveBeenCalledWith({
+      where: {
+        id: "case_2b"
+      },
+      data: {
+        statusDefinitionId: "status_certificate_uploaded"
+      }
+    });
+    expect(prismaMock.__transaction.mobilityCaseStatusHistory.create).toHaveBeenCalledWith({
+      data: {
+        mobilityCaseId: "case_2b",
+        fromStatusDefinitionId: "status_mobility_ongoing",
+        toStatusDefinitionId: "status_certificate_uploaded",
+        changedByUserId: "staff_user",
+        note: "Final Certificate of Attendance uploaded by staff user."
+      }
+    });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledTimes(3);
+  });
 
   it("removes the stored file if metadata persistence fails", async () => {
     prismaMock.mobilityCase.findFirst.mockResolvedValue({

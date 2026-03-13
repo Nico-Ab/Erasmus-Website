@@ -74,7 +74,7 @@ export function RegisterForm() {
         </div>
       </CardHeader>
       <CardContent>
-        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="space-y-5" data-testid="register-form" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name</Label>

@@ -115,7 +115,7 @@ export function ProfileForm({ initialValues, academicTitleOptions, faculties }: 
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="space-y-6" data-testid="profile-form" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name</Label>

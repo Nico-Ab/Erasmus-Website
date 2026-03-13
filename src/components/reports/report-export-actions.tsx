@@ -11,7 +11,7 @@ function buildExportHref(pathname: string, queryString: string) {
 
 export function ReportExportActions({ queryString }: ReportExportActionsProps) {
   return (
-    <Card className="border-slate-200 bg-white/95">
+    <Card className="border-slate-200 bg-white/95" data-testid="report-export-actions">
       <CardHeader>
         <CardTitle>CSV exports</CardTitle>
         <CardDescription>
@@ -20,13 +20,25 @@ export function ReportExportActions({ queryString }: ReportExportActionsProps) {
       </CardHeader>
       <CardContent className="flex flex-wrap gap-3">
         <Button asChild>
-          <a href={buildExportHref("/api/reports/export/cases", queryString)}>Export filtered case list</a>
+          <a data-testid="export-cases-csv" href={buildExportHref("/api/reports/export/cases", queryString)}>
+            Export filtered case list
+          </a>
         </Button>
         <Button asChild variant="outline">
-          <a href={buildExportHref("/api/reports/export/yearly-summary", queryString)}>Export yearly summary</a>
+          <a
+            data-testid="export-yearly-summary-csv"
+            href={buildExportHref("/api/reports/export/yearly-summary", queryString)}
+          >
+            Export yearly summary
+          </a>
         </Button>
         <Button asChild variant="outline">
-          <a href={buildExportHref("/api/reports/export/faculty-summary", queryString)}>Export faculty summary</a>
+          <a
+            data-testid="export-faculty-summary-csv"
+            href={buildExportHref("/api/reports/export/faculty-summary", queryString)}
+          >
+            Export faculty summary
+          </a>
         </Button>
       </CardContent>
     </Card>
