@@ -61,6 +61,12 @@ const dashboardNavigation: NavigationItem[] = [
     roles: [UserRole.OFFICER, UserRole.ADMIN]
   },
   {
+    title: "Review cases",
+    href: "/dashboard/officer/cases",
+    description: "Search, filter, and review all mobility cases",
+    roles: [UserRole.OFFICER, UserRole.ADMIN]
+  },
+  {
     title: "Admin area",
     href: "/dashboard/admin",
     description: "Users, settings, and master data",

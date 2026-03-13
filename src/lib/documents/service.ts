@@ -28,6 +28,9 @@ export type CaseDocumentVersionView = {
     key: DocumentReviewState;
     label: string;
   };
+  reviewComment: string | null;
+  reviewedAtLabel: string | null;
+  reviewedByName: string | null;
   downloadPath: string;
 };
 
@@ -99,6 +102,27 @@ function formatFileSizeLabel(sizeBytes: number) {
 
 function getReviewStateLabel(reviewState: DocumentReviewState) {
   return documentReviewStateLabels[reviewState];
+}
+
+function getUserDisplayName(user: {
+  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+} | null) {
+  if (!user) {
+    return null;
+  }
+
+  const trimmedName = user.name?.trim();
+
+  if (trimmedName) {
+    return trimmedName;
+  }
+
+  const composedName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+
+  return composedName || user.email;
 }
 
 function getUploadDisabledReason(statusKey: string) {
@@ -187,7 +211,17 @@ export async function getCaseDocumentPanels(
             originalFilename: true,
             sizeBytes: true,
             uploadedAt: true,
-            reviewState: true
+            reviewState: true,
+            reviewComment: true,
+            reviewedAt: true,
+            reviewedByUser: {
+              select: {
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            }
           },
           orderBy: [{ versionNumber: "desc" }, { uploadedAt: "desc" }]
         }
@@ -214,6 +248,9 @@ export async function getCaseDocumentPanels(
             key: version.reviewState,
             label: getReviewStateLabel(version.reviewState)
           },
+          reviewComment: version.reviewComment,
+          reviewedAtLabel: version.reviewedAt ? formatDocumentDate(version.reviewedAt) : null,
+          reviewedByName: getUserDisplayName(version.reviewedByUser),
           downloadPath: getDocumentVersionDownloadPath(version.id)
         })) ?? [];
       const currentVersion = versions.find((version) => version.isCurrent) ?? null;
@@ -283,7 +320,9 @@ export async function uploadDocumentVersionForStaff(
   if (blockedDocumentUploadStatusKeys.has(mobilityCase.statusDefinition.key)) {
     return {
       status: "not_uploadable",
-      message: getUploadDisabledReason(mobilityCase.statusDefinition.key) ?? "Uploads are not available for this case."
+      message:
+        getUploadDisabledReason(mobilityCase.statusDefinition.key) ??
+        "Uploads are not available for this case."
     };
   }
 

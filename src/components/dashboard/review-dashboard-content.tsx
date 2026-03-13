@@ -13,8 +13,8 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
   const title = mode === "admin" ? "Admin operations dashboard" : "Officer review dashboard";
   const description =
     mode === "admin"
-      ? "This dashboard now combines the live approval queue with submitted-case intake and real missing-document visibility from the protected workflow."
-      : "This dashboard provides operational visibility into pending registrations, submitted cases, and document gaps in the staff workflow.";
+      ? "This dashboard now combines the live approval queue with submitted-case intake, missing-document visibility, and direct access into the searchable review register."
+      : "This dashboard provides operational visibility into pending registrations, submitted cases, document gaps, and the active review workload.";
 
   return (
     <div className="space-y-6">
@@ -81,6 +81,11 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
           items={data.openReviews}
           emptyTitle="No open reviews"
           emptyDescription="There are no current case reviews waiting for operational attention."
+          footer={
+            <Button asChild>
+              <Link href="/dashboard/officer/cases">Open review register</Link>
+            </Button>
+          }
         />
         <DashboardListPanel
           title="New submitted cases"
@@ -91,7 +96,7 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
         />
         <DashboardListPanel
           title="Cases with missing documents"
-          description="This queue will identify submissions that need additional uploads or corrected files."
+          description="This queue identifies submissions that need additional uploads or corrected files."
           items={data.missingDocuments}
           emptyTitle="No missing-document cases"
           emptyDescription="All submitted or returned cases currently have the required uploads on file."

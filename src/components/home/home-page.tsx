@@ -19,7 +19,7 @@ const rolePanels = [
   {
     title: "Officer workspace",
     description:
-      "Review institutional submissions, monitor missing documents, and keep protected case workflows moving.",
+      "Search and review submitted cases, assess documents, record comments, and move workflow statuses forward.",
     href: "/dashboard/officer"
   },
   {
@@ -44,8 +44,8 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
               </CardTitle>
               <CardDescription className="max-w-2xl text-base leading-7 text-slate-600">
                 The current foundation now includes staff self-registration, approval-gated credentials authentication,
-                editable institutional profiles, admin-managed master data, staff mobility-case management, and private
-                document storage with permission-checked downloads.
+                editable institutional profiles, admin-managed master data, staff mobility-case management, private
+                document storage, and the first officer review workflow.
               </CardDescription>
             </div>
           </CardHeader>
@@ -86,9 +86,9 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
           <CardContent className="space-y-4 text-sm text-slate-200">
             <p>
               Included now: registration, approval workflow, secure login, editable profiles, master data, mobility
-              cases, private document handling, health checks, and tests.
+              cases, private document handling, officer review actions, health checks, and tests.
             </p>
-            <p>Not implemented yet: officer review actions, reporting, exports, and broader operational workflows.</p>
+            <p>Not implemented yet: reporting, exports, broader admin lifecycle controls, and long-horizon hardening work.</p>
           </CardContent>
         </Card>
       </section>

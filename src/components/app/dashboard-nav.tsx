@@ -5,13 +5,21 @@ import { usePathname } from "next/navigation";
 import type { NavigationItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
+function isItemActive(pathname: string, href: string) {
+  if (href === "/dashboard") {
+    return pathname === href;
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function DashboardNav({ items }: { items: NavigationItem[] }) {
   const pathname = usePathname();
 
   return (
     <nav className="space-y-2">
       {items.map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const active = isItemActive(pathname, item.href);
 
         return (
           <Link
@@ -19,7 +27,7 @@ export function DashboardNav({ items }: { items: NavigationItem[] }) {
             href={item.href}
             className={cn(
               "block rounded-lg border px-4 py-3 transition-colors",
-              isActive
+              active
                 ? "border-primary/20 bg-primary/10 text-primary"
                 : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50"
             )}

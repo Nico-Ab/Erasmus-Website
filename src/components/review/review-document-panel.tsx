@@ -5,60 +5,23 @@ import { useState } from "react";
 import { DocumentReviewBadge } from "@/components/cases/document-review-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { CaseDocumentPanel } from "@/lib/documents/service";
 
-type MobilityCaseDocumentPanelProps = {
+type ReviewDocumentPanelProps = {
   caseId: string;
   document: CaseDocumentPanel;
-  uploadPolicy: {
-    maxUploadSizeMb: number;
-    allowedExtensions: string[];
-  };
 };
 
-function buildAcceptAttribute(extensions: string[]) {
-  return extensions.map((extension) => `.${extension}`).join(",");
-}
-
-export function MobilityCaseDocumentPanel({
-  caseId,
-  document,
-  uploadPolicy
-}: MobilityCaseDocumentPanelProps) {
+export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelProps) {
   const router = useRouter();
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-
-  async function handleUpload(formData: FormData) {
-    setNotice(null);
-    setError(null);
-    setIsUploading(true);
-
-    formData.set("documentTypeKey", document.documentType.key);
-
-    const response = await fetch(`/api/staff/cases/${caseId}/documents`, {
-      method: "POST",
-      body: formData
-    });
-    const payload = await response.json().catch(() => null);
-
-    setIsUploading(false);
-
-    if (!response.ok) {
-      setError(payload?.message ?? "The document could not be uploaded.");
-      return false;
-    }
-
-    setNotice(payload?.message ?? "Document uploaded successfully.");
-    router.refresh();
-    return true;
-  }
+  const [isSaving, setIsSaving] = useState(false);
 
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid={`document-panel-${document.documentType.key}`}>
+    <Card className="border-slate-200 bg-white/95" data-testid={`review-document-panel-${document.documentType.key}`}>
       <CardHeader>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -82,60 +45,76 @@ export function MobilityCaseDocumentPanel({
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Latest file</p>
             <p className="mt-2 text-sm font-semibold text-slate-950">
-              {document.currentVersion?.originalFilename ?? "No file uploaded yet"}
+              {document.currentVersion?.originalFilename ?? "No current file on record"}
             </p>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Upload policy</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Latest review</p>
             <p className="mt-2 text-sm font-semibold text-slate-950">
-              {uploadPolicy.maxUploadSizeMb} MB max, {uploadPolicy.allowedExtensions.map((extension) => extension.toUpperCase()).join(", ")}
+              {document.currentVersion?.reviewState.label ?? "Not uploaded"}
             </p>
             {document.currentVersion?.reviewedAtLabel ? (
-              <p className="mt-2 text-xs text-slate-500">
-                Reviewed {document.currentVersion.reviewedAtLabel}
+              <p className="mt-1 text-xs text-slate-500">
+                {document.currentVersion.reviewedAtLabel}
                 {document.currentVersion.reviewedByName ? ` | ${document.currentVersion.reviewedByName}` : ""}
               </p>
             ) : null}
           </div>
         </div>
 
-        {document.currentVersion?.reviewComment ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            {document.currentVersion.reviewComment}
-          </div>
-        ) : null}
-
-        {document.canUpload ? (
+        {document.currentVersion ? (
           <form
-            className="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_auto] md:items-end"
-            data-testid={`document-upload-form-${document.documentType.key}`}
+            className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4"
+            data-testid={`review-document-form-${document.documentType.key}`}
             onSubmit={async (event) => {
               event.preventDefault();
-              const formData = new FormData(event.currentTarget);
-              const uploaded = await handleUpload(formData);
+              setNotice(null);
+              setError(null);
+              setIsSaving(true);
 
-              if (uploaded) {
-                event.currentTarget.reset();
+              const formData = new FormData(event.currentTarget);
+              const submitter = event.nativeEvent instanceof SubmitEvent ? event.nativeEvent.submitter : null;
+              const decision = submitter instanceof HTMLButtonElement ? submitter.value : "accept";
+              const response = await fetch(`/api/review/cases/${caseId}/documents/review`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  versionId: document.currentVersion?.id,
+                  decision,
+                  reason: String(formData.get("reason") ?? "")
+                })
+              });
+              const payload = await response.json().catch(() => null);
+
+              setIsSaving(false);
+
+              if (!response.ok) {
+                setError(payload?.message ?? "Document review could not be saved.");
+                return;
               }
+
+              setNotice(payload?.message ?? "Document review saved successfully.");
+              router.refresh();
             }}
           >
             <div className="space-y-2">
-              <Label htmlFor={`documentFile-${document.documentType.key}`}>Upload new version</Label>
-              <Input
-                accept={buildAcceptAttribute(uploadPolicy.allowedExtensions)}
-                disabled={isUploading}
-                id={`documentFile-${document.documentType.key}`}
-                name="file"
-                type="file"
-              />
+              <Label htmlFor={`reviewReason-${document.documentType.key}`}>Review note</Label>
+              <Textarea id={`reviewReason-${document.documentType.key}`} name="reason" rows={4} />
             </div>
-            <Button disabled={isUploading} type="submit">
-              {isUploading ? "Uploading..." : document.currentVersion ? "Upload next version" : "Upload document"}
-            </Button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <Button disabled={isSaving} type="submit" value="accept" variant="outline">
+                {isSaving ? "Saving review..." : "Accept current version"}
+              </Button>
+              <Button disabled={isSaving} type="submit" value="reject">
+                {isSaving ? "Saving review..." : "Reject current version"}
+              </Button>
+            </div>
           </form>
         ) : (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            {document.uploadDisabledReason}
+          <div className="rounded-lg border border-dashed border-slate-300 px-4 py-5 text-sm text-slate-600">
+            No uploaded version is currently on file for review.
           </div>
         )}
 
@@ -144,7 +123,6 @@ export function MobilityCaseDocumentPanel({
             {notice}
           </div>
         ) : null}
-
         {error ? (
           <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
         ) : null}
@@ -153,7 +131,7 @@ export function MobilityCaseDocumentPanel({
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Version history</h3>
             <p className="mt-1 text-sm text-slate-600">
-              Every upload is preserved. The current version marker moves forward when a newer file is accepted into the record.
+              Document review remains version-specific. Case status changes must still be recorded separately.
             </p>
           </div>
 
@@ -169,13 +147,13 @@ export function MobilityCaseDocumentPanel({
                     <th className="px-4 py-3 font-semibold">Version</th>
                     <th className="px-4 py-3 font-semibold">Filename</th>
                     <th className="px-4 py-3 font-semibold">Uploaded</th>
-                    <th className="px-4 py-3 font-semibold">Review state</th>
+                    <th className="px-4 py-3 font-semibold">Review</th>
                     <th className="px-4 py-3 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
                   {document.versions.map((version) => (
-                    <tr key={version.id} data-testid={`document-version-${document.documentType.key}-${version.versionNumber}`}>
+                    <tr key={version.id} data-testid={`review-document-version-${document.documentType.key}-${version.versionNumber}`}>
                       <td className="px-4 py-3 text-slate-950">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-semibold">{version.versionLabel}</span>

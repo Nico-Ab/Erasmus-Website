@@ -19,8 +19,8 @@ export default async function DashboardPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <OverviewMetric
           title="Foundation phase"
-          value="M5"
-          description="Mobility case drafting, submission, and staff-owned detail views are now live in the current slice."
+          value="M7"
+          description="Secure documents and the first officer review workflow are now live in the current slice."
         />
         <OverviewMetric
           title="Current role"
@@ -41,28 +41,36 @@ export default async function DashboardPage() {
             "Credentials-based Auth.js login using Prisma-backed users.",
             "Staff self-registration with admin approval gating.",
             "Editable staff profiles tied to master data.",
-            "Staff-owned mobility case draft, submit, and detail pages with status history."
+            "Staff-owned mobility case draft, submission, and private document workflows.",
+            "Officer review actions for comments, document decisions, status changes, and archiving."
           ]}
         />
         <SectionCard
           title="What comes next"
           description="Major product workflows still remain intentionally incomplete at this stage."
           points={[
-            "Private document upload, versioning, and review.",
-            "Officer review actions beyond queue visibility.",
-            "Reporting, exports, and archive access.",
-            "Broader admin lifecycle controls such as role changes and deactivation."
+            "Reporting, exports, and archive access surfaces.",
+            "Broader admin lifecycle controls such as role changes and deactivation.",
+            "Officer-to-staff change-request refinement and richer review automation.",
+            "Longer-term storage hardening such as alternate drivers and retention controls."
           ]}
         />
       </section>
       <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
         <h2 className="text-lg font-semibold text-slate-950">Continue into your primary workspace</h2>
         <p className="mt-2 text-sm text-slate-600">
-          The role-specific pages now include real mobility case handling for staff plus live intake visibility for officer and admin users.
+          The role-specific pages now include real mobility case handling for staff plus active review operations for officer and admin users.
         </p>
-        <Button asChild className="mt-4">
-          <Link href={nextDestinationByRole[session.user.role]}>Open my primary area</Link>
-        </Button>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Button asChild>
+            <Link href={nextDestinationByRole[session.user.role]}>Open my primary area</Link>
+          </Button>
+          {(session.user.role === UserRole.OFFICER || session.user.role === UserRole.ADMIN) ? (
+            <Button asChild variant="outline">
+              <Link href="/dashboard/officer/cases">Open review register</Link>
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
