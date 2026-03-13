@@ -9,7 +9,7 @@ describe("HomePage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /erasmus staff mobility management with a formal institutional shell/i
+        name: /erasmus staff mobility administration in one structured portal/i
       })
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open login/i })).toHaveAttribute("href", "/login");

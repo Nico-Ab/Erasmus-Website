@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserRole } from "@prisma/client";
+import { PageHeader } from "@/components/app/page-header";
 import { OverviewMetric } from "@/components/app/overview-metric";
 import { MobilityCaseForm } from "@/components/cases/mobility-case-form";
 import { Button } from "@/components/ui/button";
@@ -15,28 +16,32 @@ export default async function NewMobilityCasePage() {
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/95 p-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Create a mobility case</h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-600">
-            Start a new Erasmus mobility record, save it as draft while details are incomplete, or submit it once the required fields are ready.
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/staff">Return to case workspace</Link>
-        </Button>
-      </section>
+      <PageHeader
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/dashboard/staff">Return to case workspace</Link>
+          </Button>
+        }
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Staff area", href: "/dashboard/staff" },
+          { label: "New case" }
+        ]}
+        description="Open a new mobility record, save it as a draft while details are still being gathered, or submit it once the required fields are complete."
+        eyebrow="Case administration"
+        title="Create a mobility case"
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
         <OverviewMetric
           title="Workflow entry"
           value="Draft"
-          description="Every new case starts as a staff-controlled record that can be resumed later."
+          description="Every new case starts as a staff-controlled draft that can be resumed later."
         />
         <OverviewMetric
           title="Submission gate"
           value="Validated"
-          description="Required fields and travel dates are checked before the case can be submitted."
+          description="Required fields and travel dates are checked before submission is accepted."
         />
         <OverviewMetric
           title="Persistence"

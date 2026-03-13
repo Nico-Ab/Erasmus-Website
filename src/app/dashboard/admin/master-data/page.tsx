@@ -1,4 +1,5 @@
 import { UserRole } from "@prisma/client";
+import { PageHeader } from "@/components/app/page-header";
 import { OverviewMetric } from "@/components/app/overview-metric";
 import { MasterDataManager } from "@/components/admin/master-data-manager";
 import { requireRole } from "@/lib/auth/guards";
@@ -10,6 +11,17 @@ export default async function AdminMasterDataPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Admin area", href: "/dashboard/admin" },
+          { label: "Master data" }
+        ]}
+        description="Maintain the institutional records and operational settings used across profiles, workflows, uploads, and reporting."
+        eyebrow="Configuration administration"
+        title="Master data and settings"
+      />
+
       <section className="grid gap-4 md:grid-cols-4 xl:grid-cols-7">
         <OverviewMetric title="Faculties" value={data.faculties.length.toString()} description="Master faculty records" />
         <OverviewMetric title="Departments" value={data.departments.length.toString()} description="Faculty-linked department records" />

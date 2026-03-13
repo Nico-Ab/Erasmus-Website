@@ -17,23 +17,26 @@ export function DashboardNav({ items }: { items: NavigationItem[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="space-y-2">
+    <nav className="space-y-2" aria-label="Dashboard sections">
       {items.map((item) => {
         const active = isItemActive(pathname, item.href);
 
         return (
           <Link
+            aria-current={active ? "page" : undefined}
             key={item.href}
             href={item.href}
             className={cn(
-              "block rounded-lg border px-4 py-3 transition-colors",
+              "block rounded-xl border px-4 py-3.5 transition-colors",
               active
-                ? "border-primary/20 bg-primary/10 text-primary"
-                : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50"
+                ? "border-primary/20 bg-primary/8 text-primary shadow-sm"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
             )}
           >
             <div className="text-sm font-semibold">{item.title}</div>
-            <div className="mt-1 text-xs text-slate-500">{item.description}</div>
+            <div className={cn("mt-1 text-xs leading-5", active ? "text-primary/80" : "text-slate-500")}>
+              {item.description}
+            </div>
           </Link>
         );
       })}

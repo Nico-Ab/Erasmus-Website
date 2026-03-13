@@ -1,4 +1,5 @@
 import { UserRole } from "@prisma/client";
+import { PageHeader } from "@/components/app/page-header";
 import { OverviewMetric } from "@/components/app/overview-metric";
 import { ReportCaseTable } from "@/components/reports/report-case-table";
 import { ReportDocumentGapTable } from "@/components/reports/report-document-gap-table";
@@ -25,43 +26,46 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
   return (
     <div className="space-y-6" data-testid="reporting-page">
-      <section className="rounded-xl border border-slate-200 bg-white/95 p-5">
-        <h1 className="text-2xl font-semibold text-slate-950">Operational reports</h1>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">
-          Review filtered case counts, document gaps, and archive-inclusive summaries from one formal reporting workspace.
-        </p>
-      </section>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Reports" }
+        ]}
+        description="Review archive-inclusive case totals, document gaps, and filtered summaries from one formal reporting workspace."
+        eyebrow="Operational reporting"
+        title="Operational reports"
+      />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         <OverviewMetric
           title="Filtered cases"
           value={data.metrics.totalCount.toString()}
-          description="All cases that match the active reporting filters, including archived records when they match."
+          description="All cases that match the active filters, including archived records when they match."
         />
         <OverviewMetric
           title="Open vs completed"
           value={`${data.metrics.openCount} / ${data.metrics.completedCount}`}
-          description="Open cases are shown first, while completed and archived records remain counted together for closure reporting."
+          description="Open cases shown against completed and archived closure totals."
         />
         <OverviewMetric
           title="Archived"
           value={data.metrics.archivedCount.toString()}
-          description="Archived cases remain searchable and exportable in the reporting workspace."
+          description="Archived cases remain searchable and exportable in this workspace."
         />
         <OverviewMetric
           title="No mobility agreement"
           value={data.metrics.missingMobilityAgreementCount.toString()}
-          description="Cases without a current mobility agreement in the filtered result set."
+          description="Filtered cases without a current mobility agreement."
         />
         <OverviewMetric
           title="No final certificate"
           value={data.metrics.missingFinalCertificateCount.toString()}
-          description="Cases without a current final certificate in the filtered result set."
+          description="Filtered cases without a current final certificate."
         />
         <OverviewMetric
           title="Summary row limit"
           value={summaryRowLimit.toString()}
-          description="Admin-managed display setting for summary sections on this page."
+          description="Admin-managed display limit for summary sections on this page."
         />
       </section>
 
@@ -82,7 +86,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           title="By faculty"
         />
         <ReportSummaryTable
-          description="Department counts remain tied to the current filter scope."
+          description="Department totals within the current reporting scope."
           rows={data.summaries.byDepartment.slice(0, summaryRowLimit)}
           testId="report-summary-department"
           title="By department"
@@ -113,7 +117,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
 
       {data.displaySettings.showHostInstitutionSummary ? (
         <ReportSummaryTable
-          description="Institution-level totals remain sortable and export-friendly for later operational analysis."
+          description="Institution-level totals prepared for later operational analysis and export."
           rows={data.summaries.byHostInstitution.slice(0, summaryRowLimit)}
           testId="report-summary-host-institution"
           title="By host institution"

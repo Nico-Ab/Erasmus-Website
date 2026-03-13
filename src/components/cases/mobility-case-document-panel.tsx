@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DocumentReviewBadge } from "@/components/cases/document-review-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -183,10 +184,15 @@ export function MobilityCaseDocumentPanel({
         ) : null}
 
         <div className="space-y-3">
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Version history</h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Every upload is preserved. The current version marker moves forward when a newer file is accepted into the record.
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Version history</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                Every upload is preserved. The current version marker moves forward when a newer file becomes the active record.
+              </p>
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {document.versions.length} version{document.versions.length === 1 ? "" : "s"} on file
             </p>
           </div>
 
@@ -211,15 +217,15 @@ export function MobilityCaseDocumentPanel({
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
                   {document.versions.map((version) => (
-                    <tr key={version.id} data-testid={`document-version-${document.documentType.key}-${version.versionNumber}`}>
+                    <tr
+                      className="transition-colors hover:bg-slate-50/60"
+                      key={version.id}
+                      data-testid={`document-version-${document.documentType.key}-${version.versionNumber}`}
+                    >
                       <td className="px-4 py-3 text-slate-950">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-semibold">{version.versionLabel}</span>
-                          {version.isCurrent ? (
-                            <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-900">
-                              Current version
-                            </span>
-                          ) : null}
+                          {version.isCurrent ? <Badge variant="info">Current version</Badge> : null}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-slate-700">

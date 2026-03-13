@@ -166,6 +166,21 @@
 - Upload validation is still filename-extension and size based; MIME verification, content inspection, and malware scanning are still out of scope.
 - Negative-path auth browser coverage still emits expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
 - Direct Playwright interaction with the `/register` page remains unstable in local Next.js dev mode, so browser registration coverage still uses the live `/api/register` endpoint.
+## UI polish pass completed on March 13, 2026
+### What was done
+- Standardized page framing across the protected portal with calmer page headers, breadcrumbs, clearer descriptions, and cleaner action placement for staff, officer, admin, profile, reporting, and case-detail pages.
+- Refined the dashboard shell so navigation, signed-in account context, metrics, and dashboard panels read more like a formal university administration system and less like a generic generated workspace.
+- Improved table readability across staff, review, reporting, audit, and admin management surfaces with stronger captions, row-count context, better spacing, steadier column presentation, and clearer empty states.
+- Tightened the visual consistency of status and document-review indicators, including shared badge usage for document version markers and more readable case/document detail summaries.
+- Reworked the admin user-management and report-export surfaces so key actions are easier to scan and understand without making the interface feel flashy or product-marketing oriented.
+- Reviewed and adjusted copy across the home page, dashboards, profile, reporting, and workflow panels to remove awkward wording and keep labels more formal and professional.
+- Aligned the Playwright helper layer and browser assertions with the now-standardized officer case-detail heading and review workflow wording, while preserving the existing workflow coverage.
+
+### Risk-focused notes
+- The portal UI is materially more consistent now, but larger operational lists still do not have pagination, density controls, or saved views for heavier institutional workloads.
+- The Prisma `package.json#prisma` deprecation warning still remains and should move to a dedicated Prisma config before Prisma 7.
+- Negative-path auth browser checks still emit expected `CredentialsSignin` logs in Next.js dev mode.
+- Upload validation and storage hardening remain unchanged by this pass; content inspection, malware scanning, backup, and retention strategy are still future work.
 ### What is intentionally incomplete
 - Bulk review actions, assignment queues, and pagination for larger officer workloads
 - Password reset, email verification, and richer account recovery flows

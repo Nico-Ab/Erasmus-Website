@@ -1,26 +1,25 @@
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 type DocumentReviewBadgeProps = {
   label: string;
   reviewStateKey: string;
 };
 
-const reviewStateClasses: Record<string, string> = {
-  PENDING_REVIEW: "border-amber-200 bg-amber-50 text-amber-900",
-  ACCEPTED: "border-emerald-200 bg-emerald-50 text-emerald-900",
-  REJECTED: "border-rose-200 bg-rose-50 text-rose-900",
-  NOT_UPLOADED: "border-slate-200 bg-slate-100 text-slate-700"
-};
+const reviewStateVariantByKey = {
+  PENDING_REVIEW: "warning",
+  ACCEPTED: "success",
+  REJECTED: "danger",
+  NOT_UPLOADED: "muted"
+} as const;
 
 export function DocumentReviewBadge({ label, reviewStateKey }: DocumentReviewBadgeProps) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide",
-        reviewStateClasses[reviewStateKey] ?? reviewStateClasses.NOT_UPLOADED
-      )}
+    <Badge
+      aria-label={`Document review state: ${label}`}
+      className="uppercase"
+      variant={reviewStateVariantByKey[reviewStateKey as keyof typeof reviewStateVariantByKey] ?? "muted"}
     >
       {label}
-    </span>
+    </Badge>
   );
 }

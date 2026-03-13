@@ -94,6 +94,9 @@ async function archiveCaseAsOfficer(page: Page, hostInstitution: string) {
   const row = page.locator("tbody tr").filter({ hasText: hostInstitution });
   await expect(row).toBeVisible();
   await row.getByRole("link", { name: /open case/i }).click();
+  await expect(page).toHaveURL(/\/dashboard\/officer\/cases\//);
+  await expect(page.getByRole("heading", { name: /mobility case detail/i })).toBeVisible();
+  await expect(page.getByText(hostInstitution).first()).toBeVisible();
 
   const statusForm = page.getByTestId("review-status-form");
   await statusForm.getByLabel(/new status/i).selectOption({ label: "Completed" });

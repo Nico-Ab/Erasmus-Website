@@ -50,12 +50,10 @@ export function ProfileForm({ initialValues, academicTitleOptions, faculties }: 
     control: form.control,
     name: "departmentId"
   });
-  const visibleDepartments =
-    faculties.find((faculty) => faculty.id === selectedFacultyId)?.departments ?? [];
+  const visibleDepartments = faculties.find((faculty) => faculty.id === selectedFacultyId)?.departments ?? [];
 
   useEffect(() => {
-    const nextVisibleDepartments =
-      faculties.find((faculty) => faculty.id === selectedFacultyId)?.departments ?? [];
+    const nextVisibleDepartments = faculties.find((faculty) => faculty.id === selectedFacultyId)?.departments ?? [];
     const departmentIsVisible = nextVisibleDepartments.some(
       (department) => department.id === selectedDepartmentId
     );
@@ -109,100 +107,103 @@ export function ProfileForm({ initialValues, academicTitleOptions, faculties }: 
   return (
     <Card className="border-slate-200 bg-white/95">
       <CardHeader>
-        <CardTitle>Editable staff profile</CardTitle>
-        <CardDescription>
-          Keep your institutional contact and organisational details current for later workflow use.
+        <CardTitle>Profile details</CardTitle>
+        <CardDescription className="leading-6">
+          Maintain the identity and assignment details used throughout case management, review, and reporting.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-6" data-testid="profile-form" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First name</Label>
-              <Input id="firstName" autoComplete="given-name" {...form.register("firstName")} />
-              {form.formState.errors.firstName ? (
-                <p className="text-sm text-destructive">{form.formState.errors.firstName.message}</p>
-              ) : null}
+        <form className="space-y-5" data-testid="profile-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <section className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Identity</h3>
+              <p className="mt-1 text-sm text-slate-600">Keep your official name and contact email aligned with university records.</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last name</Label>
-              <Input id="lastName" autoComplete="family-name" {...form.register("lastName")} />
-              {form.formState.errors.lastName ? (
-                <p className="text-sm text-destructive">{form.formState.errors.lastName.message}</p>
-              ) : null}
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First name</Label>
+                <Input id="firstName" autoComplete="given-name" {...form.register("firstName")} />
+                {form.formState.errors.firstName ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.firstName.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last name</Label>
+                <Input id="lastName" autoComplete="family-name" {...form.register("lastName")} />
+                {form.formState.errors.lastName ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.lastName.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
+                {form.formState.errors.email ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+                ) : null}
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
-              {form.formState.errors.email ? (
-                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
-              ) : null}
+          <section className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Institutional assignment</h3>
+              <p className="mt-1 text-sm text-slate-600">These fields support role-aware searching, reporting, and case ownership context.</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="academicTitleOptionId">Academic title</Label>
-              <Select id="academicTitleOptionId" {...form.register("academicTitleOptionId")}>
-                <option value="">Select academic title</option>
-                {academicTitleOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="academicTitleOptionId">Academic title</Label>
+                <Select id="academicTitleOptionId" {...form.register("academicTitleOptionId")}>
+                  <option value="">Select academic title</option>
+                  {academicTitleOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+                {form.formState.errors.academicTitleOptionId ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.academicTitleOptionId.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="facultyId">Faculty</Label>
+                <Select id="facultyId" {...form.register("facultyId")}>
+                  <option value="">Select faculty</option>
+                  {faculties.map((faculty) => (
+                    <option key={faculty.id} value={faculty.id}>
+                      {faculty.name}
+                    </option>
+                  ))}
+                </Select>
+                {form.formState.errors.facultyId ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.facultyId.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="departmentId">Department</Label>
+                <Select id="departmentId" disabled={visibleDepartments.length === 0} {...form.register("departmentId")}>
+                  <option value="">
+                    {visibleDepartments.length === 0 ? "Select faculty first" : "Select department"}
                   </option>
-                ))}
-              </Select>
-              {form.formState.errors.academicTitleOptionId ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.academicTitleOptionId.message}
-                </p>
-              ) : null}
+                  {visibleDepartments.map((department) => (
+                    <option key={department.id} value={department.id}>
+                      {department.name}
+                    </option>
+                  ))}
+                </Select>
+                {form.formState.errors.departmentId ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.departmentId.message}</p>
+                ) : null}
+              </div>
             </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="facultyId">Faculty</Label>
-              <Select id="facultyId" {...form.register("facultyId")}>
-                <option value="">Select faculty</option>
-                {faculties.map((faculty) => (
-                  <option key={faculty.id} value={faculty.id}>
-                    {faculty.name}
-                  </option>
-                ))}
-              </Select>
-              {form.formState.errors.facultyId ? (
-                <p className="text-sm text-destructive">{form.formState.errors.facultyId.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="departmentId">Department</Label>
-              <Select
-                id="departmentId"
-                disabled={visibleDepartments.length === 0}
-                {...form.register("departmentId")}
-              >
-                <option value="">
-                  {visibleDepartments.length === 0 ? "Select faculty first" : "Select department"}
-                </option>
-                {visibleDepartments.map((department) => (
-                  <option key={department.id} value={department.id}>
-                    {department.name}
-                  </option>
-                ))}
-              </Select>
-              {form.formState.errors.departmentId ? (
-                <p className="text-sm text-destructive">{form.formState.errors.departmentId.message}</p>
-              ) : null}
-            </div>
-          </div>
+          </section>
 
           {formError ? (
-            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="alert">
               {formError}
             </div>
           ) : null}
           {formNotice ? (
-            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+            <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
               {formNotice}
             </div>
           ) : null}

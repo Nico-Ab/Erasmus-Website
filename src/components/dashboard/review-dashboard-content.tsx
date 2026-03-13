@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "@/components/app/page-header";
 import { OverviewMetric } from "@/components/app/overview-metric";
 import { DashboardListPanel } from "@/components/dashboard/dashboard-list-panel";
 import { Button } from "@/components/ui/button";
@@ -13,53 +14,86 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
   const title = mode === "admin" ? "Admin operations dashboard" : "Officer review dashboard";
   const description =
     mode === "admin"
-      ? "This dashboard now combines the live approval queue with submitted-case intake, missing-document visibility, direct review actions, and reporting access."
-      : "This dashboard provides operational visibility into pending registrations, submitted cases, document gaps, and the active review workload.";
+      ? "Oversee registrations, review workload, master data, reporting access, and the current academic-year context from one administrative dashboard."
+      : "Monitor pending registrations, review workload, missing documents, and reporting context from one officer workspace.";
+  const breadcrumbs =
+    mode === "admin"
+      ? [
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Admin area" }
+        ]
+      : [
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Officer area" }
+        ];
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-slate-200 bg-white/95 p-5">
-        <h1 className="text-2xl font-semibold text-slate-950">{title}</h1>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">{description}</p>
-      </section>
+      <PageHeader
+        actions={
+          mode === "admin" ? (
+            <>
+              <Button asChild variant="outline">
+                <Link href="/dashboard/admin/users">Manage users</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/dashboard/admin/master-data">Manage master data</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button asChild variant="outline">
+                <Link href="/dashboard/reports">Open reports</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/dashboard/officer/cases">Open review register</Link>
+              </Button>
+            </>
+          )
+        }
+        breadcrumbs={breadcrumbs}
+        description={description}
+        eyebrow={mode === "admin" ? "Administrative operations" : "Review operations"}
+        title={title}
+      />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <OverviewMetric
           title="New registrations"
           value={data.newRegistrationsCount.toString()}
-          description="Pending staff registrations remain a live operational queue in the protected workspace."
+          description="Staff registrations that still need an administrative decision."
         />
         <OverviewMetric
           title="New submitted cases"
           value={data.newSubmittedCasesCount.toString()}
-          description="Staff-submitted mobility cases that are ready for the first review pass."
+          description="Cases newly submitted and ready for the first review pass."
         />
         <OverviewMetric
           title="Cases with missing documents"
           value={data.missingDocumentsCount.toString()}
-          description="Submitted or returned cases that are still missing required uploads."
+          description="Cases that still require one or more required uploads."
         />
         <OverviewMetric
           title="Cases needing changes"
           value={data.casesNeedingChangesCount.toString()}
-          description="Cases returned to staff for corrections will populate this metric."
+          description="Cases returned to staff for correction and follow-up."
         />
         <OverviewMetric
           title="Open reviews"
           value={data.openReviewsCount.toString()}
-          description="Current submitted and changes-required case reviews awaiting officer or admin attention."
+          description="Current submitted and returned cases still waiting on review work."
         />
         <OverviewMetric
           title="Current academic year"
           value={data.currentAcademicYearLabel ?? "Not set"}
-          description="Current year context sourced from active academic-year master data."
+          description="Active academic-year context from master data."
         />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
         <DashboardListPanel
           title="New registrations"
-          description="Recent pending staff registrations that have not yet been approved or rejected."
+          description="Recent staff registrations that still require approval or rejection."
           items={data.newRegistrations}
           emptyTitle="No new registrations"
           emptyDescription="There are currently no pending staff registrations waiting in the system."
@@ -70,17 +104,17 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
               </Button>
             ) : (
               <p className="text-sm text-slate-600">
-                Registration decisions remain an admin-managed action even though officers can monitor the queue here.
+                Registration decisions remain an administrator action even though officers can monitor the queue.
               </p>
             )
           }
         />
         <DashboardListPanel
           title="Open reviews"
-          description="Combined live review queue for submitted cases and records currently waiting on staff changes."
+          description="Combined review queue for submitted cases and records currently awaiting staff changes."
           items={data.openReviews}
           emptyTitle="No open reviews"
-          emptyDescription="There are no current case reviews waiting for operational attention."
+          emptyDescription="There are no case reviews waiting for operational attention."
           footer={
             <div className="flex flex-wrap gap-3">
               <Button asChild>
@@ -94,31 +128,31 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
         />
         <DashboardListPanel
           title="New submitted cases"
-          description="Submitted staff cases ready for the first review pass."
+          description="Submitted case records ready for first review."
           items={data.newSubmittedCases}
           emptyTitle="No submitted cases yet"
-          emptyDescription="Staff have not submitted any mobility cases yet."
+          emptyDescription="No staff case has entered the submitted review queue yet."
         />
         <DashboardListPanel
           title="Cases with missing documents"
-          description="This queue identifies submissions that need additional uploads or corrected files."
+          description="Cases that need additional uploads or corrected files before review can proceed."
           items={data.missingDocuments}
           emptyTitle="No missing-document cases"
-          emptyDescription="All submitted or returned cases currently have the required uploads on file."
+          emptyDescription="All currently active review cases have the required uploads on file."
         />
         <DashboardListPanel
           title="Cases needing changes"
-          description="Returned applications and correction requests that still await staff follow-up."
+          description="Cases that have been returned to staff for revision."
           items={data.casesNeedingChanges}
           emptyTitle="No changes-required cases"
           emptyDescription="There are no cases currently marked as needing changes."
         />
         <DashboardListPanel
           title="Current academic year overview"
-          description="Live master-data and case metrics that show whether the protected workspace has the administrative context it needs."
+          description="Operational context for the current year, based on master data and live case metrics."
           items={data.academicYearOverview}
           emptyTitle="No academic year metrics"
-          emptyDescription="No active academic year data is available for the operational dashboard."
+          emptyDescription="No active academic year data is available for the dashboard."
           footer={
             mode === "admin" ? (
               <Button asChild>

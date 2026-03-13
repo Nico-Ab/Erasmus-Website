@@ -22,7 +22,9 @@ export function MissingDocumentActions({ caseId, missingDocuments }: MissingDocu
     return (
       <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
         <h2 className="text-lg font-semibold text-slate-950">Missing required documents</h2>
-        <p className="mt-2 text-sm text-slate-600">All required document types currently have a stored current version.</p>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          All required document types currently have a stored current version.
+        </p>
       </div>
     );
   }
@@ -31,16 +33,16 @@ export function MissingDocumentActions({ caseId, missingDocuments }: MissingDocu
     <div className="space-y-4 rounded-xl border border-slate-200 bg-white/95 p-5">
       <div>
         <h2 className="text-lg font-semibold text-slate-950">Missing required documents</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Use these quick actions to record a reviewer note when a required file has not been uploaded yet.
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          Record a formal review note when a required document has not yet been uploaded to the case file.
         </p>
       </div>
       <div className="space-y-3">
         {missingDocuments.map((document) => (
-          <div key={document.key} className="flex flex-col gap-3 rounded-lg border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div key={document.key} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">{document.label}</p>
-              <p className="mt-1 text-sm text-slate-600">No current version is available for officer review.</p>
+              <p className="mt-1 text-sm text-slate-600">No current version is available for review.</p>
             </div>
             <Button
               data-testid={`missing-document-action-${document.key}`}
@@ -78,12 +80,14 @@ export function MissingDocumentActions({ caseId, missingDocuments }: MissingDocu
         ))}
       </div>
       {notice ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
           {notice}
         </div>
       ) : null}
       {error ? (
-        <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
+        <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900" role="alert">
+          {error}
+        </div>
       ) : null}
     </div>
   );

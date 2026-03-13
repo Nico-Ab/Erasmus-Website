@@ -14,8 +14,8 @@ export function ReviewCaseFilters({ data }: ReviewCaseFiltersProps) {
     <form className="space-y-4 rounded-xl border border-slate-200 bg-white/95 p-5" data-testid="review-case-filters" method="get">
       <div>
         <h2 className="text-lg font-semibold text-slate-950">Search and filters</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Filters can be combined to narrow large review queues without hiding archived records from later lookup.
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          Combine filters to narrow the review queue while keeping archived records searchable for later reference.
         </p>
       </div>
 
@@ -96,7 +96,7 @@ export function ReviewCaseFilters({ data }: ReviewCaseFiltersProps) {
         <div className="flex gap-3 md:justify-end">
           <Button type="submit">Apply filters</Button>
           <Button asChild type="button" variant="outline">
-            <Link href="/dashboard/officer/cases">Clear</Link>
+            <Link href="/dashboard/officer/cases">Clear filters</Link>
           </Button>
         </div>
       </div>

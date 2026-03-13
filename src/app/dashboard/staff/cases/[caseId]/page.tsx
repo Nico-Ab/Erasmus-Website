@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { UserRole } from "@prisma/client";
+import { PageHeader } from "@/components/app/page-header";
 import { OverviewMetric } from "@/components/app/overview-metric";
 import { CaseStatusBadge } from "@/components/cases/case-status-badge";
 import { MobilityCaseDocumentPanel } from "@/components/cases/mobility-case-document-panel";
@@ -49,26 +50,45 @@ export default async function MobilityCaseDetailPage({
   }
 
   const notice = getNoticeMessage(readSingleValue((await searchParams).saved));
+  const hostLocation = [detail.case.hostCity, detail.case.hostCountry].filter(Boolean).join(", ") || "Not set";
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/95 p-5 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold text-slate-950">Mobility case detail</h1>
-            <CaseStatusBadge label={detail.case.status.label} statusKey={detail.case.status.key} />
-          </div>
-          <p className="mt-2 max-w-3xl text-sm text-slate-600">
-            Review the current status, comments, recorded case details, and the private document record for this mobility case.
-          </p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/staff">Return to case workspace</Link>
-        </Button>
-      </section>
+      <PageHeader
+        actions={
+          <Button asChild variant="outline">
+            <Link href="/dashboard/staff">Return to case workspace</Link>
+          </Button>
+        }
+        badges={<CaseStatusBadge label={detail.case.status.label} statusKey={detail.case.status.key} />}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Staff area", href: "/dashboard/staff" },
+          { label: "Case detail" }
+        ]}
+        description="Review the current status, recorded case details, comments, and private document history for this mobility record."
+        eyebrow="Case administration"
+        meta={
+          <dl className="grid gap-3 text-sm sm:grid-cols-3">
+            <div>
+              <dt className="text-slate-500">Host institution</dt>
+              <dd className="mt-1 font-semibold text-slate-950">{detail.case.hostInstitution || "Not set"}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Mobility type</dt>
+              <dd className="mt-1 font-semibold text-slate-950">{detail.case.mobilityTypeLabel ?? "Not set"}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Academic year</dt>
+              <dd className="mt-1 font-semibold text-slate-950">{detail.case.academicYearLabel ?? "Not set"}</dd>
+            </div>
+          </dl>
+        }
+        title="Mobility case detail"
+      />
 
       {notice ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900" role="status">
           {notice}
         </div>
       ) : null}
@@ -87,7 +107,7 @@ export default async function MobilityCaseDetailPage({
         <OverviewMetric
           title="Submitted on"
           value={detail.case.submittedAtLabel ?? "Not submitted"}
-          description="Submission date appears once the case moves out of draft."
+          description="Submission date becomes available once the case leaves draft."
         />
       </section>
 
@@ -117,40 +137,44 @@ export default async function MobilityCaseDetailPage({
 
         <Card className="border-slate-200 bg-white/95">
           <CardHeader>
-            <CardTitle>Recorded summary</CardTitle>
-            <CardDescription>Current persisted values for the staff-owned mobility case.</CardDescription>
+            <CardTitle>Case record</CardTitle>
+            <CardDescription className="leading-6">Current persisted values stored on the mobility case.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 text-sm text-slate-700">
-            <div>
-              <p className="text-slate-500">Academic year</p>
-              <p className="mt-1 font-semibold text-slate-950">{detail.case.academicYearLabel ?? "Not set"}</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Mobility type</p>
-              <p className="mt-1 font-semibold text-slate-950">{detail.case.mobilityTypeLabel ?? "Not set"}</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Host institution</p>
-              <p className="mt-1 font-semibold text-slate-950">{detail.case.hostInstitution || "Not set"}</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Host location</p>
-              <p className="mt-1 font-semibold text-slate-950">
-                {[detail.case.hostCity, detail.case.hostCountry].filter(Boolean).join(", ") || "Not set"}
-              </p>
-            </div>
-            <div>
-              <p className="text-slate-500">Travel dates</p>
-              <p className="mt-1 font-semibold text-slate-950">
-                {detail.case.startDate && detail.case.endDate
-                  ? `${detail.case.startDate} to ${detail.case.endDate}`
-                  : "Not set"}
-              </p>
-            </div>
-            <div>
-              <p className="text-slate-500">Created</p>
-              <p className="mt-1 font-semibold text-slate-950">{detail.case.createdAtLabel}</p>
-            </div>
+          <CardContent>
+            <dl className="grid gap-4 text-sm text-slate-700 sm:grid-cols-2">
+              <div>
+                <dt className="text-slate-500">Academic year</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{detail.case.academicYearLabel ?? "Not set"}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Mobility type</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{detail.case.mobilityTypeLabel ?? "Not set"}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Host institution</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{detail.case.hostInstitution || "Not set"}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Host location</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{hostLocation}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Travel dates</dt>
+                <dd className="mt-1 font-semibold text-slate-950">
+                  {detail.case.startDate && detail.case.endDate
+                    ? `${detail.case.startDate} to ${detail.case.endDate}`
+                    : "Not set"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Created</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{detail.case.createdAtLabel}</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-slate-500">Staff note</dt>
+                <dd className="mt-1 font-semibold text-slate-950">{detail.case.notes?.trim() || "No note recorded."}</dd>
+              </div>
+            </dl>
           </CardContent>
         </Card>
       </section>
@@ -158,8 +182,8 @@ export default async function MobilityCaseDetailPage({
       <section className="space-y-4">
         <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
           <h2 className="text-lg font-semibold text-slate-950">Required documents</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Uploaded files stay private, remain versioned, and are only available through permission-checked download routes.
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Documents stay private, remain versioned, and are available only through permission-checked download routes.
           </p>
           <p className="mt-2 text-sm text-slate-700">
             Current upload policy: {detail.documentUploadPolicy.maxUploadSizeMb} MB maximum, {detail.documentUploadPolicy.allowedExtensions.map((extension) => extension.toUpperCase()).join(", ")}.
@@ -187,7 +211,7 @@ export default async function MobilityCaseDetailPage({
         />
         <DashboardListPanel
           title="Comments"
-          description="Officer and admin comments will appear here once review actions begin using the case record."
+          description="Officer and administrator comments recorded against this case."
           emptyTitle="No comments yet"
           emptyDescription="There are no recorded comments on this case yet."
           items={detail.comments}

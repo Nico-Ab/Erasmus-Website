@@ -94,7 +94,9 @@ async function openOfficerCaseByHostInstitution(page: Page, hostInstitution: str
   const row = page.locator("tbody tr").filter({ hasText: hostInstitution });
   await expect(row).toBeVisible();
   await row.getByRole("link", { name: /open case/i }).click();
-  await expect(page.getByRole("heading", { name: hostInstitution })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard\/officer\/cases\//);
+  await expect(page.getByRole("heading", { name: /mobility case detail/i })).toBeVisible();
+  await expect(page.getByText(hostInstitution).first()).toBeVisible();
 }
 
 test("officers can open a submitted case and add review comments", async ({ page }) => {

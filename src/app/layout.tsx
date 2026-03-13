@@ -34,28 +34,32 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="mx-auto min-h-screen max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <header className="mb-8 rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-panel backdrop-blur">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                  South-West University internal systems
+        <div className="mx-auto min-h-screen max-w-screen-2xl px-4 py-6 sm:px-6 lg:px-8">
+          <header className="mb-8 rounded-2xl border border-slate-200 bg-white/95 px-5 py-5 shadow-panel backdrop-blur sm:px-6">
+            <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+              <div className="space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                  South-West University internal administration
                 </p>
-                <Link className="mt-2 inline-block text-2xl font-semibold text-slate-950" href="/">
-                  SWU Erasmus Staff Mobility Portal
-                </Link>
-                <p className="mt-1 text-sm text-slate-600">
-                  Local-first administrative workspace for staff mobility coordination.
-                </p>
+                <div>
+                  <Link className="inline-block text-2xl font-semibold tracking-tight text-slate-950" href="/">
+                    SWU Erasmus Staff Mobility Portal
+                  </Link>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                    Structured workspace for staff mobility cases, document review, operational reporting, and protected university administration.
+                  </p>
+                </div>
               </div>
-              <nav className="flex flex-wrap items-center gap-2 text-sm">
+              <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Primary">
                 {navigation.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "rounded-full border border-slate-200 px-4 py-2 text-slate-700 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary",
-                      item.href === "/dashboard" && "border-primary/20 bg-primary/10 text-primary"
+                      "rounded-lg border px-3.5 py-2.5 font-medium transition-colors",
+                      item.href === "/dashboard"
+                        ? "border-primary/20 bg-primary/10 text-primary"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
                     {item.title}

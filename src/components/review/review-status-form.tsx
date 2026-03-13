@@ -51,9 +51,9 @@ export function ReviewStatusForm({ caseId, currentStatusKey, statusOptions }: Re
   return (
     <div className="space-y-4 rounded-xl border border-slate-200 bg-white/95 p-5">
       <div>
-        <h2 className="text-lg font-semibold text-slate-950">Case status</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Record explicit workflow transitions without overwriting document review history.
+        <h2 className="text-lg font-semibold text-slate-950">Workflow status</h2>
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          Record explicit case-status transitions without changing the document review record.
         </p>
       </div>
       <form
@@ -101,15 +101,15 @@ export function ReviewStatusForm({ caseId, currentStatusKey, statusOptions }: Re
         </div>
       </form>
       {notice ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
           {notice}
         </div>
       ) : null}
       {error ? (
-        <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
+        <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900" role="alert">{error}</div>
       ) : null}
       {currentStatusKey === "archived" ? (
-        <p className="text-sm text-slate-600">This case is archived and remains searchable, but no further workflow changes are available here.</p>
+        <p className="text-sm leading-6 text-slate-600">This case is archived and remains searchable, but no further workflow changes are available here.</p>
       ) : null}
     </div>
   );

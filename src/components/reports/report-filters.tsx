@@ -14,7 +14,7 @@ export function ReportFilters({ data }: ReportFiltersProps) {
     <form className="space-y-4 rounded-xl border border-slate-200 bg-white/95 p-5" data-testid="report-filters" method="get">
       <div>
         <h2 className="text-lg font-semibold text-slate-950">Reporting filters</h2>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm leading-6 text-slate-600">
           Filter reports server-side by academic context, assignment, host details, and workflow status.
         </p>
       </div>

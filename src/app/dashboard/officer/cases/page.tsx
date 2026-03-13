@@ -1,4 +1,5 @@
 import { UserRole } from "@prisma/client";
+import { PageHeader } from "@/components/app/page-header";
 import { OverviewMetric } from "@/components/app/overview-metric";
 import { ReviewCaseFilters } from "@/components/review/review-case-filters";
 import { ReviewCaseTable } from "@/components/review/review-case-table";
@@ -31,12 +32,15 @@ export default async function ReviewCasesPage({ searchParams }: ReviewCasesPageP
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-slate-200 bg-white/95 p-5">
-        <h1 className="text-2xl font-semibold text-slate-950">Case review workspace</h1>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">
-          Review all mobility cases from one operational register, combine filters freely, and keep case and document decisions clearly separated.
-        </p>
-      </section>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Review cases" }
+        ]}
+        description="Search the full mobility case register, combine filters freely, and review case and document decisions from one operational workspace."
+        eyebrow="Review operations"
+        title="Case review workspace"
+      />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <OverviewMetric
@@ -55,7 +59,7 @@ export default async function ReviewCasesPage({ searchParams }: ReviewCasesPageP
           description="Cases that remain outside the archived state in the filtered result set."
         />
         <OverviewMetric
-          title="Missing docs"
+          title="Missing documents"
           value={data.metrics.missingDocumentsCount.toString()}
           description="Required document gaps currently visible in the filtered result set."
         />

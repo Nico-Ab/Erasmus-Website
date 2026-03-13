@@ -159,10 +159,7 @@ export function MobilityCaseForm({
     event.preventDefault();
 
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
-    const intent =
-      submitter instanceof HTMLButtonElement && submitter.value === "submit"
-        ? "submit"
-        : "saveDraft";
+    const intent = submitter instanceof HTMLButtonElement && submitter.value === "submit" ? "submit" : "saveDraft";
 
     await persistValues(intent, readCurrentValues(new FormData(event.currentTarget)));
   }
@@ -172,9 +169,9 @@ export function MobilityCaseForm({
       <CardHeader>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <CardTitle>{caseId ? "Case details" : "New mobility case"}</CardTitle>
-            <CardDescription>
-              Capture the academic year, mobility type, host details, travel dates, and optional notes.
+            <CardTitle>{caseId ? "Case record" : "Case details"}</CardTitle>
+            <CardDescription className="leading-6">
+              Record the academic context, host institution, travel dates, and any supporting note needed for the case file.
             </CardDescription>
           </div>
           {currentStatus ? <CaseStatusBadge label={currentStatus.label} statusKey={currentStatus.key} /> : null}
@@ -183,67 +180,104 @@ export function MobilityCaseForm({
       <CardContent>
         <form
           aria-busy={controlsDisabled}
-          className="space-y-6"
+          className="space-y-5"
           data-testid={caseId ? "mobility-case-edit-form" : "mobility-case-create-form"}
           onSubmit={(event) => void handleSubmit(event)}
         >
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="academicYearId">Academic year</Label>
-              <Select disabled={controlsDisabled} id="academicYearId" {...form.register("academicYearId")}>
-                <option value="">Select academic year</option>
-                {academicYears.map((academicYear) => (
-                  <option key={academicYear.id} value={academicYear.id}>
-                    {academicYear.label}
-                  </option>
-                ))}
-              </Select>
-              {form.formState.errors.academicYearId ? (
-                <p className="text-sm text-destructive">{form.formState.errors.academicYearId.message}</p>
-              ) : null}
+          <section className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Administrative context</h3>
+              <p className="mt-1 text-sm text-slate-600">Choose the academic year and mobility type that govern this staff mobility record.</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="mobilityTypeOptionId">Mobility type</Label>
-              <Select disabled={controlsDisabled} id="mobilityTypeOptionId" {...form.register("mobilityTypeOptionId")}>
-                <option value="">Select mobility type</option>
-                {mobilityTypes.map((mobilityType) => (
-                  <option key={mobilityType.id} value={mobilityType.id}>
-                    {mobilityType.label}
-                  </option>
-                ))}
-              </Select>
-              {form.formState.errors.mobilityTypeOptionId ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.mobilityTypeOptionId.message}
-                </p>
-              ) : null}
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="academicYearId">Academic year</Label>
+                <Select disabled={controlsDisabled} id="academicYearId" {...form.register("academicYearId")}>
+                  <option value="">Select academic year</option>
+                  {academicYears.map((academicYear) => (
+                    <option key={academicYear.id} value={academicYear.id}>
+                      {academicYear.label}
+                    </option>
+                  ))}
+                </Select>
+                {form.formState.errors.academicYearId ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.academicYearId.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mobilityTypeOptionId">Mobility type</Label>
+                <Select disabled={controlsDisabled} id="mobilityTypeOptionId" {...form.register("mobilityTypeOptionId")}>
+                  <option value="">Select mobility type</option>
+                  {mobilityTypes.map((mobilityType) => (
+                    <option key={mobilityType.id} value={mobilityType.id}>
+                      {mobilityType.label}
+                    </option>
+                  ))}
+                </Select>
+                {form.formState.errors.mobilityTypeOptionId ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.mobilityTypeOptionId.message}</p>
+                ) : null}
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="hostInstitution">Host institution</Label>
-              <Input disabled={controlsDisabled} id="hostInstitution" {...form.register("hostInstitution")} />
-              {form.formState.errors.hostInstitution ? (
-                <p className="text-sm text-destructive">{form.formState.errors.hostInstitution.message}</p>
-              ) : null}
+          <section className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Host institution</h3>
+              <p className="mt-1 text-sm text-slate-600">Record the destination institution and location exactly as they should appear in the case record.</p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="hostCountry">Host country</Label>
-              <Input disabled={controlsDisabled} id="hostCountry" {...form.register("hostCountry")} />
-              {form.formState.errors.hostCountry ? (
-                <p className="text-sm text-destructive">{form.formState.errors.hostCountry.message}</p>
-              ) : null}
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="hostInstitution">Host institution</Label>
+                <Input disabled={controlsDisabled} id="hostInstitution" {...form.register("hostInstitution")} />
+                {form.formState.errors.hostInstitution ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.hostInstitution.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hostCountry">Host country</Label>
+                <Input disabled={controlsDisabled} id="hostCountry" {...form.register("hostCountry")} />
+                {form.formState.errors.hostCountry ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.hostCountry.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hostCity">Host city</Label>
+                <Input disabled={controlsDisabled} id="hostCity" {...form.register("hostCity")} />
+                {form.formState.errors.hostCity ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.hostCity.message}</p>
+                ) : null}
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="hostCity">Host city</Label>
-              <Input disabled={controlsDisabled} id="hostCity" {...form.register("hostCity")} />
-              {form.formState.errors.hostCity ? (
-                <p className="text-sm text-destructive">{form.formState.errors.hostCity.message}</p>
-              ) : null}
+          <section className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Travel period</h3>
+              <p className="mt-1 text-sm text-slate-600">Enter the planned mobility dates. The end date must not be earlier than the start date.</p>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Start date</Label>
+                <Input disabled={controlsDisabled} id="startDate" type="date" {...form.register("startDate")} />
+                {form.formState.errors.startDate ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.startDate.message}</p>
+                ) : null}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endDate">End date</Label>
+                <Input disabled={controlsDisabled} id="endDate" type="date" {...form.register("endDate")} />
+                {form.formState.errors.endDate ? (
+                  <p className="text-sm text-destructive">{form.formState.errors.endDate.message}</p>
+                ) : null}
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Internal note</h3>
+              <p className="mt-1 text-sm text-slate-600">Use this optional field for context that should remain attached to the case record.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -252,29 +286,12 @@ export function MobilityCaseForm({
                 <p className="text-sm text-destructive">{form.formState.errors.notes.message}</p>
               ) : null}
             </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Start date</Label>
-              <Input disabled={controlsDisabled} id="startDate" type="date" {...form.register("startDate")} />
-              {form.formState.errors.startDate ? (
-                <p className="text-sm text-destructive">{form.formState.errors.startDate.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">End date</Label>
-              <Input disabled={controlsDisabled} id="endDate" type="date" {...form.register("endDate")} />
-              {form.formState.errors.endDate ? (
-                <p className="text-sm text-destructive">{form.formState.errors.endDate.message}</p>
-              ) : null}
-            </div>
-          </div>
+          </section>
 
           {!isHydrated ? <p className="text-sm text-slate-500">Preparing case form...</p> : null}
 
           {formError ? (
-            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="alert">
               {formError}
             </div>
           ) : null}
@@ -306,7 +323,7 @@ export function ReadOnlyCaseNotice() {
           <div>
             <CardTitle>Case is currently read-only</CardTitle>
             <CardDescription>
-              Submitted cases remain visible here. Editing can resume later when a real changes-required workflow is introduced.
+              Submitted cases remain visible here. Editing will reopen only when the workflow returns the record for staff changes.
             </CardDescription>
           </div>
         </div>
