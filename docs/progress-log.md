@@ -2,9 +2,9 @@
 
 ## Status snapshot
 - Date: March 13, 2026
-- Overall phase: Foundation, authentication, staff identity, admin master data, role dashboards, staff mobility-case management, secure private document handling, and officer review workflow are implemented for the current scope; reporting, exports, and broader operational workflows are still pending
-- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, staff mobility-case drafting and submission, private document storage with version history, officer review actions, and multi-layer automated tests
-- Active milestones: M7 completed for the current scope, M8 remains in progress through the current baseline, M9 has only an archive-searchability baseline and no reporting surface yet
+- Overall phase: Foundation, authentication, staff identity, admin master data, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, and operational reporting with CSV exports are implemented for the current scope; broader operational controls and hardening are still pending
+- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, staff mobility-case drafting and submission, private document storage with version history, officer review actions, reporting surfaces, CSV exports, and multi-layer automated tests
+- Active milestones: M8 remains in progress through the current baseline, M9 is completed for the current scope, M10 has not started
 
 ## Foundation completed on March 11, 2026
 ### What was done
@@ -112,14 +112,27 @@
 - Added integration coverage for status transitions, comment creation, document review actions, and missing-document handling.
 - Added E2E coverage for opening and reviewing a submitted case, changing status, adding comments, rejecting a document with a reason, archiving a completed case, and applying combined filters.
 
+## Reporting and CSV exports implemented on March 13, 2026
+### What was done
+- Added a protected reporting workspace at `/dashboard/reports` for officers and admins, including formal summary tables and a filtered case register.
+- Added a dedicated reporting service layer with server-side aggregation for counts by academic year, faculty, department, mobility type, host country, host institution, and workflow status.
+- Added report metrics for open versus completed cases plus explicit document-gap reporting for cases without a mobility agreement and cases without a final certificate.
+- Added formal filter controls for academic year, faculty, department, mobility type, country, host institution, and status.
+- Added CSV export routes for filtered case lists, yearly summaries, and faculty summaries under `/api/reports/export/...`.
+- Kept archived cases searchable and exportable by including them in the report workspace and filtered CSV exports whenever they match the selected scope.
+- Updated protected navigation and officer/admin entry points so reporting is reachable from the real app shell without bypassing role-aware guards.
+- No Prisma schema change or seed update was required for this slice.
+- Added integration coverage for aggregation logic and CSV generation.
+- Added E2E coverage for opening report pages, applying filters, exporting CSV from filtered data, and reporting on cases with missing documents.
+
 ### What is intentionally incomplete
 - Bulk review actions, assignment queues, and pagination for larger officer workloads
-- Reporting, CSV export, and broader archive-management surfaces
 - Audit history for master-data changes and document review actions beyond the recorded reviewer metadata and case status history
 - Role changes and account deactivation controls in the admin UI
 - Password reset, email verification, and richer account recovery flows
 - Direct browser interaction with the `/register` page in Playwright
 - A dedicated structured change-request model for missing or incorrect documents beyond officer comments and document review state
+- Broader report variants, scheduled exports, and non-CSV export formats beyond the current filtered case list, yearly summary, and faculty summary outputs
 
 ### Risks and follow-up notes
 - The current Prisma setup still emits a deprecation warning for `package.json#prisma`; it works now but should move to a dedicated Prisma config before Prisma 7.
@@ -127,11 +140,10 @@
 - The v1 storage driver is local filesystem only; the abstraction is in place, but backup, retention, and alternative drivers still need future implementation.
 - Rejected documents and case statuses are intentionally separate, which preserves audit clarity but means officers must still record an explicit case-status transition when a case needs changes.
 - Missing-document and incorrect-document follow-up is currently comment-driven; a richer requested-changes workflow can be added later without replacing the current review record.
-- The officer review register is optimized for current local-scale use and does not yet include pagination, saved views, or export actions.
+- The officer review register and reporting workspace are optimized for current local-scale use and do not yet include pagination, saved views, or scheduled exports.
 - Negative-path browser tests still trigger expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
 
 ## Verification summary
-- `npm run seed`: passed
 - `npm run lint`: passed
 - `npm run typecheck`: passed
 - `npm run test`: passed
@@ -140,10 +152,10 @@
 
 ## Coverage snapshot
 ### Covered now
-- unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, document upload validation, navigation filtering, review-workflow filter validation, and shared formatting helpers
-- integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, profile form behavior, mobility-case create, edit, and submit behavior, document storage behavior, document versioning, secure download authorization handling, officer status transitions, officer comment creation, document review decisions, and missing-document review actions
+- unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, document upload validation, navigation filtering, and shared formatting helpers
+- integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, profile form behavior, mobility-case create, edit, and submit behavior, document storage behavior, document versioning, secure download authorization handling, officer status transitions, officer comment creation, document review decisions, missing-document review actions, reporting aggregation, and CSV generation
 - component coverage for anonymous and authenticated home-page states, dashboard panels and role dashboard content, and readable staff case-table rendering
-- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, officer status changes, archive visibility, and combined review filters
+- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, officer status changes, archive visibility, combined review filters, reporting filters, filtered CSV export, and missing-document report visibility
 
 ### Still uncovered
 - direct browser interaction with the `/register` page in Playwright
@@ -154,25 +166,25 @@
 - structured requested-changes workflows beyond comments and document review states
 - certificate-of-attendance completion flow after mobility is finished
 - storage-missing recovery handling through the UI
-- reporting and CSV export behavior
+- broader report variants and export formats beyond the current filtered case list, yearly summary, and faculty summary CSV surfaces
 - audit-sensitive server actions in later workflow modules
 
 ## Milestone tracker
 | Milestone | Status | Notes |
 | --- | --- | --- |
 | M1 Workspace bootstrap and viewable shell | Completed | App shell, auth, status page, testing stack, migration, and seed are in place |
-| M2 Data foundation | In progress through current baseline | Core auth, profile, dashboard, master data, case, document, and review models exist; reporting and some operational models are still missing |
+| M2 Data foundation | In progress through current baseline | Core auth, profile, dashboard, master data, case, document, review, and reporting models exist; some operational models are still missing |
 | M3 Authentication and access control | Completed for current scope | Registration, approval gating, login, role protection, and admin approval page are live |
 | M4 Staff identity and dashboard baseline | Completed for current scope | Staff can edit their own profile and see a real dashboard shell with live case-aware summaries |
 | M5 Mobility case drafting and submission | Completed for current scope | Staff can create, save drafts, resume, submit, and review their own case details and status history |
 | M6 Secure document management | Completed for current scope | Private storage, version history, secure download routes, and staff-facing document panels are live |
 | M7 Officer review workflow | Completed for current scope | Officers and admins can filter, review, comment on, change status for, review documents on, and archive cases from the live review register |
 | M8 Admin controls and master data | In progress through current baseline | Approval and rejection, master-data management, and admin dashboard actions are live; broader admin controls remain unimplemented |
-| M9 Reporting, exports, and archive access | In progress through archive-search baseline | Archived cases remain searchable in the review register, but there is no reporting or export surface yet |
-| M10 Hardening and release readiness | Not started | The foundation and early protected workflows are verified, but full product hardening remains ahead |
+| M9 Reporting, exports, and archive access | Completed for current scope | Officers and admins can report on filtered case data, export CSVs, and keep archived cases searchable and exportable |
+| M10 Hardening and release readiness | Not started | The foundation and protected workflows are verified, but full product hardening remains ahead |
 
 ## Next recommended move
-Implement reporting and export surfaces, then add a richer requested-changes loop so officer review can move cases through correction cycles without relying only on comments and manual status changes.
+Implement a richer requested-changes loop and broader admin lifecycle controls, then move into hardening work such as Prisma config cleanup, storage retention strategy, and larger-scale queue performance.
 
 ## Update template
 Use this format for future entries:

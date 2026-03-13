@@ -13,7 +13,7 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
   const title = mode === "admin" ? "Admin operations dashboard" : "Officer review dashboard";
   const description =
     mode === "admin"
-      ? "This dashboard now combines the live approval queue with submitted-case intake, missing-document visibility, and direct access into the searchable review register."
+      ? "This dashboard now combines the live approval queue with submitted-case intake, missing-document visibility, direct review actions, and reporting access."
       : "This dashboard provides operational visibility into pending registrations, submitted cases, document gaps, and the active review workload.";
 
   return (
@@ -82,9 +82,14 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
           emptyTitle="No open reviews"
           emptyDescription="There are no current case reviews waiting for operational attention."
           footer={
-            <Button asChild>
-              <Link href="/dashboard/officer/cases">Open review register</Link>
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/dashboard/officer/cases">Open review register</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/dashboard/reports">Open reports</Link>
+              </Button>
+            </div>
           }
         />
         <DashboardListPanel

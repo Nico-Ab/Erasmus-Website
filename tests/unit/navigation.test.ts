@@ -22,6 +22,7 @@ describe("getDashboardNavigation", () => {
       "/dashboard/profile",
       "/dashboard/officer",
       "/dashboard/officer/cases",
+      "/dashboard/reports",
       "/dashboard/admin",
       "/dashboard/admin/users",
       "/dashboard/admin/master-data"

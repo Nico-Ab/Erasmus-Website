@@ -67,6 +67,12 @@ const dashboardNavigation: NavigationItem[] = [
     roles: [UserRole.OFFICER, UserRole.ADMIN]
   },
   {
+    title: "Reports",
+    href: "/dashboard/reports",
+    description: "Operational reporting and CSV exports",
+    roles: [UserRole.OFFICER, UserRole.ADMIN]
+  },
+  {
     title: "Admin area",
     href: "/dashboard/admin",
     description: "Users, settings, and master data",

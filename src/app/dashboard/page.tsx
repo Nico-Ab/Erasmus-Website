@@ -19,8 +19,8 @@ export default async function DashboardPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <OverviewMetric
           title="Foundation phase"
-          value="M7"
-          description="Secure documents and the first officer review workflow are now live in the current slice."
+          value="M8"
+          description="Officer review, reporting, and CSV exports are now live in the current protected slice."
         />
         <OverviewMetric
           title="Current role"
@@ -42,33 +42,38 @@ export default async function DashboardPage() {
             "Staff self-registration with admin approval gating.",
             "Editable staff profiles tied to master data.",
             "Staff-owned mobility case draft, submission, and private document workflows.",
-            "Officer review actions for comments, document decisions, status changes, and archiving."
+            "Officer review actions for comments, document decisions, status changes, archiving, and CSV-backed reporting."
           ]}
         />
         <SectionCard
           title="What comes next"
           description="Major product workflows still remain intentionally incomplete at this stage."
           points={[
-            "Reporting, exports, and archive access surfaces.",
             "Broader admin lifecycle controls such as role changes and deactivation.",
             "Officer-to-staff change-request refinement and richer review automation.",
-            "Longer-term storage hardening such as alternate drivers and retention controls."
+            "Longer-term storage hardening such as alternate drivers and retention controls.",
+            "Operational exports beyond the current filtered case, yearly, and faculty reporting surfaces."
           ]}
         />
       </section>
       <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
         <h2 className="text-lg font-semibold text-slate-950">Continue into your primary workspace</h2>
         <p className="mt-2 text-sm text-slate-600">
-          The role-specific pages now include real mobility case handling for staff plus active review operations for officer and admin users.
+          The role-specific pages now include real mobility case handling for staff plus active review, reporting, and CSV export operations for officer and admin users.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Button asChild>
             <Link href={nextDestinationByRole[session.user.role]}>Open my primary area</Link>
           </Button>
           {(session.user.role === UserRole.OFFICER || session.user.role === UserRole.ADMIN) ? (
-            <Button asChild variant="outline">
-              <Link href="/dashboard/officer/cases">Open review register</Link>
-            </Button>
+            <>
+              <Button asChild variant="outline">
+                <Link href="/dashboard/officer/cases">Open review register</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/dashboard/reports">Open reports</Link>
+              </Button>
+            </>
           ) : null}
         </div>
       </div>

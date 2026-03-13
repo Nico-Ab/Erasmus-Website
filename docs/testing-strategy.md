@@ -6,7 +6,7 @@ This document defines how automated testing should be used in the Erasmus staff 
 ## Testing goals
 - Catch regressions early in shared logic and validation.
 - Verify component behavior through user-visible outcomes rather than implementation details.
-- Keep reliable browser-level coverage for smoke paths, auth flows, protected workflows, review workflows, and document authorization.
+- Keep reliable browser-level coverage for smoke paths, auth flows, protected workflows, review workflows, reporting workflows, and document authorization.
 - Support local-first development with tests that can be run on a developer machine without cloud services.
 - Avoid brittle snapshot-heavy tests that add noise without confidence.
 
@@ -32,7 +32,7 @@ Use Vitest with React Testing Library or mocked service boundaries for:
 - auth service outcomes with mocked framework boundaries
 - route-adjacent components that depend on Next.js hooks or Auth.js client functions
 - storage and document-metadata handling with mocked Prisma edges
-- workflow services that coordinate status transitions, comments, and document-review metadata
+- workflow services that coordinate status transitions, comments, document-review metadata, aggregations, and CSV output
 
 Characteristics:
 - run in `jsdom`
@@ -59,6 +59,7 @@ Use Playwright for:
 - protected staff workflows that connect UI, routing, auth, persistence, and private file access
 - role-aware workspace visibility across staff, officer, and admin dashboards
 - officer review flows that connect search, filtering, comments, document decisions, and case-status changes
+- officer and admin reporting flows that connect filters, summary tables, archive visibility, and CSV exports
 
 Characteristics:
 - run against the local app at `http://localhost:3000`
@@ -88,7 +89,7 @@ Current shared testing utilities:
 - `tests/factories/auth.ts`: provides stable login and registration fixtures for auth-related tests
 - `tests/factories/profile.ts`: provides stable profile inputs and reference data for profile-related tests
 - `tests/factories/dashboard.ts`: provides stable staff and review dashboard data for component tests
-- local helper functions inside workflow specs: keep repeated sign-in, case creation, review, and upload interactions readable where shared abstractions would otherwise be too heavy
+- local helper functions inside workflow specs: keep repeated sign-in, case creation, review, reporting, and upload interactions readable where shared abstractions would otherwise be too heavy
 
 Guidance:
 - add helpers when they remove repetition across multiple tests
@@ -122,6 +123,8 @@ Guidance:
 - officer case-status transitions and status-history recording
 - officer comment creation and missing-document note behavior
 - officer document review decisions, including rejection-reason enforcement and reviewer metadata persistence
+- reporting aggregation by academic year, faculty, department, mobility type, country, institution, and status
+- CSV generation for filtered case lists, yearly summaries, and faculty summaries
 
 ### Component coverage
 - home page anonymous rendering
@@ -153,6 +156,7 @@ Guidance:
 - authorized users can download the current document version through the private route
 - unauthorized staff users are blocked from downloading another user's document
 - officers can open a submitted case, add comments, reject a document with a reason, change case status, archive a completed case, and combine filters to isolate a target record
+- officers can open report pages, apply reporting filters, export filtered CSV data, and verify missing-document reporting
 
 ## What remains uncovered
 Critical flows still needing future coverage:
@@ -164,7 +168,7 @@ Critical flows still needing future coverage:
 - structured requested-changes workflows beyond comments and document review states
 - certificate-of-attendance completion flow after mobility is finished
 - storage-missing recovery handling through the UI
-- reporting and CSV export behavior
+- broader report variants and export formats beyond the current filtered case list, yearly summary, and faculty summary CSV surfaces
 - audit-sensitive server actions in later workflow modules
 
 ## Test authoring rules
