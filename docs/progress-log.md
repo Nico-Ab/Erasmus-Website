@@ -2,9 +2,9 @@
 
 ## Status snapshot
 - Date: March 13, 2026
-- Overall phase: Foundation, authentication, staff identity, admin master data, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, and operational reporting with CSV exports are implemented for the current scope; broader operational controls and hardening are still pending
-- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, staff mobility-case drafting and submission, private document storage with version history, officer review actions, reporting surfaces, CSV exports, and multi-layer automated tests
-- Active milestones: M8 remains in progress through the current baseline, M9 is completed for the current scope, M10 has not started
+- Overall phase: Foundation, authentication, staff identity, admin master data, explicit audit logging, core admin lifecycle controls, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, and operational reporting with CSV exports are implemented for the current scope; broader hardening and later workflow depth are still pending
+- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, explicit audit history, admin-managed user lifecycle controls, real role dashboards, admin-managed master data and reporting settings, staff mobility-case drafting and submission, private document storage with version history, officer review actions, reporting surfaces, CSV exports, and multi-layer automated tests
+- Active milestones: M8 is completed for the current scope, M9 is completed for the current scope, M10 has not started
 
 ## Foundation completed on March 11, 2026
 ### What was done
@@ -125,10 +125,23 @@
 - Added integration coverage for aggregation logic and CSV generation.
 - Added E2E coverage for opening report pages, applying filters, exporting CSV from filtered data, and reporting on cases with missing documents.
 
+
+## Audit logging and core admin workflows implemented on March 13, 2026
+### What was done
+- Added explicit `AuditLog` records for staff registration, admin approval and rejection, role changes, deactivation, case creation, case updates, case submission, officer case-status changes, officer comments, document uploads, current-version marker updates, document reviews, missing-document actions, master-data updates, upload-setting updates, and report-setting updates.
+- Added Prisma models for `AuditLog` and `ReportSetting` plus the `20260313152007_audit_admin_workflows` migration.
+- Added a protected admin audit log page at `/dashboard/admin/audit-log` and linked it into the real app navigation.
+- Reworked the admin user-management page so admins can approve or reject registrations, change roles, and deactivate users from one protected workspace.
+- Added explicit confirmation fields for reject, role-change, and deactivation actions so dangerous user lifecycle changes require deliberate confirmation before the server accepts them.
+- Added a protected admin API route at `/api/admin/users/[userId]` for role and lifecycle actions with strict server-side authorization.
+- Extended the admin master-data route and page so upload settings and report display settings are both editable and explicitly audited.
+- Added report display settings so admins can control summary row limits and visibility of selected report sections without changing export data.
+- Refreshed seed data to include the new report-setting baseline.
+- Added integration coverage for admin user actions and explicit audit-log creation across the main auth, case, document, review, and admin workflows.
+- Added E2E coverage for admin approval, role change, deactivation, and verifying that those actions appear in the audit log.
+
 ### What is intentionally incomplete
 - Bulk review actions, assignment queues, and pagination for larger officer workloads
-- Audit history for master-data changes and document review actions beyond the recorded reviewer metadata and case status history
-- Role changes and account deactivation controls in the admin UI
 - Password reset, email verification, and richer account recovery flows
 - Direct browser interaction with the `/register` page in Playwright
 - A dedicated structured change-request model for missing or incorrect documents beyond officer comments and document review state
@@ -153,13 +166,13 @@
 ## Coverage snapshot
 ### Covered now
 - unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, document upload validation, navigation filtering, and shared formatting helpers
-- integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, profile form behavior, mobility-case create, edit, and submit behavior, document storage behavior, document versioning, secure download authorization handling, officer status transitions, officer comment creation, document review decisions, missing-document review actions, reporting aggregation, and CSV generation
+- integration coverage for auth service login and registration outcomes, admin lifecycle actions, login form behavior, registration form behavior, profile form behavior, mobility-case create, edit, and submit behavior, document storage behavior, document versioning, secure download authorization handling, officer status transitions, officer comment creation, document review decisions, missing-document review actions, reporting aggregation, CSV generation, and explicit audit-log creation on major protected actions
 - component coverage for anonymous and authenticated home-page states, dashboard panels and role dashboard content, and readable staff case-table rendering
-- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, officer status changes, archive visibility, combined review filters, reporting filters, filtered CSV export, and missing-document report visibility
+- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, admin role change, admin deactivation, audit-log visibility for major admin actions, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, officer status changes, archive visibility, combined review filters, reporting filters, filtered CSV export, and missing-document report visibility
 
 ### Still uncovered
 - direct browser interaction with the `/register` page in Playwright
-- rejection and deactivation actions in the admin UI
+- registration rejection browser coverage in the admin UI
 - session behavior after future role changes or account deactivation
 - academic year, status, select-option, and upload-setting management flows in browser coverage
 - bulk officer review actions and larger-list pagination behavior
@@ -179,7 +192,7 @@
 | M5 Mobility case drafting and submission | Completed for current scope | Staff can create, save drafts, resume, submit, and review their own case details and status history |
 | M6 Secure document management | Completed for current scope | Private storage, version history, secure download routes, and staff-facing document panels are live |
 | M7 Officer review workflow | Completed for current scope | Officers and admins can filter, review, comment on, change status for, review documents on, and archive cases from the live review register |
-| M8 Admin controls and master data | In progress through current baseline | Approval and rejection, master-data management, and admin dashboard actions are live; broader admin controls remain unimplemented |
+| M8 Admin controls and master data | Completed for current scope | Approval and rejection, role changes, deactivation, master-data management, upload settings, report display settings, and explicit audit logging are live |
 | M9 Reporting, exports, and archive access | Completed for current scope | Officers and admins can report on filtered case data, export CSVs, and keep archived cases searchable and exportable |
 | M10 Hardening and release readiness | Not started | The foundation and protected workflows are verified, but full product hardening remains ahead |
 

@@ -81,13 +81,19 @@ const dashboardNavigation: NavigationItem[] = [
   {
     title: "User management",
     href: "/dashboard/admin/users",
-    description: "Approve or reject staff registrations",
+    description: "Registrations, role changes, and account access control",
     roles: [UserRole.ADMIN]
   },
   {
     title: "Master data",
     href: "/dashboard/admin/master-data",
     description: "Faculties, departments, years, statuses, and settings",
+    roles: [UserRole.ADMIN]
+  },
+  {
+    title: "Audit log",
+    href: "/dashboard/admin/audit-log",
+    description: "Protected action history across users, cases, documents, and settings",
     roles: [UserRole.ADMIN]
   }
 ];

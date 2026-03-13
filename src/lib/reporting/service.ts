@@ -1,5 +1,6 @@
 import { requiredDocumentTypeKeys } from "@/lib/documents/constants";
 import { prisma } from "@/lib/prisma";
+import { ensureReportSetting } from "@/lib/reporting/settings";
 import {
   buildReportingCaseWhere,
   type ReportingFiltersInput
@@ -84,6 +85,11 @@ export type ReportingDocumentGapRow = {
 
 export type ReportingData = {
   filters: ReportingFiltersInput;
+  displaySettings: {
+    summaryRowLimit: number;
+    showHostInstitutionSummary: boolean;
+    showDocumentGapSummary: boolean;
+  };
   filterOptions: {
     statuses: Array<{ id: string; label: string }>;
     academicYears: Array<{ id: string; label: string }>;
@@ -280,7 +286,7 @@ export async function getReportingData(
   filters: ReportingFiltersInput
 ): Promise<ReportingData> {
   const where = buildReportingCaseWhere(filters);
-  const [statuses, academicYears, faculties, departments, mobilityTypes, mobilityCases] =
+  const [statuses, academicYears, faculties, departments, mobilityTypes, mobilityCases, reportSetting] =
     await Promise.all([
       prisma.caseStatusDefinition.findMany({
         where: { isActive: true },
@@ -384,7 +390,8 @@ export async function getReportingData(
           }
         },
         orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }]
-      })
+      }),
+      ensureReportSetting()
     ]);
 
   const caseList = mobilityCases.map(buildCaseListItem);
@@ -410,6 +417,11 @@ export async function getReportingData(
 
   return {
     filters,
+    displaySettings: {
+      summaryRowLimit: reportSetting.summaryRowLimit,
+      showHostInstitutionSummary: reportSetting.showHostInstitutionSummary,
+      showDocumentGapSummary: reportSetting.showDocumentGapSummary
+    },
     filterOptions: {
       statuses: statuses.map((status) => ({
         id: status.id,

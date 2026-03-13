@@ -14,6 +14,15 @@ const { prismaMock } = vi.hoisted(() => {
     },
     mobilityCaseStatusHistory: {
       create: vi.fn()
+    },
+    mobilityCaseComment: {
+      create: vi.fn()
+    },
+    mobilityCaseDocumentVersion: {
+      update: vi.fn()
+    },
+    auditLog: {
+      create: vi.fn()
     }
   };
 
@@ -66,7 +75,7 @@ describe("review workflow service", () => {
     vi.clearAllMocks();
   });
 
-  it("records explicit history when an officer changes case status", async () => {
+  it("records explicit history and an audit entry when an officer changes case status", async () => {
     prismaMock.mobilityCase.findUnique.mockResolvedValue({
       id: "case_1",
       statusDefinitionId: "status_submitted",
@@ -103,6 +112,14 @@ describe("review workflow service", () => {
         note: "Initial officer screening started."
       }
     });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actorUserId: "officer_user",
+        actionType: "CASE_STATUS_CHANGED",
+        entityType: "MOBILITY_CASE",
+        entityId: "case_1"
+      })
+    });
     expect(result).toEqual({
       status: "updated",
       currentStatusKey: "under_review"
@@ -133,9 +150,9 @@ describe("review workflow service", () => {
     });
   });
 
-  it("creates timestamped case comments with the reviewing author", async () => {
+  it("creates timestamped case comments with the reviewing author and audit record", async () => {
     prismaMock.mobilityCase.findUnique.mockResolvedValue({ id: "case_3" });
-    prismaMock.mobilityCaseComment.create.mockResolvedValue({ id: "comment_1" });
+    prismaMock.__transaction.mobilityCaseComment.create.mockResolvedValue({ id: "comment_1" });
 
     const result = await createReviewCaseComment(
       "officer_user",
@@ -143,7 +160,7 @@ describe("review workflow service", () => {
       "  Please upload the signed version with the official stamp.  "
     );
 
-    expect(prismaMock.mobilityCaseComment.create).toHaveBeenCalledWith({
+    expect(prismaMock.__transaction.mobilityCaseComment.create).toHaveBeenCalledWith({
       data: {
         mobilityCaseId: "case_3",
         authorUserId: "officer_user",
@@ -153,17 +170,30 @@ describe("review workflow service", () => {
         id: true
       }
     });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actorUserId: "officer_user",
+        actionType: "CASE_COMMENT_ADDED",
+        entityType: "COMMENT",
+        entityId: "comment_1"
+      })
+    });
     expect(result).toEqual({
       status: "created",
       commentId: "comment_1"
     });
   });
 
-  it("rejects the current document version and stores review metadata separately from case state", async () => {
+  it("rejects the current document version and stores a separate audit record", async () => {
     prismaMock.mobilityCaseDocumentVersion.findFirst.mockResolvedValue({
       id: "version_1",
       document: {
-        currentVersionId: "version_1"
+        id: "document_1",
+        currentVersionId: "version_1",
+        documentTypeOption: {
+          label: "Mobility Agreement",
+          key: "mobility_agreement"
+        }
       }
     });
 
@@ -175,12 +205,21 @@ describe("review workflow service", () => {
       "Missing signature on the uploaded agreement."
     );
 
-    expect(prismaMock.mobilityCaseDocumentVersion.update).toHaveBeenCalledWith({
+    expect(prismaMock.__transaction.mobilityCaseDocumentVersion.update).toHaveBeenCalledWith({
       where: { id: "version_1" },
       data: expect.objectContaining({
         reviewState: DocumentReviewState.REJECTED,
         reviewComment: "Missing signature on the uploaded agreement.",
         reviewedByUserId: "officer_user"
+      })
+    });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actorUserId: "officer_user",
+        documentId: "document_1",
+        documentVersionId: "version_1",
+        actionType: "DOCUMENT_REVIEWED",
+        entityId: "version_1"
       })
     });
     expect(result).toEqual({
@@ -189,12 +228,12 @@ describe("review workflow service", () => {
     });
   });
 
-  it("records a missing-document note when no current version exists", async () => {
+  it("records a missing-document note and audit entries when no current version exists", async () => {
     prismaMock.mobilityCase.findUnique.mockResolvedValue({
       id: "case_5",
       documents: []
     });
-    prismaMock.mobilityCaseComment.create.mockResolvedValue({ id: "comment_2" });
+    prismaMock.__transaction.mobilityCaseComment.create.mockResolvedValue({ id: "comment_2" });
 
     const result = await markMissingDocumentForReview(
       "officer_user",
@@ -203,7 +242,7 @@ describe("review workflow service", () => {
       "Staff should upload the signed agreement before review continues."
     );
 
-    expect(prismaMock.mobilityCaseComment.create).toHaveBeenCalledWith({
+    expect(prismaMock.__transaction.mobilityCaseComment.create).toHaveBeenCalledWith({
       data: {
         mobilityCaseId: "case_5",
         authorUserId: "officer_user",
@@ -214,6 +253,25 @@ describe("review workflow service", () => {
         id: true
       }
     });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledTimes(2);
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "CASE_COMMENT_ADDED",
+          entityId: "comment_2"
+        })
+      })
+    );
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "DOCUMENT_MARKED_MISSING",
+          entityId: "case_5:mobility_agreement"
+        })
+      })
+    );
     expect(result).toEqual({
       status: "created",
       commentId: "comment_2"

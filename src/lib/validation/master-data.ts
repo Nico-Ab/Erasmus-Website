@@ -102,9 +102,21 @@ export const uploadSettingSchema = z.object({
     )
 });
 
+export const reportSettingSchema = z.object({
+  summaryRowLimit: z
+    .coerce
+    .number()
+    .int("Summary row limit must be a whole number")
+    .min(3, "Summary row limit must be at least 3")
+    .max(50, "Summary row limit must be 50 or fewer"),
+  showHostInstitutionSummary: z.boolean(),
+  showDocumentGapSummary: z.boolean()
+});
+
 export type FacultyInput = z.infer<typeof facultySchema>;
 export type DepartmentInput = z.infer<typeof departmentSchema>;
 export type AcademicYearInput = z.infer<typeof academicYearSchema>;
 export type CaseStatusDefinitionInput = z.infer<typeof caseStatusDefinitionSchema>;
 export type SelectOptionInput = z.infer<typeof selectOptionSchema>;
 export type UploadSettingInput = z.output<typeof uploadSettingSchema>;
+export type ReportSettingInput = z.infer<typeof reportSettingSchema>;

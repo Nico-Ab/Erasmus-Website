@@ -20,6 +20,9 @@ const { prismaMock } = vi.hoisted(() => ({
     },
     mobilityCase: {
       findMany: vi.fn()
+    },
+    reportSetting: {
+      upsert: vi.fn()
     }
   }
 }));
@@ -53,6 +56,12 @@ describe("reporting service", () => {
       { id: "type_teaching", label: "Teaching", sortOrder: 1 },
       { id: "type_training", label: "Training", sortOrder: 2 }
     ]);
+    prismaMock.reportSetting.upsert.mockResolvedValue({
+      id: "default",
+      summaryRowLimit: 12,
+      showHostInstitutionSummary: true,
+      showDocumentGapSummary: true
+    });
   });
 
   it("aggregates report metrics, summaries, and document gaps from filtered cases", async () => {
@@ -163,6 +172,11 @@ describe("reporting service", () => {
         }
       })
     );
+    expect(data.displaySettings).toEqual({
+      summaryRowLimit: 12,
+      showHostInstitutionSummary: true,
+      showDocumentGapSummary: true
+    });
     expect(data.metrics).toEqual({
       totalCount: 3,
       openCount: 1,

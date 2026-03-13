@@ -21,6 +21,9 @@ const { prismaMock } = vi.hoisted(() => {
     },
     mobilityCaseStatusHistory: {
       create: vi.fn()
+    },
+    auditLog: {
+      create: vi.fn()
     }
   };
 
@@ -119,7 +122,7 @@ describe("document storage and metadata handling", () => {
     );
   });
 
-  it("creates the first document version, stores the file, and records metadata", async () => {
+  it("creates the first document version, stores the file, and records metadata plus audit entries", async () => {
     prismaMock.mobilityCase.findFirst.mockResolvedValue({
       id: "case_1",
       statusDefinitionId: "status_submitted",
@@ -129,7 +132,8 @@ describe("document storage and metadata handling", () => {
     });
     prismaMock.caseStatusDefinition.findFirst.mockResolvedValue({
       id: "status_agreement_uploaded",
-      key: "agreement_uploaded"
+      key: "agreement_uploaded",
+      label: "Agreement Uploaded"
     });
     prismaMock.__transaction.mobilityCaseDocument.findUnique.mockResolvedValue(null);
     prismaMock.__transaction.mobilityCaseDocument.create.mockResolvedValue({
@@ -185,6 +189,34 @@ describe("document storage and metadata handling", () => {
         statusDefinitionId: "status_agreement_uploaded"
       }
     });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledTimes(3);
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "DOCUMENT_UPLOADED",
+          entityId: "version_1"
+        })
+      })
+    );
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "DOCUMENT_CURRENT_VERSION_CHANGED",
+          entityId: "document_1"
+        })
+      })
+    );
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "CASE_STATUS_CHANGED",
+          entityId: "case_1"
+        })
+      })
+    );
 
     const storageKey =
       prismaMock.__transaction.mobilityCaseDocumentVersion.create.mock.calls[0][0].data.storageKey;
@@ -249,6 +281,7 @@ describe("document storage and metadata handling", () => {
     });
     expect(prismaMock.__transaction.mobilityCase.update).not.toHaveBeenCalled();
     expect(prismaMock.__transaction.mobilityCaseStatusHistory.create).not.toHaveBeenCalled();
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledTimes(2);
   });
 
   it("removes the stored file if metadata persistence fails", async () => {
@@ -261,7 +294,8 @@ describe("document storage and metadata handling", () => {
     });
     prismaMock.caseStatusDefinition.findFirst.mockResolvedValue({
       id: "status_agreement_uploaded",
-      key: "agreement_uploaded"
+      key: "agreement_uploaded",
+      label: "Agreement Uploaded"
     });
     prismaMock.__transaction.mobilityCaseDocument.findUnique.mockResolvedValue(null);
     prismaMock.__transaction.mobilityCaseDocument.create.mockRejectedValue(new Error("db write failed"));

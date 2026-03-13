@@ -64,6 +64,12 @@ type MasterDataManagerProps = {
     maxUploadSizeMb: number;
     allowedExtensions: string;
   };
+  reportSetting: {
+    id: string;
+    summaryRowLimit: number;
+    showHostInstitutionSummary: boolean;
+    showDocumentGapSummary: boolean;
+  };
   uploadEnvironmentBounds: {
     maxUploadSizeMb: number;
     allowedExtensions: string[];
@@ -76,7 +82,8 @@ type SectionKey =
   | "academicYears"
   | "statuses"
   | "selectOptions"
-  | "uploadSettings";
+  | "uploadSettings"
+  | "reportSettings";
 
 function readText(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -159,6 +166,7 @@ export function MasterDataManager({
   statuses,
   selectOptions,
   uploadSetting,
+  reportSetting,
   uploadEnvironmentBounds
 }: MasterDataManagerProps) {
   const router = useRouter();
@@ -168,7 +176,8 @@ export function MasterDataManager({
     academicYears: null,
     statuses: null,
     selectOptions: null,
-    uploadSettings: null
+    uploadSettings: null,
+    reportSettings: null
   });
   const [activeSection, setActiveSection] = useState<SectionKey | null>(null);
 
@@ -706,6 +715,50 @@ export function MasterDataManager({
           <p className="mt-2">Maximum upload size cap: {uploadEnvironmentBounds.maxUploadSizeMb} MB</p>
           <p className="mt-1">Allowed extension allowlist: {uploadEnvironmentBounds.allowedExtensions.join(", ")}</p>
         </div>
+      </SectionShell>
+
+      <SectionShell
+        title="Report display settings"
+        description="Adjust how summary tables appear in officer and admin reporting pages without changing the export data itself."
+        notice={notices.reportSettings}
+        sectionId="reportSettings"
+      >
+        <form
+          className="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[180px_auto]"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            await submitPayload("reportSettings", {
+              entity: "reportSetting",
+              mode: "update",
+              summaryRowLimit: readNumber(formData, "reportSummaryRowLimit"),
+              showHostInstitutionSummary: readBoolean(formData, "reportShowHostInstitutionSummary"),
+              showDocumentGapSummary: readBoolean(formData, "reportShowDocumentGapSummary")
+            });
+          }}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="reportSummaryRowLimit">Summary row limit</Label>
+            <Input defaultValue={reportSetting.summaryRowLimit} id="reportSummaryRowLimit" name="reportSummaryRowLimit" type="number" />
+          </div>
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+            <CheckboxField
+              defaultChecked={reportSetting.showHostInstitutionSummary}
+              id="reportShowHostInstitutionSummary"
+              label="Show host institution summary"
+            />
+            <CheckboxField
+              defaultChecked={reportSetting.showDocumentGapSummary}
+              id="reportShowDocumentGapSummary"
+              label="Show missing-document summary"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Button disabled={activeSection === "reportSettings"} type="submit" variant="outline">
+              {activeSection === "reportSettings" ? "Saving..." : "Save report settings"}
+            </Button>
+          </div>
+        </form>
       </SectionShell>
     </div>
   );

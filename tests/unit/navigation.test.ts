@@ -25,7 +25,8 @@ describe("getDashboardNavigation", () => {
       "/dashboard/reports",
       "/dashboard/admin",
       "/dashboard/admin/users",
-      "/dashboard/admin/master-data"
+      "/dashboard/admin/master-data",
+      "/dashboard/admin/audit-log"
     ]);
   });
 });

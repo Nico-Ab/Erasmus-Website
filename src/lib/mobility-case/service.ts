@@ -1,4 +1,6 @@
 import { SelectOptionCategory } from "@prisma/client";
+import { auditActionTypes, auditEntityTypes } from "@/lib/audit/constants";
+import { createAuditLog } from "@/lib/audit/service";
 import { type CaseDocumentPanel, getCaseDocumentPanels } from "@/lib/documents/service";
 import { editableMobilityCaseStatusKeys, mobilityCaseStatusKeys } from "@/lib/mobility-case/constants";
 import { prisma } from "@/lib/prisma";
@@ -394,6 +396,7 @@ export async function createMobilityCaseForStaff(
   const targetStatus = intent === "submit" ? statusDefinitions.submitted : statusDefinitions.draft;
   const now = new Date();
   const data = buildPersistenceData(input);
+  const hostInstitution = data.hostInstitution ?? "unspecified host institution";
 
   const mobilityCase = await prisma.$transaction(async (transaction) => {
     const createdCase = await transaction.mobilityCase.create({
@@ -425,6 +428,34 @@ export async function createMobilityCaseForStaff(
             : "Case created as draft by staff user."
       }
     });
+
+    await createAuditLog(transaction, {
+      actorUserId: userId,
+      mobilityCaseId: createdCase.id,
+      actionType: auditActionTypes.caseCreated,
+      entityType: auditEntityTypes.mobilityCase,
+      entityId: createdCase.id,
+      summary: `Staff user created a mobility case for ${hostInstitution}.`,
+      details: {
+        currentStatus: targetStatus.key,
+        intent
+      }
+    });
+
+    if (intent === "submit") {
+      await createAuditLog(transaction, {
+        actorUserId: userId,
+        mobilityCaseId: createdCase.id,
+        actionType: auditActionTypes.caseSubmitted,
+        entityType: auditEntityTypes.mobilityCase,
+        entityId: createdCase.id,
+        summary: `Staff user submitted a newly created mobility case for ${hostInstitution}.`,
+        details: {
+          previousStatus: null,
+          nextStatus: targetStatus.key
+        }
+      });
+    }
 
     return createdCase;
   });
@@ -478,6 +509,7 @@ export async function updateMobilityCaseForStaff(
   const statusChanged = Boolean(nextStatus && nextStatus.id !== existingCase.statusDefinitionId);
   const data = buildPersistenceData(input);
   const now = new Date();
+  const hostInstitution = data.hostInstitution ?? "unspecified host institution";
 
   const mobilityCase = await prisma.$transaction(async (transaction) => {
     const updatedCase = await transaction.mobilityCase.update({
@@ -497,6 +529,19 @@ export async function updateMobilityCaseForStaff(
       }
     });
 
+    await createAuditLog(transaction, {
+      actorUserId: userId,
+      mobilityCaseId: existingCase.id,
+      actionType: auditActionTypes.caseUpdated,
+      entityType: auditEntityTypes.mobilityCase,
+      entityId: existingCase.id,
+      summary: `Staff user updated the mobility case for ${hostInstitution}.`,
+      details: {
+        intent,
+        currentStatus: updatedCase.statusDefinition.key
+      }
+    });
+
     if (statusChanged && nextStatus) {
       await transaction.mobilityCaseStatusHistory.create({
         data: {
@@ -505,6 +550,33 @@ export async function updateMobilityCaseForStaff(
           toStatusDefinitionId: nextStatus.id,
           changedByUserId: userId,
           note: "Case submitted by staff user."
+        }
+      });
+
+      await createAuditLog(transaction, {
+        actorUserId: userId,
+        mobilityCaseId: existingCase.id,
+        actionType: auditActionTypes.caseSubmitted,
+        entityType: auditEntityTypes.mobilityCase,
+        entityId: existingCase.id,
+        summary: `Staff user submitted the mobility case for ${hostInstitution}.`,
+        details: {
+          previousStatus: existingCase.statusDefinition.key,
+          nextStatus: nextStatus.key
+        }
+      });
+
+      await createAuditLog(transaction, {
+        actorUserId: userId,
+        mobilityCaseId: existingCase.id,
+        actionType: auditActionTypes.caseStatusChanged,
+        entityType: auditEntityTypes.mobilityCase,
+        entityId: existingCase.id,
+        summary: `Case status changed from ${existingCase.statusDefinition.key} to ${nextStatus.key}.`,
+        details: {
+          previousStatus: existingCase.statusDefinition.key,
+          nextStatus: nextStatus.key,
+          source: "staff_submit"
         }
       });
     }

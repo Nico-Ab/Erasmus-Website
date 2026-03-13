@@ -240,6 +240,21 @@ async function main() {
     }
   });
 
+  await prisma.reportSetting.upsert({
+    where: { id: "default" },
+    update: {
+      summaryRowLimit: 12,
+      showHostInstitutionSummary: true,
+      showDocumentGapSummary: true
+    },
+    create: {
+      id: "default",
+      summaryRowLimit: 12,
+      showHostInstitutionSummary: true,
+      showDocumentGapSummary: true
+    }
+  });
+
   for (const user of users) {
     const { academicTitleKey, departmentCode, facultyCode, firstName, lastName, password, ...rest } = user;
     const passwordHash = await bcrypt.hash(password, 12);

@@ -21,6 +21,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const filters = parseReportingFilters(await searchParams);
   const data = await getReportingData(filters);
   const queryString = buildReportingQueryString(data.filters);
+  const summaryRowLimit = data.displaySettings.summaryRowLimit;
 
   return (
     <div className="space-y-6" data-testid="reporting-page">
@@ -57,6 +58,11 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           value={data.metrics.missingFinalCertificateCount.toString()}
           description="Cases without a current final certificate in the filtered result set."
         />
+        <OverviewMetric
+          title="Summary row limit"
+          value={summaryRowLimit.toString()}
+          description="Admin-managed display setting for summary sections on this page."
+        />
       </section>
 
       <ReportFilters data={data} />
@@ -65,49 +71,55 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
       <section className="grid gap-4 xl:grid-cols-2">
         <ReportSummaryTable
           description="Mobility counts by academic year with open, completed, and missing-document breakdowns."
-          rows={data.summaries.byAcademicYear}
+          rows={data.summaries.byAcademicYear.slice(0, summaryRowLimit)}
           testId="report-summary-academic-year"
           title="By academic year"
         />
         <ReportSummaryTable
           description="Faculty-level reporting across the current filtered case register."
-          rows={data.summaries.byFaculty}
+          rows={data.summaries.byFaculty.slice(0, summaryRowLimit)}
           testId="report-summary-faculty"
           title="By faculty"
         />
         <ReportSummaryTable
           description="Department counts remain tied to the current filter scope."
-          rows={data.summaries.byDepartment}
+          rows={data.summaries.byDepartment.slice(0, summaryRowLimit)}
           testId="report-summary-department"
           title="By department"
         />
         <ReportSummaryTable
           description="Teaching and training totals with open and completed breakdowns."
-          rows={data.summaries.byMobilityType}
+          rows={data.summaries.byMobilityType.slice(0, summaryRowLimit)}
           testId="report-summary-mobility-type"
           title="By mobility type"
         />
         <ReportSummaryTable
           description="Country-level host reporting with missing-document visibility."
-          rows={data.summaries.byHostCountry}
+          rows={data.summaries.byHostCountry.slice(0, summaryRowLimit)}
           testId="report-summary-country"
           title="By host country"
         />
         <ReportSummaryTable
           description="Workflow status reporting, including archived cases when they match the filter scope."
-          rows={data.summaries.byStatus}
+          rows={data.summaries.byStatus.slice(0, summaryRowLimit)}
           testId="report-summary-status"
           title="By status"
         />
       </section>
 
-      <ReportDocumentGapTable rows={data.summaries.documentGaps} />
-      <ReportSummaryTable
-        description="Institution-level totals remain sortable and export-friendly for later operational analysis."
-        rows={data.summaries.byHostInstitution}
-        testId="report-summary-host-institution"
-        title="By host institution"
-      />
+      {data.displaySettings.showDocumentGapSummary ? (
+        <ReportDocumentGapTable rows={data.summaries.documentGaps} />
+      ) : null}
+
+      {data.displaySettings.showHostInstitutionSummary ? (
+        <ReportSummaryTable
+          description="Institution-level totals remain sortable and export-friendly for later operational analysis."
+          rows={data.summaries.byHostInstitution.slice(0, summaryRowLimit)}
+          testId="report-summary-host-institution"
+          title="By host institution"
+        />
+      ) : null}
+
       <ReportCaseTable rows={data.caseList} />
     </div>
   );

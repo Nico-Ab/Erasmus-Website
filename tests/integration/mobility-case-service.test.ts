@@ -13,6 +13,9 @@ const { prismaMock } = vi.hoisted(() => {
     },
     mobilityCaseStatusHistory: {
       create: vi.fn()
+    },
+    auditLog: {
+      create: vi.fn()
     }
   };
 
@@ -67,7 +70,7 @@ describe("mobility case service", () => {
     prismaMock.selectOption.findFirst.mockResolvedValue({ id: "mobility_type_teaching" });
   });
 
-  it("creates draft cases with an initial status-history record", async () => {
+  it("creates draft cases with an initial status-history record and audit entry", async () => {
     prismaMock.__transaction.mobilityCase.create.mockResolvedValue({
       id: "case_1",
       statusDefinition: {
@@ -99,6 +102,15 @@ describe("mobility case service", () => {
         changedByUserId: "staff_user"
       })
     });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        actorUserId: "staff_user",
+        mobilityCaseId: "case_1",
+        actionType: "CASE_CREATED",
+        entityType: "MOBILITY_CASE",
+        entityId: "case_1"
+      })
+    });
     expect(result).toEqual({
       status: "created",
       caseId: "case_1",
@@ -106,7 +118,7 @@ describe("mobility case service", () => {
     });
   });
 
-  it("updates a draft and creates status history when submitted", async () => {
+  it("updates a draft, submits it, and creates audit records for the transition", async () => {
     prismaMock.mobilityCase.findFirst.mockResolvedValue({
       id: "case_2",
       statusDefinitionId: "status_draft",
@@ -145,6 +157,34 @@ describe("mobility case service", () => {
         changedByUserId: "staff_user"
       })
     });
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenCalledTimes(3);
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "CASE_UPDATED",
+          entityId: "case_2"
+        })
+      })
+    );
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "CASE_SUBMITTED",
+          entityId: "case_2"
+        })
+      })
+    );
+    expect(prismaMock.__transaction.auditLog.create).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          actionType: "CASE_STATUS_CHANGED",
+          entityId: "case_2"
+        })
+      })
+    );
     expect(result).toEqual({
       status: "updated",
       caseId: "case_2",

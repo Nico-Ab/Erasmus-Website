@@ -1,11 +1,13 @@
 import { Prisma } from "@prisma/client";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { ensureReportSetting, updateReportSetting as persistReportSetting } from "@/lib/reporting/settings";
 import type {
   AcademicYearInput,
   CaseStatusDefinitionInput,
   DepartmentInput,
   FacultyInput,
+  ReportSettingInput,
   SelectOptionInput,
   UploadSettingInput
 } from "@/lib/validation/master-data";
@@ -14,7 +16,7 @@ function isUniqueConstraintError(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
-async function ensureUploadSetting() {
+export async function ensureUploadSetting() {
   return prisma.uploadSetting.upsert({
     where: { id: "default" },
     update: {},
@@ -27,9 +29,10 @@ async function ensureUploadSetting() {
 }
 
 export async function getMasterDataPageData() {
-  const [uploadSetting, faculties, departments, academicYears, statuses, selectOptions] =
+  const [uploadSetting, reportSetting, faculties, departments, academicYears, statuses, selectOptions] =
     await Promise.all([
       ensureUploadSetting(),
+      ensureReportSetting(),
       prisma.faculty.findMany({
         select: {
           id: true,
@@ -107,6 +110,7 @@ export async function getMasterDataPageData() {
     statuses,
     selectOptions,
     uploadSetting,
+    reportSetting,
     uploadEnvironmentBounds: {
       maxUploadSizeMb: env.MAX_UPLOAD_SIZE_MB,
       allowedExtensions: env.allowedUploadExtensions
@@ -337,4 +341,8 @@ export async function updateUploadSetting(input: UploadSettingInput) {
   });
 
   return { status: "updated" as const };
+}
+
+export async function updateReportSetting(input: ReportSettingInput) {
+  return persistReportSetting(input);
 }

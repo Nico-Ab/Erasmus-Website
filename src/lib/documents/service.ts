@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { DocumentReviewState, SelectOptionCategory, UserRole } from "@prisma/client";
+import { auditActionTypes, auditEntityTypes } from "@/lib/audit/constants";
+import { createAuditLog } from "@/lib/audit/service";
 import { env } from "@/lib/env";
 import {
   blockedDocumentUploadStatusKeys,
@@ -426,12 +428,44 @@ export async function uploadDocumentVersionForStaff(
         }
       });
 
+      await createAuditLog(transaction, {
+        actorUserId: userId,
+        mobilityCaseId: caseId,
+        documentId: document.id,
+        documentVersionId: version.id,
+        actionType: auditActionTypes.documentUploaded,
+        entityType: auditEntityTypes.documentVersion,
+        entityId: version.id,
+        summary: `${documentTypeOption.label} uploaded as version ${version.versionNumber}.`,
+        details: {
+          documentTypeKey,
+          versionNumber: version.versionNumber,
+          originalFilename: validation.data.originalFilename,
+          sizeBytes: validation.data.sizeBytes
+        }
+      });
+
       await transaction.mobilityCaseDocument.update({
         where: {
           id: document.id
         },
         data: {
           currentVersionId: version.id
+        }
+      });
+
+      await createAuditLog(transaction, {
+        actorUserId: userId,
+        mobilityCaseId: caseId,
+        documentId: document.id,
+        documentVersionId: version.id,
+        actionType: auditActionTypes.documentCurrentVersionChanged,
+        entityType: auditEntityTypes.document,
+        entityId: document.id,
+        summary: `${documentTypeOption.label} current version set to v${version.versionNumber}.`,
+        details: {
+          previousCurrentVersionId: document.currentVersionId,
+          nextCurrentVersionId: version.id
         }
       });
 
@@ -453,6 +487,21 @@ export async function uploadDocumentVersionForStaff(
             toStatusDefinitionId: targetStatus.id,
             changedByUserId: userId,
             note: `${documentTypeOption.label} uploaded by staff user.`
+          }
+        });
+        await createAuditLog(transaction, {
+          actorUserId: userId,
+          mobilityCaseId: caseId,
+          documentId: document.id,
+          documentVersionId: version.id,
+          actionType: auditActionTypes.caseStatusChanged,
+          entityType: auditEntityTypes.mobilityCase,
+          entityId: caseId,
+          summary: `Case status changed from ${mobilityCase.statusDefinition.key} to ${targetStatus.key} after ${documentTypeOption.label} upload.`,
+          details: {
+            previousStatus: mobilityCase.statusDefinition.key,
+            nextStatus: targetStatus.key,
+            source: documentTypeKey
           }
         });
         currentStatusKey = targetStatus.key;

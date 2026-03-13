@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import { Prisma, UserApprovalStatus, UserRole } from "@prisma/client";
+import { auditActionTypes, auditEntityTypes } from "@/lib/audit/constants";
+import { createAuditLog } from "@/lib/audit/service";
 import { prisma } from "@/lib/prisma";
 import type { LoginInput, RegistrationInput } from "@/lib/validation/auth";
 import { authErrorCodes } from "@/lib/auth/error-codes";
@@ -90,20 +92,37 @@ export async function registerStaffUser(input: RegistrationInput): Promise<Regis
   }
 
   const passwordHash = await bcrypt.hash(input.password, 12);
-  const user = await prisma.user.create({
-    data: {
-      email,
-      firstName: input.firstName.trim(),
-      lastName: input.lastName.trim(),
-      name: `${input.firstName.trim()} ${input.lastName.trim()}`,
-      passwordHash,
-      role: UserRole.STAFF,
-      status: UserApprovalStatus.PENDING
-    },
-    select: {
-      id: true,
-      email: true
-    }
+  const user = await prisma.$transaction(async (transaction) => {
+    const createdUser = await transaction.user.create({
+      data: {
+        email,
+        firstName: input.firstName.trim(),
+        lastName: input.lastName.trim(),
+        name: `${input.firstName.trim()} ${input.lastName.trim()}`,
+        passwordHash,
+        role: UserRole.STAFF,
+        status: UserApprovalStatus.PENDING
+      },
+      select: {
+        id: true,
+        email: true
+      }
+    });
+
+    await createAuditLog(transaction, {
+      actorUserId: createdUser.id,
+      targetUserId: createdUser.id,
+      actionType: auditActionTypes.userRegistered,
+      entityType: auditEntityTypes.user,
+      entityId: createdUser.id,
+      summary: `Staff registration requested for ${createdUser.email}.`,
+      details: {
+        nextStatus: UserApprovalStatus.PENDING,
+        role: UserRole.STAFF
+      }
+    });
+
+    return createdUser;
   });
 
   return {
@@ -144,6 +163,7 @@ export async function updateRegistrationStatus(params: {
     where: { id: params.userId },
     select: {
       id: true,
+      email: true,
       role: true,
       status: true
     }
@@ -157,13 +177,34 @@ export async function updateRegistrationStatus(params: {
     return { status: "unchanged" as const };
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      status: params.status,
-      reviewedAt: new Date(),
-      reviewedById: params.adminUserId
-    }
+  await prisma.$transaction(async (transaction) => {
+    await transaction.user.update({
+      where: { id: user.id },
+      data: {
+        status: params.status,
+        reviewedAt: new Date(),
+        reviewedById: params.adminUserId
+      }
+    });
+
+    await createAuditLog(transaction, {
+      actorUserId: params.adminUserId,
+      targetUserId: user.id,
+      actionType:
+        params.status === UserApprovalStatus.APPROVED
+          ? auditActionTypes.userApproved
+          : auditActionTypes.userRejected,
+      entityType: auditEntityTypes.user,
+      entityId: user.id,
+      summary:
+        params.status === UserApprovalStatus.APPROVED
+          ? `Admin approved staff registration for ${user.email}.`
+          : `Admin rejected staff registration for ${user.email}.`,
+      details: {
+        previousStatus: user.status,
+        nextStatus: params.status
+      }
+    });
   });
 
   return { status: "updated" as const };

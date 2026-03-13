@@ -58,6 +58,8 @@ model User {
   mobilityCaseStatusChanges MobilityCaseStatusHistory[]  @relation("MobilityCaseStatusChangedBy")
   uploadedDocumentVersions  MobilityCaseDocumentVersion[] @relation("DocumentVersionUploadedBy")
   reviewedDocumentVersions  MobilityCaseDocumentVersion[] @relation("DocumentVersionReviewedBy")
+  auditEntriesActed         AuditLog[]                    @relation("AuditActor")
+  auditEntriesTargeted      AuditLog[]                    @relation("AuditTargetUser")
   accounts                  Account[]
   sessions                  Session[]
   authenticators            Authenticator[]
@@ -162,6 +164,7 @@ model MobilityCase {
   comments             MobilityCaseComment[]
   documents            MobilityCaseDocument[]
   statusHistory        MobilityCaseStatusHistory[]
+  auditLogs            AuditLog[]
   createdAt            DateTime                    @default(now())
   updatedAt            DateTime                    @updatedAt
 
@@ -213,6 +216,7 @@ model MobilityCaseDocument {
   documentTypeOption   SelectOption                  @relation("MobilityCaseDocumentTypeAssignments", fields: [documentTypeOptionId], references: [id], onDelete: Restrict)
   currentVersion       MobilityCaseDocumentVersion?  @relation("CurrentDocumentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
   versions             MobilityCaseDocumentVersion[] @relation("DocumentVersions")
+  auditLogs            AuditLog[]
   createdAt            DateTime                      @default(now())
   updatedAt            DateTime                      @updatedAt
 
@@ -240,11 +244,50 @@ model MobilityCaseDocumentVersion {
   currentForDocument MobilityCaseDocument? @relation("CurrentDocumentVersion")
   reviewedByUser     User?                 @relation("DocumentVersionReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
   uploadedByUser     User                  @relation("DocumentVersionUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
-
+  auditLogs          AuditLog[]
   @@unique([documentId, versionNumber])
   @@index([reviewedByUserId])
   @@index([uploadedByUserId])
   @@index([documentId, uploadedAt])
+}
+
+
+model ReportSetting {
+  id                         String   @id
+  summaryRowLimit            Int      @default(12)
+  showHostInstitutionSummary Boolean  @default(true)
+  showDocumentGapSummary     Boolean  @default(true)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}
+
+model AuditLog {
+  id                String                       @id @default(cuid())
+  actorUserId       String?
+  targetUserId      String?
+  mobilityCaseId    String?
+  documentId        String?
+  documentVersionId String?
+  actionType        String
+  entityType        String
+  entityId          String
+  summary           String
+  details           Json?
+  actorUser         User?                        @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  targetUser        User?                        @relation("AuditTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  mobilityCase      MobilityCase?                @relation(fields: [mobilityCaseId], references: [id], onDelete: SetNull)
+  document          MobilityCaseDocument?        @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  documentVersion   MobilityCaseDocumentVersion? @relation(fields: [documentVersionId], references: [id], onDelete: SetNull)
+  createdAt         DateTime                     @default(now())
+
+  @@index([createdAt])
+  @@index([actionType, createdAt])
+  @@index([entityType, entityId])
+  @@index([actorUserId, createdAt])
+  @@index([targetUserId, createdAt])
+  @@index([mobilityCaseId, createdAt])
+  @@index([documentId, createdAt])
+  @@index([documentVersionId, createdAt])
 }
 
 model UploadSetting {

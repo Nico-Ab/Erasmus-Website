@@ -1,6 +1,8 @@
-import { UserApprovalStatus, UserRole } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { auditActionTypes, auditEntityTypes } from "@/lib/audit/constants";
+import { createAuditLog } from "@/lib/audit/service";
+import { requireApprovedAdminSession } from "@/lib/auth/api-guards";
 import {
   createAcademicYear,
   createCaseStatusDefinition,
@@ -12,37 +14,49 @@ import {
   updateCaseStatusDefinition,
   updateDepartment,
   updateFaculty,
+  updateReportSetting,
   updateSelectOption,
   updateUploadSetting
 } from "@/lib/master-data/service";
+import { prisma } from "@/lib/prisma";
 import {
   academicYearSchema,
   caseStatusDefinitionSchema,
   departmentSchema,
   facultySchema,
+  reportSettingSchema,
   selectOptionSchema,
   uploadSettingSchema
 } from "@/lib/validation/master-data";
+
+export const runtime = "nodejs";
 
 function validationErrorResponse(error: { flatten: () => { fieldErrors: Record<string, string[] | undefined> } }) {
   return NextResponse.json(
     {
       message: "Submitted master data is invalid.",
-      fieldErrors: error?.flatten().fieldErrors
+      fieldErrors: error.flatten().fieldErrors
     },
     { status: 400 }
   );
 }
 
+async function recordAuditEntry(input: {
+  actorUserId: string;
+  actionType: string;
+  entityType: string;
+  entityId: string;
+  summary: string;
+  details: Prisma.InputJsonValue;
+}) {
+  await createAuditLog(prisma, input);
+}
+
 export async function GET() {
-  const session = await auth();
+  const session = await requireApprovedAdminSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ message: "Sign in to view master data." }, { status: 401 });
-  }
-
-  if (session.user.status !== UserApprovalStatus.APPROVED || session.user.role !== UserRole.ADMIN) {
-    return NextResponse.json({ message: "Only admins can view master data." }, { status: 403 });
+  if (session instanceof NextResponse) {
+    return session;
   }
 
   const data = await getMasterDataPageData();
@@ -51,14 +65,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
+  const session = await requireApprovedAdminSession();
 
-  if (!session?.user) {
-    return NextResponse.json({ message: "Sign in to manage master data." }, { status: 401 });
-  }
-
-  if (session.user.status !== UserApprovalStatus.APPROVED || session.user.role !== UserRole.ADMIN) {
-    return NextResponse.json({ message: "Only admins can change master data." }, { status: 403 });
+  if (session instanceof NextResponse) {
+    return session;
   }
 
   let body: Record<string, unknown>;
@@ -77,7 +87,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Entity and mode are required." }, { status: 400 });
   }
 
-  if (mode === "update" && !id && entity !== "uploadSetting") {
+  if (mode === "update" && !id && entity !== "uploadSetting" && entity !== "reportSetting") {
     return NextResponse.json({ message: "Record id is required for updates." }, { status: 400 });
   }
 
@@ -100,6 +110,23 @@ export async function POST(request: Request) {
     if (result.status === "not_found") {
       return NextResponse.json({ message: result.message }, { status: 404 });
     }
+
+    await recordAuditEntry({
+      actorUserId: session.user.id,
+      actionType:
+        mode === "create" ? auditActionTypes.masterDataCreated : auditActionTypes.masterDataUpdated,
+      entityType: auditEntityTypes.masterData,
+      entityId: "facultyId" in result ? result.facultyId : (id as string),
+      summary:
+        mode === "create"
+          ? `Admin created faculty ${parsed.data.name}.`
+          : `Admin updated faculty ${parsed.data.name}.`,
+      details: {
+        entity,
+        mode,
+        ...parsed.data
+      }
+    });
 
     return NextResponse.json({ message: "Faculty saved successfully." });
   }
@@ -124,6 +151,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: result.message }, { status: 404 });
     }
 
+    await recordAuditEntry({
+      actorUserId: session.user.id,
+      actionType:
+        mode === "create" ? auditActionTypes.masterDataCreated : auditActionTypes.masterDataUpdated,
+      entityType: auditEntityTypes.masterData,
+      entityId: "departmentId" in result ? result.departmentId : (id as string),
+      summary:
+        mode === "create"
+          ? `Admin created department ${parsed.data.name}.`
+          : `Admin updated department ${parsed.data.name}.`,
+      details: {
+        entity,
+        mode,
+        ...parsed.data
+      }
+    });
+
     return NextResponse.json({ message: "Department saved successfully." });
   }
 
@@ -146,6 +190,23 @@ export async function POST(request: Request) {
     if (result.status === "not_found") {
       return NextResponse.json({ message: result.message }, { status: 404 });
     }
+
+    await recordAuditEntry({
+      actorUserId: session.user.id,
+      actionType:
+        mode === "create" ? auditActionTypes.masterDataCreated : auditActionTypes.masterDataUpdated,
+      entityType: auditEntityTypes.masterData,
+      entityId: "academicYearId" in result ? result.academicYearId : (id as string),
+      summary:
+        mode === "create"
+          ? `Admin created academic year ${parsed.data.label}.`
+          : `Admin updated academic year ${parsed.data.label}.`,
+      details: {
+        entity,
+        mode,
+        ...parsed.data
+      }
+    });
 
     return NextResponse.json({ message: "Academic year saved successfully." });
   }
@@ -170,6 +231,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: result.message }, { status: 404 });
     }
 
+    await recordAuditEntry({
+      actorUserId: session.user.id,
+      actionType:
+        mode === "create" ? auditActionTypes.masterDataCreated : auditActionTypes.masterDataUpdated,
+      entityType: auditEntityTypes.masterData,
+      entityId: "statusId" in result ? result.statusId : (id as string),
+      summary:
+        mode === "create"
+          ? `Admin created case status ${parsed.data.label}.`
+          : `Admin updated case status ${parsed.data.label}.`,
+      details: {
+        entity,
+        mode,
+        ...parsed.data
+      }
+    });
+
     return NextResponse.json({ message: "Status definition saved successfully." });
   }
 
@@ -193,6 +271,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: result.message }, { status: 404 });
     }
 
+    await recordAuditEntry({
+      actorUserId: session.user.id,
+      actionType:
+        mode === "create" ? auditActionTypes.masterDataCreated : auditActionTypes.masterDataUpdated,
+      entityType: auditEntityTypes.masterData,
+      entityId: "optionId" in result ? result.optionId : (id as string),
+      summary:
+        mode === "create"
+          ? `Admin created select option ${parsed.data.label}.`
+          : `Admin updated select option ${parsed.data.label}.`,
+      details: {
+        entity,
+        mode,
+        ...parsed.data
+      }
+    });
+
     return NextResponse.json({ message: "Select-list option saved successfully." });
   }
 
@@ -204,8 +299,44 @@ export async function POST(request: Request) {
     }
 
     await updateUploadSetting(parsed.data);
+    await recordAuditEntry({
+      actorUserId: session.user.id,
+      actionType: auditActionTypes.uploadSettingUpdated,
+      entityType: auditEntityTypes.uploadSetting,
+      entityId: "default",
+      summary: "Admin updated upload policy settings.",
+      details: {
+        entity,
+        mode,
+        ...parsed.data
+      }
+    });
 
     return NextResponse.json({ message: "Upload settings saved successfully." });
+  }
+
+  if (entity === "reportSetting") {
+    const parsed = reportSettingSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error);
+    }
+
+    await updateReportSetting(parsed.data);
+    await recordAuditEntry({
+      actorUserId: session.user.id,
+      actionType: auditActionTypes.reportSettingUpdated,
+      entityType: auditEntityTypes.reportSetting,
+      entityId: "default",
+      summary: "Admin updated report display settings.",
+      details: {
+        entity,
+        mode,
+        ...parsed.data
+      }
+    });
+
+    return NextResponse.json({ message: "Report display settings saved successfully." });
   }
 
   return NextResponse.json({ message: "Unsupported master-data entity." }, { status: 400 });

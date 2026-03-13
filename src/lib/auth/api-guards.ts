@@ -25,3 +25,27 @@ export async function requireApprovedReviewSession() {
 
   return session;
 }
+
+export async function requireApprovedAdminSession() {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json({ message: "Sign in to continue." }, { status: 401 });
+  }
+
+  if (session.user.status !== UserApprovalStatus.APPROVED) {
+    return NextResponse.json(
+      { message: "Only approved accounts can access admin actions." },
+      { status: 403 }
+    );
+  }
+
+  if (session.user.role !== UserRole.ADMIN) {
+    return NextResponse.json(
+      { message: "Only admins can perform this action." },
+      { status: 403 }
+    );
+  }
+
+  return session;
+}

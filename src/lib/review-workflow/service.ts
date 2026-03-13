@@ -1,4 +1,6 @@
 import { DocumentReviewState, Prisma } from "@prisma/client";
+import { auditActionTypes, auditEntityTypes } from "@/lib/audit/constants";
+import { createAuditLog } from "@/lib/audit/service";
 import { getCaseDocumentPanels, type CaseDocumentPanel } from "@/lib/documents/service";
 import {
   requiredDocumentTypeDefinitions,
@@ -768,6 +770,20 @@ export async function changeReviewCaseStatus(
         note: note.trim() || `Status updated to ${nextStatus.label} during officer review.`
       }
     });
+
+    await createAuditLog(transaction, {
+      actorUserId: reviewerUserId,
+      mobilityCaseId: caseId,
+      actionType: auditActionTypes.caseStatusChanged,
+      entityType: auditEntityTypes.mobilityCase,
+      entityId: caseId,
+      summary: `Officer changed case status from ${mobilityCase.statusDefinition.label} to ${nextStatus.label}.`,
+      details: {
+        previousStatus: mobilityCase.statusDefinition.key,
+        nextStatus: nextStatus.key,
+        note: note.trim() || null
+      }
+    });
   });
 
   return {
@@ -795,15 +811,31 @@ export async function createReviewCaseComment(
     };
   }
 
-  const comment = await prisma.mobilityCaseComment.create({
-    data: {
+  const comment = await prisma.$transaction(async (transaction) => {
+    const createdComment = await transaction.mobilityCaseComment.create({
+      data: {
+        mobilityCaseId: caseId,
+        authorUserId: reviewerUserId,
+        body: body.trim()
+      },
+      select: {
+        id: true
+      }
+    });
+
+    await createAuditLog(transaction, {
+      actorUserId: reviewerUserId,
       mobilityCaseId: caseId,
-      authorUserId: reviewerUserId,
-      body: body.trim()
-    },
-    select: {
-      id: true
-    }
+      actionType: auditActionTypes.caseCommentAdded,
+      entityType: auditEntityTypes.comment,
+      entityId: createdComment.id,
+      summary: "Officer added a case review comment.",
+      details: {
+        commentId: createdComment.id
+      }
+    });
+
+    return createdComment;
   });
 
   return {
@@ -830,7 +862,14 @@ export async function reviewDocumentVersion(
       id: true,
       document: {
         select: {
-          currentVersionId: true
+          id: true,
+          currentVersionId: true,
+          documentTypeOption: {
+            select: {
+              label: true,
+              key: true
+            }
+          }
         }
       }
     }
@@ -861,14 +900,32 @@ export async function reviewDocumentVersion(
 
   const reviewState = decision === "accept" ? DocumentReviewState.ACCEPTED : DocumentReviewState.REJECTED;
 
-  await prisma.mobilityCaseDocumentVersion.update({
-    where: { id: versionId },
-    data: {
-      reviewState,
-      reviewComment: trimmedReason || null,
-      reviewedAt: new Date(),
-      reviewedByUserId: reviewerUserId
-    }
+  await prisma.$transaction(async (transaction) => {
+    await transaction.mobilityCaseDocumentVersion.update({
+      where: { id: versionId },
+      data: {
+        reviewState,
+        reviewComment: trimmedReason || null,
+        reviewedAt: new Date(),
+        reviewedByUserId: reviewerUserId
+      }
+    });
+
+    await createAuditLog(transaction, {
+      actorUserId: reviewerUserId,
+      mobilityCaseId: caseId,
+      documentId: version.document.id,
+      documentVersionId: versionId,
+      actionType: auditActionTypes.documentReviewed,
+      entityType: auditEntityTypes.documentVersion,
+      entityId: versionId,
+      summary: `Officer ${decision === "accept" ? "accepted" : "rejected"} the current ${version.document.documentTypeOption.label} version.`,
+      details: {
+        decision,
+        reviewState,
+        reason: trimmedReason || null
+      }
+    });
   });
 
   return {
@@ -926,17 +983,49 @@ export async function markMissingDocumentForReview(
     };
   }
 
-  const comment = await prisma.mobilityCaseComment.create({
-    data: {
+  const commentBody = note.trim()
+    ? `${documentDefinition.label} is missing from the case record. ${note.trim()}`
+    : `${documentDefinition.label} is missing from the case record.`;
+
+  const comment = await prisma.$transaction(async (transaction) => {
+    const createdComment = await transaction.mobilityCaseComment.create({
+      data: {
+        mobilityCaseId: caseId,
+        authorUserId: reviewerUserId,
+        body: commentBody
+      },
+      select: {
+        id: true
+      }
+    });
+
+    await createAuditLog(transaction, {
+      actorUserId: reviewerUserId,
       mobilityCaseId: caseId,
-      authorUserId: reviewerUserId,
-      body: note.trim()
-        ? `${documentDefinition.label} is missing from the case record. ${note.trim()}`
-        : `${documentDefinition.label} is missing from the case record.`
-    },
-    select: {
-      id: true
-    }
+      actionType: auditActionTypes.caseCommentAdded,
+      entityType: auditEntityTypes.comment,
+      entityId: createdComment.id,
+      summary: "Officer added a missing-document comment.",
+      details: {
+        commentId: createdComment.id,
+        documentTypeKey
+      }
+    });
+
+    await createAuditLog(transaction, {
+      actorUserId: reviewerUserId,
+      mobilityCaseId: caseId,
+      actionType: auditActionTypes.documentMarkedMissing,
+      entityType: auditEntityTypes.document,
+      entityId: `${caseId}:${documentTypeKey}`,
+      summary: `${documentDefinition.label} marked as missing during officer review.`,
+      details: {
+        documentTypeKey,
+        commentId: createdComment.id
+      }
+    });
+
+    return createdComment;
   });
 
   return {
