@@ -22,6 +22,18 @@ function buildAcceptAttribute(extensions: string[]) {
   return extensions.map((extension) => `.${extension}`).join(",");
 }
 
+function getUploadErrorMessage(status: number, fallback: string) {
+  if (status === 401) {
+    return "Your session has ended. Sign in again to continue uploading documents.";
+  }
+
+  if (status === 403) {
+    return "You do not have permission to upload documents for this case.";
+  }
+
+  return fallback;
+}
+
 export function MobilityCaseDocumentPanel({
   caseId,
   document,
@@ -33,28 +45,43 @@ export function MobilityCaseDocumentPanel({
   const [isUploading, setIsUploading] = useState(false);
 
   async function handleUpload(formData: FormData) {
+    const selectedFile = formData.get("file");
+
+    if (!(selectedFile instanceof File) || !selectedFile.name.trim()) {
+      setError("Choose a file to upload.");
+      return false;
+    }
+
     setNotice(null);
     setError(null);
     setIsUploading(true);
 
     formData.set("documentTypeKey", document.documentType.key);
 
-    const response = await fetch(`/api/staff/cases/${caseId}/documents`, {
-      method: "POST",
-      body: formData
-    });
-    const payload = await response.json().catch(() => null);
+    try {
+      const response = await fetch(`/api/staff/cases/${caseId}/documents`, {
+        method: "POST",
+        body: formData
+      });
+      const payload = await response.json().catch(() => null);
 
-    setIsUploading(false);
+      if (!response.ok) {
+        setError(
+          payload?.message ??
+            getUploadErrorMessage(response.status, "The document could not be uploaded.")
+        );
+        return false;
+      }
 
-    if (!response.ok) {
-      setError(payload?.message ?? "The document could not be uploaded.");
+      setNotice(payload?.message ?? "Document uploaded successfully.");
+      router.refresh();
+      return true;
+    } catch {
+      setError("The upload could not be completed. Check your connection and try again.");
       return false;
+    } finally {
+      setIsUploading(false);
     }
-
-    setNotice(payload?.message ?? "Document uploaded successfully.");
-    router.refresh();
-    return true;
   }
 
   return (
@@ -101,7 +128,8 @@ export function MobilityCaseDocumentPanel({
 
         {document.currentVersion?.reviewComment ? (
           <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            {document.currentVersion.reviewComment}
+            <p className="font-semibold">Latest review note</p>
+            <p className="mt-1">{document.currentVersion.reviewComment}</p>
           </div>
         ) : null}
 
@@ -140,13 +168,18 @@ export function MobilityCaseDocumentPanel({
         )}
 
         {notice ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          <div
+            className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+            role="status"
+          >
             {notice}
           </div>
         ) : null}
 
         {error ? (
-          <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
+          <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900" role="alert">
+            {error}
+          </div>
         ) : null}
 
         <div className="space-y-3">
@@ -159,18 +192,21 @@ export function MobilityCaseDocumentPanel({
 
           {document.versions.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-600">
-              No versions uploaded yet.
+              No versions uploaded yet. Upload the first file once this requirement is ready for review.
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <table aria-label={`${document.documentType.label} version history`} className="min-w-full divide-y divide-slate-200 text-sm">
+                <caption className="sr-only">
+                  Version history for {document.documentType.label}, including current-version markers, review state, and secure downloads.
+                </caption>
                 <thead className="bg-slate-50 text-left text-slate-600">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">Version</th>
-                    <th className="px-4 py-3 font-semibold">Filename</th>
-                    <th className="px-4 py-3 font-semibold">Uploaded</th>
-                    <th className="px-4 py-3 font-semibold">Review state</th>
-                    <th className="px-4 py-3 font-semibold">Actions</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Version</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Filename</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Uploaded</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Review state</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
@@ -190,7 +226,7 @@ export function MobilityCaseDocumentPanel({
                         <p className="font-medium text-slate-950">{version.originalFilename}</p>
                         <p className="text-xs text-slate-500">{version.sizeLabel}</p>
                       </td>
-                      <td className="px-4 py-3 text-slate-700">{version.uploadedAtLabel}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">{version.uploadedAtLabel}</td>
                       <td className="px-4 py-3 text-slate-700">
                         <div className="space-y-2">
                           <DocumentReviewBadge label={version.reviewState.label} reviewStateKey={version.reviewState.key} />
@@ -203,7 +239,7 @@ export function MobilityCaseDocumentPanel({
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="whitespace-nowrap px-4 py-3">
                         <Button asChild size="sm" variant="outline">
                           <a href={version.downloadPath}>Download</a>
                         </Button>

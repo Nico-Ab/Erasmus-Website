@@ -24,7 +24,14 @@ function resolveRedirectPath(url?: string | null) {
     return "/dashboard";
   }
 
-  return new URL(url, window.location.origin).pathname;
+  try {
+    const resolved = new URL(url, window.location.origin);
+    const path = `${resolved.pathname}${resolved.search}${resolved.hash}`;
+
+    return path || "/dashboard";
+  } catch {
+    return "/dashboard";
+  }
 }
 
 export function LoginForm({ initialMessage = null }: LoginFormProps) {
@@ -45,28 +52,32 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
     setFormError(null);
     setIsSubmitting(true);
 
-    const result = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-      redirectTo: "/dashboard"
-    });
+    try {
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+        redirectTo: "/dashboard"
+      });
 
-    setIsSubmitting(false);
+      if (result?.code === authErrorCodes.pendingApproval) {
+        router.push(buildPendingApprovalPath({ email: values.email }));
+        router.refresh();
+        return;
+      }
 
-    if (result?.code === authErrorCodes.pendingApproval) {
-      router.push(buildPendingApprovalPath({ email: values.email }));
+      if (!result || result.error) {
+        setFormError(getLoginErrorMessage(result?.code));
+        return;
+      }
+
+      router.push(resolveRedirectPath(result.url));
       router.refresh();
-      return;
+    } catch {
+      setFormError(getLoginErrorMessage());
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (!result || result.error) {
-      setFormError(getLoginErrorMessage(result?.code));
-      return;
-    }
-
-    router.push(resolveRedirectPath(result.url));
-    router.refresh();
   }
 
   return (
@@ -104,13 +115,19 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
             ) : null}
           </div>
           {notice ? (
-            <div className="flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
+            <div
+              className="flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800"
+              role="status"
+            >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{notice}</span>
             </div>
           ) : null}
           {formError ? (
-            <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <div
+              className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+              role="alert"
+            >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{formError}</span>
             </div>

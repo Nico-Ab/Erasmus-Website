@@ -120,7 +120,7 @@ export type ReviewCommentResult =
       commentId: string;
     }
   | {
-      status: "not_found";
+      status: "invalid_comment" | "not_found";
       message: string;
     };
 
@@ -797,6 +797,15 @@ export async function createReviewCaseComment(
   caseId: string,
   body: string
 ): Promise<ReviewCommentResult> {
+  const trimmedBody = body.trim();
+
+  if (!trimmedBody) {
+    return {
+      status: "invalid_comment",
+      message: "Comment is required."
+    };
+  }
+
   const mobilityCase = await prisma.mobilityCase.findUnique({
     where: { id: caseId },
     select: {
@@ -816,7 +825,7 @@ export async function createReviewCaseComment(
       data: {
         mobilityCaseId: caseId,
         authorUserId: reviewerUserId,
-        body: body.trim()
+        body: trimmedBody
       },
       select: {
         id: true

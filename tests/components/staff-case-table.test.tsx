@@ -34,9 +34,13 @@ describe("StaffCaseTable", () => {
     );
   });
 
-  it("shows an empty state when no cases exist", () => {
+  it("shows an empty state with a quick create action when no cases exist", () => {
     renderWithUser(<StaffCaseTable items={[]} />);
 
     expect(screen.getByText(/no mobility cases yet/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /create first case/i })).toHaveAttribute(
+      "href",
+      "/dashboard/staff/cases/new"
+    );
   });
 });

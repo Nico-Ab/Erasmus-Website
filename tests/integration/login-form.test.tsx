@@ -79,7 +79,7 @@ describe("LoginForm", () => {
     expect(router.refresh).toHaveBeenCalled();
   });
 
-  it("shows a form-level error when sign-in fails", async () => {
+  it("shows a form-level error when credentials are rejected", async () => {
     signInMock.mockResolvedValue({
       error: "CredentialsSignin",
       code: authErrorCodes.invalidCredentials,
@@ -93,7 +93,24 @@ describe("LoginForm", () => {
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     expect(
-      await screen.findByText(/sign-in failed\. check your credentials or account approval status\./i)
+      await screen.findByText(
+        /sign in could not be completed\. check your email, password, and account approval status\./i
+      )
+    ).toBeInTheDocument();
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it("shows a stable temporary error when signIn throws", async () => {
+    signInMock.mockRejectedValue(new Error("network failure"));
+    const { user } = renderWithUser(<LoginForm />);
+    const credentials = createLoginInput();
+
+    await user.type(screen.getByLabelText(/email/i), credentials.email);
+    await user.type(screen.getByLabelText(/password/i), credentials.password);
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+    expect(
+      await screen.findByText(/sign in could not be completed right now\. please try again\./i)
     ).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
   });

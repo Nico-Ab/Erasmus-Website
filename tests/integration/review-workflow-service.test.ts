@@ -184,6 +184,18 @@ describe("review workflow service", () => {
     });
   });
 
+  it("rejects blank review comments before database work begins", async () => {
+    const result = await createReviewCaseComment("officer_user", "case_3", "   ");
+
+    expect(prismaMock.mobilityCase.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.__transaction.mobilityCaseComment.create).not.toHaveBeenCalled();
+    expect(prismaMock.__transaction.auditLog.create).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      status: "invalid_comment",
+      message: "Comment is required."
+    });
+  });
+
   it("rejects the current document version and stores a separate audit record", async () => {
     prismaMock.mobilityCaseDocumentVersion.findFirst.mockResolvedValue({
       id: "version_1",

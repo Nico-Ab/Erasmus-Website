@@ -2,10 +2,9 @@
 
 ## Status snapshot
 - Date: March 13, 2026
-- Overall phase: Foundation, authentication, staff identity, admin master data, explicit audit logging, core admin lifecycle controls, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, and operational reporting with CSV exports are implemented for the current scope; broader hardening and later workflow depth are still pending
+- Overall phase: Foundation, authentication, staff identity, admin master data, explicit audit logging, core admin lifecycle controls, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, operational reporting with CSV exports, and an initial focused hardening pass are implemented for the current scope; broader release hardening and later workflow depth are still pending
 - Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, explicit audit history, admin-managed user lifecycle controls, real role dashboards, admin-managed master data and reporting settings, staff mobility-case drafting and submission, private document storage with version history, officer review actions, reporting surfaces, CSV exports, and multi-layer automated tests
-- Active milestones: M8 is completed for the current scope, M9 is completed for the current scope, M10 has not started
-
+- Active milestones: M8 is completed for the current scope, M9 is completed for the current scope, M10 is in progress through targeted risk-reduction work
 ## Foundation completed on March 11, 2026
 ### What was done
 - Added a real Next.js App Router application with `src/` layout.
@@ -151,6 +150,22 @@
 ### Follow-up notes
 - The critical E2E journey now exercises the live `/api/register` endpoint plus browser-visible pending-approval and approval-unlock behavior for local reliability. The `/register` page UI itself remains covered in integration tests because direct Playwright navigation to that route is still unstable in local Next.js dev mode.
 - Negative-path auth browser coverage continues to emit expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked before approval.
+
+## Focused hardening pass completed on March 13, 2026
+### What was done
+- Hardened the login flow with safer redirect parsing and a stable fallback error when credential sign-in fails unexpectedly.
+- Clarified auth, upload, and review error handling so users now see more actionable messages for expired sessions, missing files, missing rejection reasons, and temporary request failures.
+- Added controlled server-side fallback handling for document upload and download failures so unexpected storage or service errors no longer leak through as abrupt route failures.
+- Blocked blank officer comments at the review service boundary before any database work begins, even if invalid input slips past the UI.
+- Improved staff, review, and reporting tables with clearer empty states, row-count context, better host-location formatting, accessible captions, steadier status/action/date columns, and a direct create-case action from the empty staff list.
+- Refined case-status badge semantics so draft, upload, review, change-required, and completion states are easier to distinguish at a glance.
+- Added targeted test coverage for thrown login failures, blank review comments, and the staff case-table empty-state action.
+
+### Risk-focused notes
+- The Prisma `package.json#prisma` deprecation warning still remains and should move to a dedicated Prisma config before Prisma 7.
+- Upload validation is still filename-extension and size based; MIME verification, content inspection, and malware scanning are still out of scope.
+- Negative-path auth browser coverage still emits expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
+- Direct Playwright interaction with the `/register` page remains unstable in local Next.js dev mode, so browser registration coverage still uses the live `/api/register` endpoint.
 ### What is intentionally incomplete
 - Bulk review actions, assignment queues, and pagination for larger officer workloads
 - Password reset, email verification, and richer account recovery flows
@@ -205,11 +220,10 @@
 | M7 Officer review workflow | Completed for current scope | Officers and admins can filter, review, comment on, change status for, review documents on, and archive cases from the live review register |
 | M8 Admin controls and master data | Completed for current scope | Approval and rejection, role changes, deactivation, master-data management, upload settings, report display settings, and explicit audit logging are live |
 | M9 Reporting, exports, and archive access | Completed for current scope | Officers and admins can report on filtered case data, export CSVs, and keep archived cases searchable and exportable |
-| M10 Hardening and release readiness | Not started | The foundation and protected workflows are verified, but full product hardening remains ahead |
+| M10 Hardening and release readiness | In progress for incremental hardening | Focused auth, upload, review, and table hardening is in place; broader release-readiness work still remains |
 
 ## Next recommended move
-Implement a richer requested-changes loop and broader admin lifecycle controls, then move into hardening work such as Prisma config cleanup, storage retention strategy, and larger-scale queue performance.
-
+Continue M10 hardening with Prisma config cleanup, stronger file-inspection safeguards, storage retention and recovery strategy, and larger-scale queue performance work before broader release-readiness claims.
 ## Update template
 Use this format for future entries:
 

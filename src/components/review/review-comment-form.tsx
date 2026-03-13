@@ -10,6 +10,18 @@ type ReviewCommentFormProps = {
   caseId: string;
 };
 
+function getCommentErrorMessage(status: number) {
+  if (status === 401) {
+    return "Your session has ended. Sign in again to continue reviewing cases.";
+  }
+
+  if (status === 403) {
+    return "You no longer have permission to add comments to this case.";
+  }
+
+  return "Comment could not be added.";
+}
+
 export function ReviewCommentForm({ caseId }: ReviewCommentFormProps) {
   const router = useRouter();
   const [notice, setNotice] = useState<string | null>(null);
@@ -31,28 +43,40 @@ export function ReviewCommentForm({ caseId }: ReviewCommentFormProps) {
           event.preventDefault();
           setNotice(null);
           setError(null);
-          setIsSaving(true);
 
           const formData = new FormData(event.currentTarget);
-          const response = await fetch(`/api/review/cases/${caseId}/comments`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ body: String(formData.get("body") ?? "") })
-          });
-          const payload = await response.json().catch(() => null);
+          const body = String(formData.get("body") ?? "").trim();
 
-          setIsSaving(false);
-
-          if (!response.ok) {
-            setError(payload?.message ?? "Comment could not be added.");
+          if (!body) {
+            setError("Comment is required.");
             return;
           }
 
-          event.currentTarget.reset();
-          setNotice(payload?.message ?? "Comment added successfully.");
-          router.refresh();
+          setIsSaving(true);
+
+          try {
+            const response = await fetch(`/api/review/cases/${caseId}/comments`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ body })
+            });
+            const payload = await response.json().catch(() => null);
+
+            if (!response.ok) {
+              setError(payload?.message ?? getCommentErrorMessage(response.status));
+              return;
+            }
+
+            event.currentTarget.reset();
+            setNotice(payload?.message ?? "Comment added successfully.");
+            router.refresh();
+          } catch {
+            setError("Comment could not be saved right now. Please try again.");
+          } finally {
+            setIsSaving(false);
+          }
         }}
       >
         <div className="space-y-2">
@@ -66,12 +90,14 @@ export function ReviewCommentForm({ caseId }: ReviewCommentFormProps) {
         </div>
       </form>
       {notice ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
           {notice}
         </div>
       ) : null}
       {error ? (
-        <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
+        <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900" role="alert">
+          {error}
+        </div>
       ) : null}
     </div>
   );

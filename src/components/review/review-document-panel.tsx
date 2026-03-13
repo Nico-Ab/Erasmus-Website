@@ -14,11 +14,24 @@ type ReviewDocumentPanelProps = {
   document: CaseDocumentPanel;
 };
 
+function getReviewErrorMessage(status: number) {
+  if (status === 401) {
+    return "Your session has ended. Sign in again to continue reviewing documents.";
+  }
+
+  if (status === 403) {
+    return "You no longer have permission to review this document.";
+  }
+
+  return "Document review could not be saved.";
+}
+
 export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelProps) {
   const router = useRouter();
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const currentVersionId = document.currentVersion?.id ?? "";
 
   return (
     <Card className="border-slate-200 bg-white/95" data-testid={`review-document-panel-${document.documentType.key}`}>
@@ -75,33 +88,45 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
               const formData = new FormData(event.currentTarget);
               const submitter = event.nativeEvent instanceof SubmitEvent ? event.nativeEvent.submitter : null;
               const decision = submitter instanceof HTMLButtonElement ? submitter.value : "accept";
-              const response = await fetch(`/api/review/cases/${caseId}/documents/review`, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  versionId: document.currentVersion?.id,
-                  decision,
-                  reason: String(formData.get("reason") ?? "")
-                })
-              });
-              const payload = await response.json().catch(() => null);
+              const reason = String(formData.get("reason") ?? "").trim();
 
-              setIsSaving(false);
-
-              if (!response.ok) {
-                setError(payload?.message ?? "Document review could not be saved.");
+              if (decision === "reject" && reason.length === 0) {
+                setError("Provide a reason when rejecting a document.");
+                setIsSaving(false);
                 return;
               }
 
-              setNotice(payload?.message ?? "Document review saved successfully.");
-              router.refresh();
+              try {
+                const response = await fetch(`/api/review/cases/${caseId}/documents/review`, {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    versionId: currentVersionId,
+                    decision,
+                    reason
+                  })
+                });
+                const payload = await response.json().catch(() => null);
+
+                if (!response.ok) {
+                  setError(payload?.message ?? getReviewErrorMessage(response.status));
+                  return;
+                }
+
+                setNotice(payload?.message ?? "Document review saved successfully.");
+                router.refresh();
+              } catch {
+                setError("Document review could not be saved right now. Please try again.");
+              } finally {
+                setIsSaving(false);
+              }
             }}
           >
             <div className="space-y-2">
               <Label htmlFor={`reviewReason-${document.documentType.key}`}>Review note</Label>
-              <Textarea id={`reviewReason-${document.documentType.key}`} name="reason" rows={4} />
+              <Textarea disabled={isSaving} id={`reviewReason-${document.documentType.key}`} name="reason" rows={4} />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
               <Button disabled={isSaving} type="submit" value="accept" variant="outline">
@@ -114,17 +139,19 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
           </form>
         ) : (
           <div className="rounded-lg border border-dashed border-slate-300 px-4 py-5 text-sm text-slate-600">
-            No uploaded version is currently on file for review.
+            No uploaded version is currently on file for review. Ask staff to upload the required document before review continues.
           </div>
         )}
 
         {notice ? (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" role="status">
             {notice}
           </div>
         ) : null}
         {error ? (
-          <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</div>
+          <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900" role="alert">
+            {error}
+          </div>
         ) : null}
 
         <div className="space-y-3">
@@ -141,14 +168,17 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
+              <table aria-label={`${document.documentType.label} review history`} className="min-w-full divide-y divide-slate-200 text-sm">
+                <caption className="sr-only">
+                  Review history for {document.documentType.label}, including current version markers, review notes, and secure downloads.
+                </caption>
                 <thead className="bg-slate-50 text-left text-slate-600">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">Version</th>
-                    <th className="px-4 py-3 font-semibold">Filename</th>
-                    <th className="px-4 py-3 font-semibold">Uploaded</th>
-                    <th className="px-4 py-3 font-semibold">Review</th>
-                    <th className="px-4 py-3 font-semibold">Actions</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Version</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Filename</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Uploaded</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Review</th>
+                    <th className="px-4 py-3 font-semibold" scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
@@ -168,7 +198,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
                         <p className="font-medium text-slate-950">{version.originalFilename}</p>
                         <p className="text-xs text-slate-500">{version.sizeLabel}</p>
                       </td>
-                      <td className="px-4 py-3 text-slate-700">{version.uploadedAtLabel}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-slate-700">{version.uploadedAtLabel}</td>
                       <td className="px-4 py-3 text-slate-700">
                         <div className="space-y-2">
                           <DocumentReviewBadge label={version.reviewState.label} reviewStateKey={version.reviewState.key} />
@@ -181,7 +211,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="whitespace-nowrap px-4 py-3">
                         <Button asChild size="sm" variant="outline">
                           <a href={version.downloadPath}>Download</a>
                         </Button>

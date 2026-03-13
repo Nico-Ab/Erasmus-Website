@@ -47,29 +47,38 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const { caseId } = await context.params;
-  const result = await uploadDocumentVersionForStaff(
-    session.user.id,
-    caseId,
-    parsedDocumentType.data,
-    file
-  );
 
-  if (result.status === "uploaded") {
-    return NextResponse.json({
-      message: "Document uploaded successfully.",
-      documentId: result.documentId,
-      versionId: result.versionId,
-      currentStatusKey: result.currentStatusKey
-    });
+  try {
+    const result = await uploadDocumentVersionForStaff(
+      session.user.id,
+      caseId,
+      parsedDocumentType.data,
+      file
+    );
+
+    if (result.status === "uploaded") {
+      return NextResponse.json({
+        message: "Document uploaded successfully.",
+        documentId: result.documentId,
+        versionId: result.versionId,
+        currentStatusKey: result.currentStatusKey
+      });
+    }
+
+    if (result.status === "not_found") {
+      return NextResponse.json({ message: result.message }, { status: 404 });
+    }
+
+    if (result.status === "not_uploadable") {
+      return NextResponse.json({ message: result.message }, { status: 409 });
+    }
+
+    return NextResponse.json({ message: result.message }, { status: 400 });
+  } catch (error) {
+    console.error("Document upload failed", error);
+    return NextResponse.json(
+      { message: "The upload could not be completed. Please try again." },
+      { status: 500 }
+    );
   }
-
-  if (result.status === "not_found") {
-    return NextResponse.json({ message: result.message }, { status: 404 });
-  }
-
-  if (result.status === "not_uploadable") {
-    return NextResponse.json({ message: result.message }, { status: 409 });
-  }
-
-  return NextResponse.json({ message: result.message }, { status: 400 });
 }

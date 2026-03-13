@@ -45,5 +45,9 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ message: "Comment added successfully." }, { status: 201 });
   }
 
+  if (result.status === "invalid_comment") {
+    return NextResponse.json({ message: result.message }, { status: 400 });
+  }
+
   return NextResponse.json({ message: result.message }, { status: 404 });
 }

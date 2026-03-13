@@ -8,12 +8,14 @@ export const authErrorCodes = {
 export function getLoginErrorMessage(code?: string) {
   switch (code) {
     case authErrorCodes.pendingApproval:
-      return "Your account is waiting for admin approval."
+      return "Your account is waiting for admin approval.";
     case authErrorCodes.accountRejected:
-      return "Your registration was rejected. Please contact the Erasmus office."
+      return "Your registration was rejected. Please contact the Erasmus office.";
     case authErrorCodes.accountDeactivated:
-      return "Your account is deactivated. Please contact an administrator."
+      return "Your account is deactivated. Please contact an administrator.";
+    case authErrorCodes.invalidCredentials:
+      return "Sign in could not be completed. Check your email, password, and account approval status.";
     default:
-      return "Sign-in failed. Check your credentials or account approval status."
+      return "Sign in could not be completed right now. Please try again.";
   }
 }
