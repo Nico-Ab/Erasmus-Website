@@ -4,7 +4,7 @@
 - Date: March 13, 2026
 - Overall phase: Foundation, authentication, staff identity, admin master data, explicit audit logging, core admin lifecycle controls, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, operational reporting with CSV exports, and an initial focused hardening pass are implemented for the current scope; broader release hardening and later workflow depth are still pending
 - Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, explicit audit history, admin-managed user lifecycle controls, real role dashboards, admin-managed master data and reporting settings, staff mobility-case drafting and submission, private document storage with version history, officer review actions, reporting surfaces, CSV exports, and multi-layer automated tests
-- Active milestones: M8 is completed for the current scope, M9 is completed for the current scope, M10 is in progress through targeted risk-reduction work
+- Active milestones: M8 is completed for the current scope, M9 is completed for the current scope, M10 is completed for reliable local-use scope with future hosting follow-up documented separately
 ## Foundation completed on March 11, 2026
 ### What was done
 - Added a real Next.js App Router application with `src/` layout.
@@ -162,7 +162,7 @@
 - Added targeted test coverage for thrown login failures, blank review comments, and the staff case-table empty-state action.
 
 ### Risk-focused notes
-- The Prisma `package.json#prisma` deprecation warning still remains and should move to a dedicated Prisma config before Prisma 7.
+- The earlier Prisma package configuration warning has since been resolved by moving configuration into `prisma.config.ts`.
 - Upload validation is still filename-extension and size based; MIME verification, content inspection, and malware scanning are still out of scope.
 - Negative-path auth browser coverage still emits expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
 - Direct Playwright interaction with the `/register` page remains unstable in local Next.js dev mode, so browser registration coverage still uses the live `/api/register` endpoint.
@@ -178,7 +178,7 @@
 
 ### Risk-focused notes
 - The portal UI is materially more consistent now, but larger operational lists still do not have pagination, density controls, or saved views for heavier institutional workloads.
-- The Prisma `package.json#prisma` deprecation warning still remains and should move to a dedicated Prisma config before Prisma 7.
+- The earlier Prisma package configuration warning has since been resolved by moving configuration into `prisma.config.ts`.
 - Negative-path auth browser checks still emit expected `CredentialsSignin` logs in Next.js dev mode.
 - Upload validation and storage hardening remain unchanged by this pass; content inspection, malware scanning, backup, and retention strategy are still future work.
 ### What is intentionally incomplete
@@ -189,7 +189,7 @@
 - Broader report variants, scheduled exports, and non-CSV export formats beyond the current filtered case list, yearly summary, and faculty summary outputs
 
 ### Risks and follow-up notes
-- The current Prisma setup still emits a deprecation warning for `package.json#prisma`; it works now but should move to a dedicated Prisma config before Prisma 7.
+- The earlier Prisma package configuration warning has since been resolved by moving configuration into `prisma.config.ts`.
 - Document upload validation currently relies on filename extension and size limits; it does not yet include MIME verification, content inspection, or malware scanning.
 - The v1 storage driver is local filesystem only; the abstraction is in place, but backup, retention, and alternative drivers still need future implementation.
 - Rejected documents and case statuses are intentionally separate, which preserves audit clarity but means officers must still record an explicit case-status transition when a case needs changes.
@@ -223,6 +223,41 @@
 - broader report variants and export formats beyond the current CSV surfaces
 - audit-sensitive server actions in later workflow modules
 
+
+## Local-use finalization completed on March 13, 2026
+### What was done
+- Rewrote the README so it now reflects the real v1 portal rather than the earlier app-foundation state.
+- Added focused operator docs for local startup, test execution, demo accounts, storage behavior, and later deployment readiness.
+- Completed `.env.example` so the checked-in local configuration matches the current app, storage, upload, and Playwright expectations.
+- Moved Prisma configuration into `prisma.config.ts`, which resolved the earlier `package.json` deprecation warning.
+- Expanded the seed data with richer demo coverage, including additional account states and seeded draft and submitted cases for local walkthroughs.
+- Removed a stale local `Commands.txt` artifact that no longer represented the project setup.
+- Standardized local app and Playwright use on `http://127.0.0.1:3000` to match the development server binding and eliminate a real browser-suite reliability issue.
+
+### Docs updated
+- `README.md`
+- `docs/local-startup.md`
+- `docs/test-execution.md`
+- `docs/demo-accounts.md`
+- `docs/storage-behavior.md`
+- `docs/deployment-readiness.md`
+- `docs/testing-strategy.md`
+- `.env.example`
+
+### Verification run
+- `docker compose up -d`
+- `npm run seed`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run test:e2e`
+- `npm run build`
+
+### Risk-focused notes
+- The portal is now well-documented and reliable for local use, but hosted deployment work is still notes-only.
+- The local filesystem storage driver remains suitable for local or single-host use only.
+- Upload validation still relies on extension and size checks; MIME inspection, malware scanning, and retention controls remain future work.
+- Larger operational queues still do not have pagination, saved views, or bulk actions.
 ## Milestone tracker
 | Milestone | Status | Notes |
 | --- | --- | --- |
@@ -235,10 +270,10 @@
 | M7 Officer review workflow | Completed for current scope | Officers and admins can filter, review, comment on, change status for, review documents on, and archive cases from the live review register |
 | M8 Admin controls and master data | Completed for current scope | Approval and rejection, role changes, deactivation, master-data management, upload settings, report display settings, and explicit audit logging are live |
 | M9 Reporting, exports, and archive access | Completed for current scope | Officers and admins can report on filtered case data, export CSVs, and keep archived cases searchable and exportable |
-| M10 Hardening and release readiness | In progress for incremental hardening | Focused auth, upload, review, and table hardening is in place; broader release-readiness work still remains |
+| M10 Hardening and release readiness | Completed for reliable local use | Hardening, local-use documentation, Prisma config cleanup, demo seed improvements, and full verification are in place; hosted rollout follow-up still remains |
 
 ## Next recommended move
-Continue M10 hardening with Prisma config cleanup, stronger file-inspection safeguards, storage retention and recovery strategy, and larger-scale queue performance work before broader release-readiness claims.
+Use the current local v1 baseline for evaluation, then focus next on hosted deployment planning, stronger file-inspection safeguards, storage retention and recovery strategy, and larger-scale queue performance work.
 ## Update template
 Use this format for future entries:
 
@@ -248,3 +283,4 @@ Use this format for future entries:
 - Tests run:
 - Docs updated:
 - Risks or follow-up:
+

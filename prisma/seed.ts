@@ -104,6 +104,106 @@ const users = [
     departmentCode: "PUBLIC_LAW",
     role: UserRole.STAFF,
     status: UserApprovalStatus.APPROVED
+  },
+  {
+    email: "pending@swu.local",
+    password: "PendingPass123!",
+    firstName: "Petar",
+    lastName: "Markov",
+    academicTitleKey: "mr",
+    facultyCode: "ECON",
+    departmentCode: "INTL_RELATIONS",
+    role: UserRole.STAFF,
+    status: UserApprovalStatus.PENDING
+  },
+  {
+    email: "rejected@swu.local",
+    password: "RejectedPass123!",
+    firstName: "Raya",
+    lastName: "Stoicheva",
+    academicTitleKey: "ms",
+    facultyCode: "LAW",
+    departmentCode: "PUBLIC_LAW",
+    role: UserRole.STAFF,
+    status: UserApprovalStatus.REJECTED
+  },
+  {
+    email: "deactivated@swu.local",
+    password: "DeactivatedPass123!",
+    firstName: "Georgi",
+    lastName: "Velinov",
+    academicTitleKey: "dr",
+    facultyCode: "ECON",
+    departmentCode: "INTL_RELATIONS",
+    role: UserRole.STAFF,
+    status: UserApprovalStatus.DEACTIVATED
+  }
+];
+
+const demoCases = [
+  {
+    id: "seed-case-draft-staff",
+    staffEmail: "staff@swu.local",
+    academicYearLabel: "2025/2026",
+    mobilityTypeKey: "teaching",
+    hostInstitution: "Demo Draft: University of Graz",
+    hostCountry: "Austria",
+    hostCity: "Graz",
+    startDate: new Date("2026-05-12T00:00:00Z"),
+    endDate: new Date("2026-05-16T00:00:00Z"),
+    notes: "Seeded draft case for staff dashboard and edit-flow demos.",
+    statusKey: "draft",
+    submittedAt: null
+  },
+  {
+    id: "seed-case-submitted-staff2",
+    staffEmail: "staff2@swu.local",
+    academicYearLabel: "2025/2026",
+    mobilityTypeKey: "training",
+    hostInstitution: "Demo Review: KU Leuven",
+    hostCountry: "Belgium",
+    hostCity: "Leuven",
+    startDate: new Date("2026-06-03T00:00:00Z"),
+    endDate: new Date("2026-06-07T00:00:00Z"),
+    notes: "Seeded submitted case for officer review, reporting, and search demos.",
+    statusKey: "submitted",
+    submittedAt: new Date("2026-02-14T09:00:00Z")
+  }
+];
+
+const demoStatusHistory = [
+  {
+    id: "seed-case-draft-history-1",
+    mobilityCaseId: "seed-case-draft-staff",
+    fromStatusKey: null,
+    toStatusKey: "draft",
+    changedByEmail: "staff@swu.local",
+    note: "Seeded draft case for local demo use."
+  },
+  {
+    id: "seed-case-submitted-history-1",
+    mobilityCaseId: "seed-case-submitted-staff2",
+    fromStatusKey: null,
+    toStatusKey: "draft",
+    changedByEmail: "staff2@swu.local",
+    note: "Seeded draft stage before submission."
+  },
+  {
+    id: "seed-case-submitted-history-2",
+    mobilityCaseId: "seed-case-submitted-staff2",
+    fromStatusKey: "draft",
+    toStatusKey: "submitted",
+    changedByEmail: "staff2@swu.local",
+    note: "Seeded submitted case for officer review and reporting demos."
+  }
+];
+
+const demoComments = [
+  {
+    id: "seed-case-comment-1",
+    mobilityCaseId: "seed-case-submitted-staff2",
+    authorEmail: "officer@swu.local",
+    body: "Demo case ready for review filtering, comments, and reporting walkthroughs."
   }
 ];
 
@@ -115,10 +215,18 @@ function normalizeExtensions(value: string) {
     .join(",");
 }
 
+function requiresReview(status: UserApprovalStatus) {
+  return status !== UserApprovalStatus.PENDING;
+}
+
 async function main() {
   const facultyIdsByCode = new Map<string, string>();
   const departmentIdsByCode = new Map<string, string>();
   const academicTitleIdsByKey = new Map<string, string>();
+  const academicYearIdsByLabel = new Map<string, string>();
+  const caseStatusIdsByKey = new Map<string, string>();
+  const mobilityTypeIdsByKey = new Map<string, string>();
+  const userIdsByEmail = new Map<string, string>();
 
   for (const faculty of faculties) {
     const record = await prisma.faculty.upsert({
@@ -163,7 +271,7 @@ async function main() {
   }
 
   for (const academicYear of academicYears) {
-    await prisma.academicYear.upsert({
+    const record = await prisma.academicYear.upsert({
       where: { label: academicYear.label },
       update: {
         startYear: academicYear.startYear,
@@ -179,10 +287,12 @@ async function main() {
         isActive: true
       }
     });
+
+    academicYearIdsByLabel.set(academicYear.label, record.id);
   }
 
   for (const status of caseStatuses) {
-    await prisma.caseStatusDefinition.upsert({
+    const record = await prisma.caseStatusDefinition.upsert({
       where: { key: status.key },
       update: {
         label: status.label,
@@ -198,6 +308,8 @@ async function main() {
         description: null
       }
     });
+
+    caseStatusIdsByKey.set(status.key, record.id);
   }
 
   for (const option of selectOptions) {
@@ -224,6 +336,10 @@ async function main() {
 
     if (option.category === SelectOptionCategory.ACADEMIC_TITLE) {
       academicTitleIdsByKey.set(option.key, record.id);
+    }
+
+    if (option.category === SelectOptionCategory.MOBILITY_TYPE) {
+      mobilityTypeIdsByKey.set(option.key, record.id);
     }
   }
 
@@ -255,38 +371,170 @@ async function main() {
     }
   });
 
-  for (const user of users) {
-    const { academicTitleKey, departmentCode, facultyCode, firstName, lastName, password, ...rest } = user;
-    const passwordHash = await bcrypt.hash(password, 12);
-    const academicTitleOptionId = academicTitleIdsByKey.get(academicTitleKey) ?? null;
-    const facultyId = facultyIdsByCode.get(facultyCode) ?? null;
-    const departmentId = departmentIdsByCode.get(departmentCode) ?? null;
+  const adminSeed = users[0];
+  const adminPasswordHash = await bcrypt.hash(adminSeed.password, 12);
+  const adminRecord = await prisma.user.upsert({
+    where: { email: adminSeed.email },
+    update: {
+      email: adminSeed.email,
+      firstName: adminSeed.firstName,
+      lastName: adminSeed.lastName,
+      name: `${adminSeed.firstName} ${adminSeed.lastName}`,
+      passwordHash: adminPasswordHash,
+      role: adminSeed.role,
+      status: adminSeed.status,
+      academicTitleOptionId: academicTitleIdsByKey.get(adminSeed.academicTitleKey) ?? null,
+      facultyId: facultyIdsByCode.get(adminSeed.facultyCode) ?? null,
+      departmentId: departmentIdsByCode.get(adminSeed.departmentCode) ?? null,
+      reviewedAt: new Date(),
+      reviewedById: null
+    },
+    create: {
+      email: adminSeed.email,
+      firstName: adminSeed.firstName,
+      lastName: adminSeed.lastName,
+      name: `${adminSeed.firstName} ${adminSeed.lastName}`,
+      passwordHash: adminPasswordHash,
+      role: adminSeed.role,
+      status: adminSeed.status,
+      academicTitleOptionId: academicTitleIdsByKey.get(adminSeed.academicTitleKey) ?? null,
+      facultyId: facultyIdsByCode.get(adminSeed.facultyCode) ?? null,
+      departmentId: departmentIdsByCode.get(adminSeed.departmentCode) ?? null,
+      reviewedAt: new Date(),
+      reviewedById: null
+    }
+  });
 
-    await prisma.user.upsert({
-      where: { email: rest.email },
+  userIdsByEmail.set(adminSeed.email, adminRecord.id);
+
+  for (const user of users.slice(1)) {
+    const passwordHash = await bcrypt.hash(user.password, 12);
+
+    const record = await prisma.user.upsert({
+      where: { email: user.email },
       update: {
-        ...rest,
-        firstName,
-        lastName,
-        name: `${firstName} ${lastName}`,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: `${user.firstName} ${user.lastName}`,
         passwordHash,
-        academicTitleOptionId,
-        facultyId,
-        departmentId,
-        reviewedAt: rest.status === UserApprovalStatus.APPROVED ? new Date() : null,
-        reviewedById: null
+        role: user.role,
+        status: user.status,
+        academicTitleOptionId: academicTitleIdsByKey.get(user.academicTitleKey) ?? null,
+        facultyId: facultyIdsByCode.get(user.facultyCode) ?? null,
+        departmentId: departmentIdsByCode.get(user.departmentCode) ?? null,
+        reviewedAt: requiresReview(user.status) ? new Date() : null,
+        reviewedById: requiresReview(user.status) ? adminRecord.id : null
       },
       create: {
-        ...rest,
-        firstName,
-        lastName,
-        name: `${firstName} ${lastName}`,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: `${user.firstName} ${user.lastName}`,
         passwordHash,
-        academicTitleOptionId,
-        facultyId,
-        departmentId,
-        reviewedAt: rest.status === UserApprovalStatus.APPROVED ? new Date() : null,
-        reviewedById: null
+        role: user.role,
+        status: user.status,
+        academicTitleOptionId: academicTitleIdsByKey.get(user.academicTitleKey) ?? null,
+        facultyId: facultyIdsByCode.get(user.facultyCode) ?? null,
+        departmentId: departmentIdsByCode.get(user.departmentCode) ?? null,
+        reviewedAt: requiresReview(user.status) ? new Date() : null,
+        reviewedById: requiresReview(user.status) ? adminRecord.id : null
+      }
+    });
+
+    userIdsByEmail.set(user.email, record.id);
+  }
+
+  for (const mobilityCase of demoCases) {
+    const staffUserId = userIdsByEmail.get(mobilityCase.staffEmail);
+    const academicYearId = academicYearIdsByLabel.get(mobilityCase.academicYearLabel);
+    const mobilityTypeOptionId = mobilityTypeIdsByKey.get(mobilityCase.mobilityTypeKey);
+    const statusDefinitionId = caseStatusIdsByKey.get(mobilityCase.statusKey);
+
+    if (!staffUserId || !academicYearId || !mobilityTypeOptionId || !statusDefinitionId) {
+      throw new Error(`Missing seeded relation for case ${mobilityCase.id}`);
+    }
+
+    await prisma.mobilityCase.upsert({
+      where: { id: mobilityCase.id },
+      update: {
+        staffUserId,
+        academicYearId,
+        mobilityTypeOptionId,
+        hostInstitution: mobilityCase.hostInstitution,
+        hostCountry: mobilityCase.hostCountry,
+        hostCity: mobilityCase.hostCity,
+        startDate: mobilityCase.startDate,
+        endDate: mobilityCase.endDate,
+        notes: mobilityCase.notes,
+        statusDefinitionId,
+        submittedAt: mobilityCase.submittedAt
+      },
+      create: {
+        id: mobilityCase.id,
+        staffUserId,
+        academicYearId,
+        mobilityTypeOptionId,
+        hostInstitution: mobilityCase.hostInstitution,
+        hostCountry: mobilityCase.hostCountry,
+        hostCity: mobilityCase.hostCity,
+        startDate: mobilityCase.startDate,
+        endDate: mobilityCase.endDate,
+        notes: mobilityCase.notes,
+        statusDefinitionId,
+        submittedAt: mobilityCase.submittedAt
+      }
+    });
+  }
+
+  for (const entry of demoStatusHistory) {
+    const changedByUserId = userIdsByEmail.get(entry.changedByEmail);
+    const toStatusDefinitionId = caseStatusIdsByKey.get(entry.toStatusKey);
+    const fromStatusDefinitionId = entry.fromStatusKey ? caseStatusIdsByKey.get(entry.fromStatusKey) ?? null : null;
+
+    if (!changedByUserId || !toStatusDefinitionId) {
+      throw new Error(`Missing seeded relation for case history ${entry.id}`);
+    }
+
+    await prisma.mobilityCaseStatusHistory.upsert({
+      where: { id: entry.id },
+      update: {
+        mobilityCaseId: entry.mobilityCaseId,
+        fromStatusDefinitionId,
+        toStatusDefinitionId,
+        changedByUserId,
+        note: entry.note
+      },
+      create: {
+        id: entry.id,
+        mobilityCaseId: entry.mobilityCaseId,
+        fromStatusDefinitionId,
+        toStatusDefinitionId,
+        changedByUserId,
+        note: entry.note
+      }
+    });
+  }
+
+  for (const comment of demoComments) {
+    const authorUserId = userIdsByEmail.get(comment.authorEmail);
+
+    if (!authorUserId) {
+      throw new Error(`Missing seeded author for comment ${comment.id}`);
+    }
+
+    await prisma.mobilityCaseComment.upsert({
+      where: { id: comment.id },
+      update: {
+        mobilityCaseId: comment.mobilityCaseId,
+        authorUserId,
+        body: comment.body
+      },
+      create: {
+        id: comment.id,
+        mobilityCaseId: comment.mobilityCaseId,
+        authorUserId,
+        body: comment.body
       }
     });
   }

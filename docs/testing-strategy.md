@@ -62,7 +62,7 @@ Use Playwright for:
 - the highest-value cross-role journey from registration outcome through archive and audit visibility
 
 Characteristics:
-- run against the local app at `http://localhost:3000`
+- run against the local app at `http://127.0.0.1:3000`
 - can start the local dev server automatically through Playwright
 - currently uses a single browser worker locally for stability in this workspace
 - should stay small, stable, and high-signal
