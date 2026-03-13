@@ -1,4 +1,5 @@
 import { SelectOptionCategory } from "@prisma/client";
+import { type CaseDocumentPanel, getCaseDocumentPanels } from "@/lib/documents/service";
 import { editableMobilityCaseStatusKeys, mobilityCaseStatusKeys } from "@/lib/mobility-case/constants";
 import { prisma } from "@/lib/prisma";
 import { formatRoleLabel } from "@/lib/utils";
@@ -47,6 +48,11 @@ export type StaffMobilityCaseDetailData = {
   };
   academicYears: MobilityCaseReferenceData["academicYears"];
   mobilityTypes: MobilityCaseReferenceData["mobilityTypes"];
+  documentUploadPolicy: {
+    maxUploadSizeMb: number;
+    allowedExtensions: string[];
+  };
+  documents: CaseDocumentPanel[];
   isEditable: boolean;
   statusHistory: ActivityPanelItem[];
   comments: ActivityPanelItem[];
@@ -319,6 +325,8 @@ export async function getStaffMobilityCaseDetail(userId: string, caseId: string)
     return null;
   }
 
+  const documentData = await getCaseDocumentPanels(mobilityCase.id, mobilityCase.statusDefinition.key);
+
   return {
     case: {
       id: mobilityCase.id,
@@ -342,6 +350,11 @@ export async function getStaffMobilityCaseDetail(userId: string, caseId: string)
     },
     academicYears: referenceData.academicYears,
     mobilityTypes: referenceData.mobilityTypes,
+    documentUploadPolicy: {
+      maxUploadSizeMb: documentData.uploadPolicy.maxUploadSizeMb,
+      allowedExtensions: documentData.uploadPolicy.allowedExtensions
+    },
+    documents: documentData.documents,
     isEditable: editableMobilityCaseStatusKeys.has(mobilityCase.statusDefinition.key),
     comments: mobilityCase.comments.map((comment) => ({
       id: comment.id,

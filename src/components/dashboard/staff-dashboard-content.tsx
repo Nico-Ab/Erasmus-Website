@@ -59,7 +59,7 @@ export function StaffDashboardContent({ data }: StaffDashboardContentProps) {
         <OverviewMetric
           title="Open tasks"
           value={data.openTasksCount.toString()}
-          description="Actionable profile and draft-case follow-up items."
+          description="Actionable profile, draft-case, and document follow-up items."
         />
       </section>
 
@@ -88,10 +88,10 @@ export function StaffDashboardContent({ data }: StaffDashboardContentProps) {
         />
         <DashboardListPanel
           title="Missing documents"
-          description="Required uploads will be tracked here once the secure document workflow is introduced."
+          description="Required uploads missing from your active mobility cases."
           items={data.missingDocuments}
-          emptyTitle="No document requests yet"
-          emptyDescription="There are no missing uploads to resolve because the protected document workflow is not live yet."
+          emptyTitle="No missing documents"
+          emptyDescription="All currently tracked required documents are on file for your active cases."
           footer={
             <p className="text-sm text-slate-600">
               Current upload policy: <span className="font-medium text-slate-900">{data.uploadPolicySummary}</span>
@@ -107,7 +107,7 @@ export function StaffDashboardContent({ data }: StaffDashboardContentProps) {
         />
         <DashboardListPanel
           title="Open tasks"
-          description="This panel keeps the staff workspace focused on concrete next steps without inventing unavailable workflows."
+          description="This panel keeps the staff workspace focused on concrete next steps across profile, case, and document work."
           items={data.openTasks}
           emptyTitle="No open staff tasks"
           emptyDescription="Your profile and current case records do not currently require action."

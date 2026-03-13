@@ -13,8 +13,8 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
   const title = mode === "admin" ? "Admin operations dashboard" : "Officer review dashboard";
   const description =
     mode === "admin"
-      ? "This dashboard now combines the live approval queue with real submitted-case intake and honest empty states where later document workflows still remain ahead."
-      : "This dashboard provides operational visibility into pending registrations and the real case-review queues now available in the staff workflow.";
+      ? "This dashboard now combines the live approval queue with submitted-case intake and real missing-document visibility from the protected workflow."
+      : "This dashboard provides operational visibility into pending registrations, submitted cases, and document gaps in the staff workflow.";
 
   return (
     <div className="space-y-6">
@@ -37,7 +37,7 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
         <OverviewMetric
           title="Cases with missing documents"
           value={data.missingDocumentsCount.toString()}
-          description="Document issues will appear here once secure uploads and checks are available."
+          description="Submitted or returned cases that are still missing required uploads."
         />
         <OverviewMetric
           title="Cases needing changes"
@@ -92,9 +92,9 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
         <DashboardListPanel
           title="Cases with missing documents"
           description="This queue will identify submissions that need additional uploads or corrected files."
-          items={[]}
-          emptyTitle="No document issues to review"
-          emptyDescription="Document validation and secure upload handling are not implemented yet, so this queue is currently empty."
+          items={data.missingDocuments}
+          emptyTitle="No missing-document cases"
+          emptyDescription="All submitted or returned cases currently have the required uploads on file."
         />
         <DashboardListPanel
           title="Cases needing changes"

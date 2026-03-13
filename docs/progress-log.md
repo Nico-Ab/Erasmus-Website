@@ -2,9 +2,9 @@
 
 ## Status snapshot
 - Date: March 13, 2026
-- Overall phase: Foundation, authentication, staff profile baseline, admin master data baseline, role dashboards, and the first staff-owned mobility-case workflow are implemented; larger review and document workflows are still pending
-- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, staff mobility-case drafting and submission, and multi-layer automated tests
-- Active milestones: M5 completed for the current scope, M7 in progress through dashboard visibility only, M8 in progress through the current baseline
+- Overall phase: Foundation, authentication, staff identity, admin master data, role dashboards, staff mobility-case management, and secure private document handling are implemented; officer review actions, reporting, and broader operational workflows are still pending
+- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, staff mobility-case drafting and submission, private document storage with version history, and multi-layer automated tests
+- Active milestones: M6 completed for the current scope, M7 still limited to dashboard visibility, M8 in progress through the current baseline
 
 ## Foundation completed on March 11, 2026
 ### What was done
@@ -74,7 +74,7 @@
 - Added server-side mobility-case validation with clear required-field and date-order rules for draft and submit flows.
 - Added protected staff APIs at `/api/staff/cases` and `/api/staff/cases/[caseId]` with approved-staff checks and ownership enforcement.
 - Added staff case routes at `/dashboard/staff/cases/new` and `/dashboard/staff/cases/[caseId]` for creating, resuming, editing, and submitting cases.
-- Added a structured staff case list and detail experience with formal tables, status badges, status history, comments, recorded-summary panels, and honest empty states where downstream review data does not yet exist.
+- Added a structured staff case list and detail experience with formal tables, status badges, status history, comments, recorded-summary panels, and honest empty states where downstream review data did not yet exist.
 - Added real draft save and later-resume behavior so staff users can maintain multiple cases in progress.
 - Added submission behavior that moves a case into the submitted state and records explicit status-history entries when the workflow changes state.
 - Updated the staff dashboard so case overview, status areas, latest comments, and open tasks now consume real case data where available instead of only shell placeholders.
@@ -82,29 +82,38 @@
 - Added unit coverage for mobility-case validation, integration coverage for create, update, and submit service and form behavior, component coverage for the readable case table, and E2E coverage for draft creation, draft editing, submission, own-case list/detail access, and protected-route enforcement.
 - Hardened the mobility-case browser tests by scoping create and edit interactions to explicit form instances after client-side navigation, which removed a real local flake where overlapping route transitions could momentarily expose both forms.
 
+## Secure document handling implemented on March 13, 2026
+### What was done
+- Added `DocumentReviewState`, `MobilityCaseDocument`, and `MobilityCaseDocumentVersion` to the Prisma schema so case documents now have private metadata, review state, a current-version pointer, and preserved history.
+- Added the `20260313122825_secure_document_handling` Prisma migration for private case-document storage and version tracking.
+- Added a storage abstraction under `src/lib/storage/` plus a local filesystem driver that writes under the environment-configured storage root and blocks path traversal.
+- Added server-side file validation that enforces allowed extensions and maximum upload size from upload settings with environment-based fallback values.
+- Added document service logic that stores the original filename, upload timestamp, file metadata, and storage key while preserving previous versions and moving the current-version marker forward.
+- Added protected staff upload handling at `/api/staff/cases/[caseId]/documents` with approved-staff checks, ownership enforcement, and case-status transition recording where relevant.
+- Added secure private downloads at `/api/documents/versions/[versionId]/download` so every file access passes authentication, approval, and permission checks before reading from storage.
+- Integrated required-document panels into the staff case detail page so staff users can see upload policy, version history, current version, and review state for mobility agreements and final certificates of attendance.
+- Updated dashboard queries so missing-document areas now use real required-document data from stored case documents instead of placeholder copy.
+- Refreshed the local seed data with document-type options and a second approved staff account used for unauthorized-access coverage.
+- Added unit coverage for document validation, integration coverage for storage and document-metadata handling, and E2E coverage for upload, later-version upload, current-version marker behavior, and secure download authorization.
+
 ### What is intentionally incomplete
 - Officer and admin review actions on submitted cases
 - Officer or admin comment authoring and change-request loops
-- Real missing-document logic tied to uploaded files
-- Private document upload, versioning, and review workflows
+- Officer or admin document review decisions that move document review state beyond the default pending-review state
 - Reporting, CSV export, archive management, and broader admin operations
-- Audit history for master-data changes
+- Audit history for master-data changes and document review actions
 - Role changes and account deactivation controls in the admin UI
 - Password reset, email verification, and richer account recovery flows
 - Direct browser interaction with the `/register` page in Playwright
 
 ### Risks and follow-up notes
 - The current Prisma setup still emits a deprecation warning for `package.json#prisma`; it works now but should move to a dedicated Prisma config before Prisma 7.
-- Negative-path browser tests trigger expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
-- Direct browser navigation to `/register` remains unreliable under the current local Playwright-plus-dev-server combination, so registration browser coverage still exercises the live endpoint rather than the page UI itself.
-- The current mobility workflow covers staff-owned drafting, editing, listing, and submission only; submitted cases are visible but there is no officer review or changes-required loop yet.
-- Case comments are readable on the detail page, but there is not yet a workflow for officers or admins to add them.
-- Missing-documents and open-task areas now surface honest case-aware states, but they are not yet backed by document requirements or task-assignment records.
-- The `20260312110000_profile_master_data` database change was applied through Prisma diff and execute commands instead of `migrate dev`; that is valid for the current local setup, but the generated SQL should remain under review because it included column-removal behavior.
+- Document upload validation currently relies on filename extension and size limits; it does not yet include MIME verification, content inspection, or malware scanning.
+- The v1 storage driver is local filesystem only; the abstraction is in place, but backup, retention, and alternative drivers still need future implementation.
+- Document review state is currently visible to staff users, but no officer or admin UI exists yet to accept or reject uploaded versions.
+- Negative-path browser tests still trigger expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
 
 ## Verification summary
-- `docker compose up -d`: passed
-- `npm run db:migrate -- --name mobility-case-management`: passed
 - `npm run seed`: passed
 - `npm run lint`: passed
 - `npm run typecheck`: passed
@@ -114,10 +123,10 @@
 
 ## Coverage snapshot
 ### Covered now
-- unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, navigation filtering, and shared formatting helpers
-- integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, profile form behavior, and mobility-case create, edit, and submit behavior
+- unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, document upload validation, navigation filtering, and shared formatting helpers
+- integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, profile form behavior, mobility-case create/edit/submit behavior, document storage behavior, document versioning, and secure download authorization handling
 - component coverage for anonymous and authenticated home-page states, dashboard panels and role dashboard content, and readable staff case-table rendering
-- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list/detail access, and unauthorized admin-edit prevention
+- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list/detail access, document upload, version rollover, current-version marker behavior, and unauthorized document download prevention
 
 ### Still uncovered
 - direct browser interaction with the `/register` page in Playwright
@@ -125,26 +134,27 @@
 - session behavior immediately after future role changes or deactivation actions
 - academic year, status, select-option, and upload-setting admin flows at the browser level
 - officer or admin review actions on submitted cases
-- comments creation and review-history authoring on cases
-- document upload and download authorization
+- officer or admin document review decisions and review-comment authoring
+- certificate-of-attendance completion flow after mobility is finished
+- storage-missing recovery handling in the UI
 - reporting and exports
 
 ## Milestone tracker
 | Milestone | Status | Notes |
 | --- | --- | --- |
 | M1 Workspace bootstrap and viewable shell | Completed | App shell, auth, status page, testing stack, migration, and seed are in place |
-| M2 Data foundation | In progress through current baseline | Core auth, profile, dashboard, master data, and initial mobility-case models exist; document and reporting domain models are still missing |
+| M2 Data foundation | In progress through current baseline | Core auth, profile, dashboard, master data, case, and document models exist; reporting and some review-domain models are still missing |
 | M3 Authentication and access control | Completed for current scope | Registration, approval gating, login, role protection, and admin approval page are live |
 | M4 Staff identity and dashboard baseline | Completed for current scope | Staff can edit their own profile and see a real dashboard shell with live case-aware summaries |
 | M5 Mobility case drafting and submission | Completed for current scope | Staff can create, save drafts, resume, submit, and review their own case details and status history |
-| M6 Secure document management | Not started | No upload or storage workflow yet |
-| M7 Officer review workflow | In progress through dashboard visibility | Officer and admin dashboards show oversight metrics, but no case-review actions or change loops exist yet |
+| M6 Secure document management | Completed for current scope | Private storage, version history, secure download routes, and staff-facing document panels are live |
+| M7 Officer review workflow | In progress through dashboard visibility | Officer and admin dashboards show oversight metrics, but no case-review actions or document-review decisions exist yet |
 | M8 Admin controls and master data | In progress through current baseline | Approval/rejection page plus master-data management and admin dashboard actions are live; broader admin controls remain unimplemented |
 | M9 Reporting, exports, and archive access | Not started | No reporting or export implementation yet |
-| M10 Hardening and release readiness | Not started | Foundation, auth, dashboard, profile, master-data, and mobility-case verification exist; full product hardening remains ahead |
+| M10 Hardening and release readiness | Not started | The foundation and early protected workflows are verified, but full product hardening remains ahead |
 
 ## Next recommended move
-Start the officer review and document-management slices so submitted mobility cases can advance beyond the staff-owned draft and submit lifecycle.
+Implement the officer review slice so submitted cases and uploaded documents can move beyond staff submission into review decisions, requested changes, and explicit document acceptance or rejection.
 
 ## Update template
 Use this format for future entries:

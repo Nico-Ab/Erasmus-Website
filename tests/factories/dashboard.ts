@@ -94,6 +94,7 @@ export function createReviewDashboardData(): ReviewDashboardData {
         meta: "12 Mar 2026"
       }
     ],
+    missingDocuments: [],
     casesNeedingChanges: [
       {
         id: "case-change-1",

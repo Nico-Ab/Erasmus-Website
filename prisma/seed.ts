@@ -46,8 +46,18 @@ const selectOptions = [
   { category: SelectOptionCategory.ACADEMIC_TITLE, key: "prof", label: "Prof.", sortOrder: 4 },
   { category: SelectOptionCategory.MOBILITY_TYPE, key: "teaching", label: "Teaching", sortOrder: 1 },
   { category: SelectOptionCategory.MOBILITY_TYPE, key: "training", label: "Training", sortOrder: 2 },
-  { category: SelectOptionCategory.DOCUMENT_TYPE, key: "mobility_agreement", label: "Mobility Agreement", sortOrder: 1 },
-  { category: SelectOptionCategory.DOCUMENT_TYPE, key: "certificate_of_attendance", label: "Certificate of Attendance", sortOrder: 2 }
+  {
+    category: SelectOptionCategory.DOCUMENT_TYPE,
+    key: "mobility_agreement",
+    label: "Mobility Agreement",
+    sortOrder: 1
+  },
+  {
+    category: SelectOptionCategory.DOCUMENT_TYPE,
+    key: "certificate_of_attendance",
+    label: "Final Certificate of Attendance",
+    sortOrder: 2
+  }
 ];
 
 const users = [
@@ -81,6 +91,17 @@ const users = [
     academicTitleKey: "dr",
     facultyCode: "ECON",
     departmentCode: "INTL_RELATIONS",
+    role: UserRole.STAFF,
+    status: UserApprovalStatus.APPROVED
+  },
+  {
+    email: "staff2@swu.local",
+    password: "StaffTwoPass123!",
+    firstName: "Nadia",
+    lastName: "Koleva",
+    academicTitleKey: "ms",
+    facultyCode: "LAW",
+    departmentCode: "PUBLIC_LAW",
     role: UserRole.STAFF,
     status: UserApprovalStatus.APPROVED
   }

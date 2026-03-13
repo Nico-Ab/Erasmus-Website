@@ -6,7 +6,7 @@ This document defines how automated testing should be used in the Erasmus staff 
 ## Testing goals
 - Catch regressions early in shared logic and validation.
 - Verify component behavior through user-visible outcomes rather than implementation details.
-- Keep reliable browser-level coverage for both smoke paths and sensitive auth flows.
+- Keep reliable browser-level coverage for smoke paths, auth flows, protected workflows, and document authorization.
 - Support local-first development with tests that can be run on a developer machine without cloud services.
 - Avoid brittle snapshot-heavy tests that add noise without confidence.
 
@@ -14,6 +14,7 @@ This document defines how automated testing should be used in the Erasmus staff 
 ### Unit tests
 Use Vitest for:
 - validation schemas
+- document file-validation rules
 - formatting helpers
 - navigation logic
 - other pure functions with minimal dependencies
@@ -25,11 +26,12 @@ Characteristics:
 - stored under `tests/unit/`
 
 ### Integration tests
-Use Vitest with React Testing Library for:
+Use Vitest with React Testing Library or mocked service boundaries for:
 - form behavior
 - component interaction with validation and mocked side effects
 - auth service outcomes with mocked framework boundaries
 - route-adjacent components that depend on Next.js hooks or Auth.js client functions
+- storage and document-metadata handling with mocked Prisma edges
 
 Characteristics:
 - run in `jsdom`
@@ -53,7 +55,7 @@ Use Playwright for:
 - basic route availability
 - live auth outcomes and protected-route access behavior
 - authenticated app shell rendering
-- the first real protected workflows that connect UI, routing, auth, and persistence
+- protected staff workflows that connect UI, routing, auth, persistence, and private file access
 - role-aware workspace visibility across staff, officer, and admin dashboards
 
 Characteristics:
@@ -84,6 +86,7 @@ Current shared testing utilities:
 - `tests/factories/auth.ts`: provides stable login and registration fixtures for auth-related tests
 - `tests/factories/profile.ts`: provides stable profile inputs and reference data for profile-related tests
 - `tests/factories/dashboard.ts`: provides stable staff and review dashboard data for component tests
+- local helper functions inside workflow specs: keep repeated sign-in, case creation, and upload interactions readable where shared abstractions would otherwise be too heavy
 
 Guidance:
 - add helpers when they remove repetition across multiple tests
@@ -96,6 +99,8 @@ Guidance:
 - registration schema trimming, password-length rules, and confirmation matching
 - profile schema trimming and required-field rules
 - faculty, department, academic year, and upload-setting validation rules
+- mobility-case validation rules
+- document upload filename, extension, empty-file, and max-size rules
 - role-aware navigation filtering
 - shared formatting helpers
 
@@ -108,6 +113,9 @@ Guidance:
 - failed credentials submit flow with user-visible error state
 - registration form validation and submission behavior
 - profile form validation, department reset behavior, successful submit, and duplicate-email handling
+- mobility-case create, update, and submit service and form behavior
+- local filesystem storage write/read behavior and traversal blocking
+- document upload metadata creation, version rollover, storage cleanup on failure, and secure download authorization behavior
 
 ### Component coverage
 - home page anonymous rendering
@@ -115,6 +123,7 @@ Guidance:
 - dashboard list-panel rendering and empty states
 - staff dashboard content rendering
 - admin dashboard content rendering
+- staff case-table rendering and empty state
 
 ### E2E browser coverage
 - home page loads
@@ -131,6 +140,12 @@ Guidance:
 - staff users can edit their own profile
 - admins can create and edit faculties and departments
 - unauthorized users cannot edit admin master data
+- staff users can create, save, edit, submit, and reopen mobility cases
+- staff users can view their own case list and detail page
+- staff users can upload a mobility agreement
+- staff users can upload a later document version and see the current-version marker move forward
+- authorized users can download the current document version through the private route
+- unauthorized staff users are blocked from downloading another user’s document
 
 ## What remains uncovered
 Critical flows still needing future coverage:
@@ -138,9 +153,10 @@ Critical flows still needing future coverage:
 - rejection and deactivation actions in the admin UI
 - session behavior after future role changes or account deactivation
 - academic year, status, select-option, and upload-setting management flows in browser coverage
-- mobility case draft and submission lifecycle
-- protected document upload and download authorization
-- officer review actions and status transitions beyond dashboard visibility
+- officer or admin review actions on submitted cases
+- officer or admin document review decisions and review comments
+- certificate-of-attendance completion flow after mobility is finished
+- storage-missing recovery handling through the UI
 - reporting and CSV export behavior
 - audit-sensitive server actions in later workflow modules
 

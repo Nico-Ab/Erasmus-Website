@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import { OverviewMetric } from "@/components/app/overview-metric";
-import { DashboardListPanel } from "@/components/dashboard/dashboard-list-panel";
-import { MobilityCaseForm, ReadOnlyCaseNotice } from "@/components/cases/mobility-case-form";
 import { CaseStatusBadge } from "@/components/cases/case-status-badge";
+import { MobilityCaseDocumentPanel } from "@/components/cases/mobility-case-document-panel";
+import { MobilityCaseForm, ReadOnlyCaseNotice } from "@/components/cases/mobility-case-form";
+import { DashboardListPanel } from "@/components/dashboard/dashboard-list-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/guards";
@@ -58,7 +59,7 @@ export default async function MobilityCaseDetailPage({
             <CaseStatusBadge label={detail.case.status.label} statusKey={detail.case.status.key} />
           </div>
           <p className="mt-2 max-w-3xl text-sm text-slate-600">
-            Review the current status, comments, and recorded case details. Draft cases remain editable until they are submitted.
+            Review the current status, comments, recorded case details, and the private document record for this mobility case.
           </p>
         </div>
         <Button asChild variant="outline">
@@ -152,6 +153,28 @@ export default async function MobilityCaseDetailPage({
             </div>
           </CardContent>
         </Card>
+      </section>
+
+      <section className="space-y-4">
+        <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
+          <h2 className="text-lg font-semibold text-slate-950">Required documents</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Uploaded files stay private, remain versioned, and are only available through permission-checked download routes.
+          </p>
+          <p className="mt-2 text-sm text-slate-700">
+            Current upload policy: {detail.documentUploadPolicy.maxUploadSizeMb} MB maximum, {detail.documentUploadPolicy.allowedExtensions.map((extension) => extension.toUpperCase()).join(", ")}.
+          </p>
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          {detail.documents.map((document) => (
+            <MobilityCaseDocumentPanel
+              caseId={detail.case.id}
+              document={document}
+              key={document.documentType.key}
+              uploadPolicy={detail.documentUploadPolicy}
+            />
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">

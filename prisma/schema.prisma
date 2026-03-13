@@ -20,6 +20,12 @@ enum UserApprovalStatus {
   DEACTIVATED
 }
 
+enum DocumentReviewState {
+  PENDING_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
 enum SelectOptionCategory {
   ACADEMIC_TITLE
   MOBILITY_TYPE
@@ -27,34 +33,36 @@ enum SelectOptionCategory {
 }
 
 model User {
-  id                        String                     @id @default(cuid())
+  id                        String                       @id @default(cuid())
   name                      String?
   firstName                 String?
   lastName                  String?
   academicTitleOptionId     String?
   facultyId                 String?
   departmentId              String?
-  email                     String                     @unique
+  email                     String                       @unique
   emailVerified             DateTime?
   image                     String?
   passwordHash              String?
-  role                      UserRole                   @default(STAFF)
-  status                    UserApprovalStatus         @default(PENDING)
+  role                      UserRole                     @default(STAFF)
+  status                    UserApprovalStatus           @default(PENDING)
   reviewedAt                DateTime?
   reviewedById              String?
-  academicTitleOption       SelectOption?              @relation("AcademicTitleAssignments", fields: [academicTitleOptionId], references: [id], onDelete: SetNull)
-  faculty                   Faculty?                   @relation(fields: [facultyId], references: [id], onDelete: SetNull)
-  department                Department?                @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  reviewedBy                User?                      @relation("UserApprovals", fields: [reviewedById], references: [id], onDelete: SetNull)
-  reviewedUsers             User[]                     @relation("UserApprovals")
-  mobilityCases             MobilityCase[]             @relation("StaffMobilityCases")
-  mobilityCaseComments      MobilityCaseComment[]      @relation("MobilityCaseCommentAuthor")
-  mobilityCaseStatusChanges MobilityCaseStatusHistory[] @relation("MobilityCaseStatusChangedBy")
+  academicTitleOption       SelectOption?                @relation("AcademicTitleAssignments", fields: [academicTitleOptionId], references: [id], onDelete: SetNull)
+  faculty                   Faculty?                     @relation(fields: [facultyId], references: [id], onDelete: SetNull)
+  department                Department?                  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  reviewedBy                User?                        @relation("UserApprovals", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedUsers             User[]                       @relation("UserApprovals")
+  mobilityCases             MobilityCase[]               @relation("StaffMobilityCases")
+  mobilityCaseComments      MobilityCaseComment[]        @relation("MobilityCaseCommentAuthor")
+  mobilityCaseStatusChanges MobilityCaseStatusHistory[]  @relation("MobilityCaseStatusChangedBy")
+  uploadedDocumentVersions  MobilityCaseDocumentVersion[] @relation("DocumentVersionUploadedBy")
+  reviewedDocumentVersions  MobilityCaseDocumentVersion[] @relation("DocumentVersionReviewedBy")
   accounts                  Account[]
   sessions                  Session[]
   authenticators            Authenticator[]
-  createdAt                 DateTime                   @default(now())
-  updatedAt                 DateTime                   @updatedAt
+  createdAt                 DateTime                     @default(now())
+  updatedAt                 DateTime                     @updatedAt
 
   @@index([academicTitleOptionId])
   @@index([facultyId])
@@ -117,16 +125,17 @@ model CaseStatusDefinition {
 }
 
 model SelectOption {
-  id                 String               @id @default(cuid())
+  id                 String                 @id @default(cuid())
   category           SelectOptionCategory
   key                String
   label              String
-  sortOrder          Int                  @default(0)
-  isActive           Boolean              @default(true)
-  academicTitleUsers User[]               @relation("AcademicTitleAssignments")
-  mobilityTypeCases  MobilityCase[]       @relation("MobilityTypeAssignments")
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  sortOrder          Int                    @default(0)
+  isActive           Boolean                @default(true)
+  academicTitleUsers User[]                 @relation("AcademicTitleAssignments")
+  caseDocuments      MobilityCaseDocument[] @relation("MobilityCaseDocumentTypeAssignments")
+  mobilityTypeCases  MobilityCase[]         @relation("MobilityTypeAssignments")
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   @@unique([category, key])
   @@unique([category, label])
@@ -151,6 +160,7 @@ model MobilityCase {
   mobilityTypeOption   SelectOption?               @relation("MobilityTypeAssignments", fields: [mobilityTypeOptionId], references: [id], onDelete: SetNull)
   statusDefinition     CaseStatusDefinition        @relation("CurrentCaseStatus", fields: [statusDefinitionId], references: [id], onDelete: Restrict)
   comments             MobilityCaseComment[]
+  documents            MobilityCaseDocument[]
   statusHistory        MobilityCaseStatusHistory[]
   createdAt            DateTime                    @default(now())
   updatedAt            DateTime                    @updatedAt
@@ -192,6 +202,49 @@ model MobilityCaseStatusHistory {
   @@index([fromStatusDefinitionId])
   @@index([toStatusDefinitionId])
   @@index([changedByUserId])
+}
+
+model MobilityCaseDocument {
+  id                   String                        @id @default(cuid())
+  mobilityCaseId       String
+  documentTypeOptionId String
+  currentVersionId     String?                       @unique
+  mobilityCase         MobilityCase                  @relation(fields: [mobilityCaseId], references: [id], onDelete: Cascade)
+  documentTypeOption   SelectOption                  @relation("MobilityCaseDocumentTypeAssignments", fields: [documentTypeOptionId], references: [id], onDelete: Restrict)
+  currentVersion       MobilityCaseDocumentVersion?  @relation("CurrentDocumentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions             MobilityCaseDocumentVersion[] @relation("DocumentVersions")
+  createdAt            DateTime                      @default(now())
+  updatedAt            DateTime                      @updatedAt
+
+  @@unique([mobilityCaseId, documentTypeOptionId])
+  @@index([documentTypeOptionId])
+  @@index([currentVersionId])
+}
+
+model MobilityCaseDocumentVersion {
+  id                 String                @id @default(cuid())
+  documentId         String
+  versionNumber      Int
+  originalFilename   String
+  fileExtension      String
+  mimeType           String?
+  sizeBytes          Int
+  storageKey         String                @unique
+  reviewState        DocumentReviewState   @default(PENDING_REVIEW)
+  reviewComment      String?               @db.Text
+  reviewedAt         DateTime?
+  reviewedByUserId   String?
+  uploadedByUserId   String
+  uploadedAt         DateTime              @default(now())
+  document           MobilityCaseDocument  @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Cascade)
+  currentForDocument MobilityCaseDocument? @relation("CurrentDocumentVersion")
+  reviewedByUser     User?                 @relation("DocumentVersionReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  uploadedByUser     User                  @relation("DocumentVersionUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([documentId, versionNumber])
+  @@index([reviewedByUserId])
+  @@index([uploadedByUserId])
+  @@index([documentId, uploadedAt])
 }
 
 model UploadSetting {

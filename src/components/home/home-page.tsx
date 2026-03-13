@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type HomePageProps = {
@@ -12,12 +12,14 @@ type HomePageProps = {
 const rolePanels = [
   {
     title: "Staff workspace",
-    description: "Maintain profile data, create mobility cases later, and monitor officer feedback.",
+    description:
+      "Maintain profile data, create and submit mobility cases, upload private documents, and monitor review feedback.",
     href: "/dashboard/staff"
   },
   {
     title: "Officer workspace",
-    description: "Review institutional submissions, manage corrections, and keep case status moving.",
+    description:
+      "Review institutional submissions, monitor missing documents, and keep protected case workflows moving.",
     href: "/dashboard/officer"
   },
   {
@@ -42,7 +44,8 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
               </CardTitle>
               <CardDescription className="max-w-2xl text-base leading-7 text-slate-600">
                 The current foundation now includes staff self-registration, approval-gated credentials authentication,
-                editable institutional profiles, admin-managed master data, and the local-first database and testing stack.
+                editable institutional profiles, admin-managed master data, staff mobility-case management, and private
+                document storage with permission-checked downloads.
               </CardDescription>
             </div>
           </CardHeader>
@@ -81,8 +84,11 @@ export function HomePage({ isAuthenticated, userName }: HomePageProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-slate-200">
-            <p>Included now: registration, approval workflow, secure login, editable profiles, master data, health checks, and tests.</p>
-            <p>Not implemented yet: mobility cases, document handling, reporting, and broader operational workflows.</p>
+            <p>
+              Included now: registration, approval workflow, secure login, editable profiles, master data, mobility
+              cases, private document handling, health checks, and tests.
+            </p>
+            <p>Not implemented yet: officer review actions, reporting, exports, and broader operational workflows.</p>
           </CardContent>
         </Card>
       </section>

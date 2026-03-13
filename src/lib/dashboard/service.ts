@@ -1,4 +1,5 @@
 import { UserApprovalStatus, UserRole } from "@prisma/client";
+import { requiredDocumentTypeDefinitions } from "@/lib/documents/constants";
 import { prisma } from "@/lib/prisma";
 
 type ActiveAcademicYearRecord = {
@@ -6,6 +7,14 @@ type ActiveAcademicYearRecord = {
   label: string;
   startYear: number;
   endYear: number;
+};
+
+type CaseDocumentReference = {
+  currentVersionId: string | null;
+  documentTypeOption: {
+    key: string;
+    label: string;
+  };
 };
 
 export type DashboardPanelItem = {
@@ -58,6 +67,7 @@ export type ReviewDashboardData = {
   openReviewsCount: number;
   newRegistrations: DashboardPanelItem[];
   newSubmittedCases: DashboardPanelItem[];
+  missingDocuments: DashboardPanelItem[];
   casesNeedingChanges: DashboardPanelItem[];
   openReviews: DashboardPanelItem[];
   academicYearOverview: DashboardPanelItem[];
@@ -137,6 +147,18 @@ function buildCaseReviewTitle(mobilityCase: {
   }
 
   return mobilityCase.academicYear?.label ?? mobilityCase.mobilityTypeOption?.label ?? "Mobility case";
+}
+
+function shouldTrackMissingDocuments(statusKey: string) {
+  return !["draft", "archived", "completed"].includes(statusKey);
+}
+
+function getMissingRequiredDocuments(documents: CaseDocumentReference[]) {
+  const currentDocumentKeys = new Set(
+    documents.filter((document) => Boolean(document.currentVersionId)).map((document) => document.documentTypeOption.key)
+  );
+
+  return requiredDocumentTypeDefinitions.filter((definition) => !currentDocumentKeys.has(definition.key));
 }
 
 export async function getStaffDashboardData(userId: string): Promise<StaffDashboardData | null> {
@@ -219,6 +241,17 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
               key: true,
               label: true
             }
+          },
+          documents: {
+            select: {
+              currentVersionId: true,
+              documentTypeOption: {
+                select: {
+                  key: true,
+                  label: true
+                }
+              }
+            }
           }
         },
         orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }]
@@ -273,6 +306,7 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
   const submittedCases = mobilityCases.filter(
     (mobilityCase) => mobilityCase.statusDefinition.key === "submitted"
   );
+  const missingDocuments: DashboardPanelItem[] = [];
   const openTasks: DashboardPanelItem[] = [];
 
   if (!user.academicTitleOption || !user.faculty || !user.department) {
@@ -308,6 +342,30 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
     });
   }
 
+  for (const mobilityCase of mobilityCases) {
+    if (!shouldTrackMissingDocuments(mobilityCase.statusDefinition.key)) {
+      continue;
+    }
+
+    const missingForCase = getMissingRequiredDocuments(mobilityCase.documents);
+
+    for (const missingDocument of missingForCase) {
+      const item = {
+        id: `${mobilityCase.id}-${missingDocument.key}`,
+        title: mobilityCase.hostInstitution?.trim() || "Mobility case document missing",
+        description: `${missingDocument.label} is still missing from this case record.`,
+        badge: "Missing",
+        meta: `/dashboard/staff/cases/${mobilityCase.id}`
+      };
+
+      missingDocuments.push(item);
+
+      if (openTasks.length < 8) {
+        openTasks.push(item);
+      }
+    }
+  }
+
   const uploadPolicySummary = uploadSetting
     ? `${uploadSetting.maxUploadSizeMb} MB maximum, ${uploadSetting.allowedExtensions
         .split(",")
@@ -326,7 +384,7 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
     ownCasesCount: mobilityCases.length,
     draftCasesCount: draftCases.length,
     submittedCasesCount: submittedCases.length,
-    missingDocumentsCount: 0,
+    missingDocumentsCount: missingDocuments.length,
     openTasksCount: openTasks.length,
     cases: mobilityCases.map((mobilityCase) => ({
       id: mobilityCase.id,
@@ -356,7 +414,7 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
         meta: currentAcademicYearLabel ?? "No active academic year"
       };
     }),
-    missingDocuments: [],
+    missingDocuments,
     latestComments: latestComments.map((comment) => ({
       id: comment.id,
       title: comment.mobilityCase.hostInstitution?.trim() || "Mobility case comment",
@@ -456,6 +514,17 @@ export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
             lastName: true,
             email: true
           }
+        },
+        documents: {
+          select: {
+            currentVersionId: true,
+            documentTypeOption: {
+              select: {
+                key: true,
+                label: true
+              }
+            }
+          }
         }
       },
       orderBy: [{ submittedAt: "desc" }, { updatedAt: "desc" }],
@@ -495,6 +564,17 @@ export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
             lastName: true,
             email: true
           }
+        },
+        documents: {
+          select: {
+            currentVersionId: true,
+            documentTypeOption: {
+              select: {
+                key: true,
+                label: true
+              }
+            }
+          }
         }
       },
       orderBy: { updatedAt: "desc" },
@@ -527,7 +607,25 @@ export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
     badge: "Changes",
     meta: formatDashboardDate(mobilityCase.updatedAt)
   }));
-  const openReviews = [...submittedCaseItems, ...casesNeedingChangesItems].slice(0, 6);
+  const reviewCases = [...submittedCases, ...changesRequiredCases];
+  const missingDocuments = reviewCases.flatMap((mobilityCase) => {
+  const missingForCase = getMissingRequiredDocuments(mobilityCase.documents);
+
+  if (missingForCase.length === 0) {
+    return [];
+  }
+
+  return [
+    {
+      id: mobilityCase.id,
+      title: buildCaseReviewTitle(mobilityCase),
+      description: `Missing: ${missingForCase.map((document) => document.label).join(", ")}.`,
+      badge: missingForCase.length === 1 ? "1 missing file" : `${missingForCase.length} missing files`,
+      meta: mobilityCase.academicYear?.label ?? formatDashboardDate(mobilityCase.updatedAt)
+    }
+  ];
+});
+const openReviews = [...submittedCaseItems, ...casesNeedingChangesItems].slice(0, 6);
   const currentAcademicYearCaseCount = currentAcademicYear
     ? await prisma.mobilityCase.count({
         where: {
@@ -540,11 +638,12 @@ export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
     currentAcademicYearLabel,
     newRegistrationsCount: pendingRegistrations.length,
     newSubmittedCasesCount: submittedCaseCount,
-    missingDocumentsCount: 0,
+    missingDocumentsCount: missingDocuments.length,
     casesNeedingChangesCount: changesRequiredCaseCount,
     openReviewsCount: submittedCaseCount + changesRequiredCaseCount,
     newRegistrations: registrationItems,
     newSubmittedCases: submittedCaseItems,
+    missingDocuments,
     casesNeedingChanges: casesNeedingChangesItems,
     openReviews,
     academicYearOverview: [

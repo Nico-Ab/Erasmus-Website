@@ -25,7 +25,7 @@ export const env = {
   ...parsed.data,
   trustHost: parsed.data.AUTH_TRUST_HOST === "true",
   allowedUploadExtensions: parsed.data.ALLOWED_UPLOAD_EXTENSIONS.split(",")
-    .map((extension) => extension.trim())
+    .map((extension) => extension.trim().toLowerCase())
     .filter(Boolean),
   storageLocalRoot: path.resolve(process.cwd(), parsed.data.STORAGE_LOCAL_ROOT)
 };

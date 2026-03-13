@@ -30,12 +30,12 @@ describe("DashboardListPanel", () => {
         description="Uploads pending"
         items={[]}
         emptyTitle="No document requests yet"
-        emptyDescription="The upload workflow is not live."
+        emptyDescription="All currently tracked required documents are already on file."
       />
     );
 
     expect(screen.getByText(/no document requests yet/i)).toBeInTheDocument();
-    expect(screen.getByText(/the upload workflow is not live/i)).toBeInTheDocument();
+    expect(screen.getByText(/all currently tracked required documents are already on file/i)).toBeInTheDocument();
   });
 });
 
