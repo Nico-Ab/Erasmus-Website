@@ -11,7 +11,7 @@ export function DashboardNav({ items }: { items: NavigationItem[] }) {
   return (
     <nav className="space-y-2">
       {items.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
         return (
           <Link

@@ -23,12 +23,12 @@ async function signInWith(page: Page, credentials: { email: string; password: st
   await expect(page).toHaveURL(/\/dashboard/);
 }
 
-test("staff users see the staff dashboard only", async ({ page }) => {
+test("staff users see the staff case workspace only", async ({ page }) => {
   await signInWith(page, staffCredentials);
   await page.goto("/dashboard/staff");
 
-  await expect(page.getByRole("heading", { name: /staff operational dashboard/i })).toBeVisible();
-  await expect(page.getByText(/own cases overview/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /staff mobility workspace/i })).toBeVisible();
+  await expect(page.getByText(/my mobility cases/i)).toBeVisible();
   await expect(page.getByText(/latest comments/i)).toBeVisible();
 
   await page.goto("/dashboard/officer");

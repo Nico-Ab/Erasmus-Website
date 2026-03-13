@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { OverviewMetric } from "@/components/app/overview-metric";
+import { StaffCaseTable } from "@/components/cases/staff-case-table";
 import { DashboardListPanel } from "@/components/dashboard/dashboard-list-panel";
 import { Button } from "@/components/ui/button";
 import type { StaffDashboardData } from "@/lib/dashboard/service";
@@ -13,9 +14,9 @@ export function StaffDashboardContent({ data }: StaffDashboardContentProps) {
     <div className="space-y-6">
       <section className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/95 p-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-950">Staff operational dashboard</h1>
+          <h1 className="text-2xl font-semibold text-slate-950">Staff mobility workspace</h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-600">
-            This workspace shows your current profile-linked context and the first operational areas that will later connect to cases, documents, and review history.
+            This workspace now supports real staff-owned mobility cases with draft persistence, submission, status history, and a clear path back into incomplete records.
           </p>
         </div>
         <dl className="grid gap-3 text-sm sm:grid-cols-3">
@@ -34,53 +35,61 @@ export function StaffDashboardContent({ data }: StaffDashboardContentProps) {
         </dl>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <OverviewMetric
           title="Current academic year"
           value={data.currentAcademicYearLabel ?? "Not set"}
-          description="Active year context that will later scope staff cases and reporting."
+          description="Active year context that scopes staff case creation and reporting."
         />
         <OverviewMetric
           title="Own cases"
           value={data.ownCasesCount.toString()}
-          description="No real mobility case records exist yet, so this remains an honest zero state."
+          description="All mobility cases currently stored for the signed-in staff user."
         />
         <OverviewMetric
-          title="Missing documents"
-          value={data.missingDocumentsCount.toString()}
-          description="Document requirements will appear here once case records and uploads are introduced."
+          title="Draft cases"
+          value={data.draftCasesCount.toString()}
+          description="Cases that can still be resumed, edited, and submitted later."
+        />
+        <OverviewMetric
+          title="Submitted cases"
+          value={data.submittedCasesCount.toString()}
+          description="Cases that have moved into the review-ready state."
         />
         <OverviewMetric
           title="Open tasks"
           value={data.openTasksCount.toString()}
-          description="Actionable personal items derived from the real profile and configuration state."
+          description="Actionable profile and draft-case follow-up items."
         />
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-950">Own cases overview</h2>
+            <p className="text-sm text-slate-600">
+              Continue existing drafts or open a new case when another mobility period needs to be recorded.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/dashboard/staff/cases/new">Create new case</Link>
+          </Button>
+        </div>
+        <StaffCaseTable items={data.cases} />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
         <DashboardListPanel
-          title="Own cases overview"
-          description="Your future case list, submissions, and progress summaries will land in this panel."
-          items={[]}
-          emptyTitle="No mobility cases available yet"
-          emptyDescription="The case module has not been implemented yet, so there are no personal case records to summarize in the dashboard."
-          footer={
-            <Button asChild variant="outline">
-              <Link href="/dashboard/profile">Review profile readiness</Link>
-            </Button>
-          }
-        />
-        <DashboardListPanel
           title="Current status areas"
-          description="These active status areas are configured in master data and ready to receive future case records."
+          description="Configured case-status buckets populated from your current mobility records."
           items={data.statusAreas}
           emptyTitle="No status areas configured"
           emptyDescription="Ask an administrator to configure workflow statuses before case tracking begins."
         />
         <DashboardListPanel
           title="Missing documents"
-          description="Required uploads will be tracked here once cases and secure document handling are available."
-          items={[]}
+          description="Required uploads will be tracked here once the secure document workflow is introduced."
+          items={data.missingDocuments}
           emptyTitle="No document requests yet"
           emptyDescription="There are no missing uploads to resolve because the protected document workflow is not live yet."
           footer={
@@ -91,25 +100,29 @@ export function StaffDashboardContent({ data }: StaffDashboardContentProps) {
         />
         <DashboardListPanel
           title="Latest comments"
-          description="Officer review comments and correction notes will surface here when review workflows are introduced."
-          items={[]}
+          description="Recent officer or admin comments recorded against your mobility cases."
+          items={data.latestComments}
           emptyTitle="No review comments yet"
-          emptyDescription="There are no officer comments yet because submitted case review has not been implemented."
+          emptyDescription="There are no recorded review comments on your mobility cases yet."
+        />
+        <DashboardListPanel
+          title="Open tasks"
+          description="This panel keeps the staff workspace focused on concrete next steps without inventing unavailable workflows."
+          items={data.openTasks}
+          emptyTitle="No open staff tasks"
+          emptyDescription="Your profile and current case records do not currently require action."
+          footer={
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button asChild variant="outline">
+                <Link href="/dashboard/profile">Open profile editor</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/dashboard/staff/cases/new">Create new case</Link>
+              </Button>
+            </div>
+          }
         />
       </section>
-
-      <DashboardListPanel
-        title="Open tasks"
-        description="This panel keeps the current staff workspace focused on concrete next steps without inventing unavailable workflows."
-        items={data.openTasks}
-        emptyTitle="No open staff tasks"
-        emptyDescription="Your profile and current configuration do not require action right now. Future case tasks will appear here when that module is live."
-        footer={
-          <Button asChild>
-            <Link href="/dashboard/profile">Open profile editor</Link>
-          </Button>
-        }
-      />
     </div>
   );
 }

@@ -1,18 +1,19 @@
 import { UserApprovalStatus, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+type ActiveAcademicYearRecord = {
+  id: string;
+  label: string;
+  startYear: number;
+  endYear: number;
+};
+
 export type DashboardPanelItem = {
   id: string;
   title: string;
   description: string;
   badge?: string;
   meta?: string;
-};
-
-type ActiveAcademicYearRecord = {
-  label: string;
-  startYear: number;
-  endYear: number;
 };
 
 export type StaffDashboardData = {
@@ -23,9 +24,27 @@ export type StaffDashboardData = {
   };
   currentAcademicYearLabel: string | null;
   ownCasesCount: number;
+  draftCasesCount: number;
+  submittedCasesCount: number;
   missingDocumentsCount: number;
   openTasksCount: number;
+  cases: Array<{
+    id: string;
+    academicYearLabel: string | null;
+    mobilityTypeLabel: string | null;
+    hostInstitution: string;
+    hostLocation: string;
+    dateRangeLabel: string;
+    status: {
+      key: string;
+      label: string;
+    };
+    updatedAtLabel: string;
+    submittedAtLabel: string | null;
+  }>;
   statusAreas: DashboardPanelItem[];
+  missingDocuments: DashboardPanelItem[];
+  latestComments: DashboardPanelItem[];
   openTasks: DashboardPanelItem[];
   uploadPolicySummary: string;
 };
@@ -38,6 +57,8 @@ export type ReviewDashboardData = {
   casesNeedingChangesCount: number;
   openReviewsCount: number;
   newRegistrations: DashboardPanelItem[];
+  newSubmittedCases: DashboardPanelItem[];
+  casesNeedingChanges: DashboardPanelItem[];
   openReviews: DashboardPanelItem[];
   academicYearOverview: DashboardPanelItem[];
 };
@@ -46,11 +67,32 @@ function formatDashboardDate(value: Date) {
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
-    year: "numeric"
+    year: "numeric",
+    timeZone: "UTC"
   }).format(value);
 }
 
-function getCurrentAcademicYearLabel(years: ActiveAcademicYearRecord[]) {
+function formatDateRangeLabel(startDate: Date | null, endDate: Date | null) {
+  if (startDate && endDate) {
+    return `${formatDashboardDate(startDate)} - ${formatDashboardDate(endDate)}`;
+  }
+
+  if (startDate) {
+    return `Starts ${formatDashboardDate(startDate)}`;
+  }
+
+  if (endDate) {
+    return `Ends ${formatDashboardDate(endDate)}`;
+  }
+
+  return "Dates not set";
+}
+
+function formatCaseLocation(hostCity: string | null, hostCountry: string | null) {
+  return [hostCity, hostCountry].filter(Boolean).join(", ") || "Location not set";
+}
+
+function getCurrentAcademicYear(years: ActiveAcademicYearRecord[]) {
   if (years.length === 0) {
     return null;
   }
@@ -59,7 +101,7 @@ function getCurrentAcademicYearLabel(years: ActiveAcademicYearRecord[]) {
   const currentStartYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
   const matchingYear = years.find((year) => year.startYear === currentStartYear);
 
-  return matchingYear?.label ?? years[0].label;
+  return matchingYear ?? years[0];
 }
 
 function getUserDisplayName(user: {
@@ -79,63 +121,158 @@ function getUserDisplayName(user: {
   return composedName || user.email;
 }
 
+function buildCaseReviewTitle(mobilityCase: {
+  hostInstitution: string | null;
+  academicYear: {
+    label: string;
+  } | null;
+  mobilityTypeOption: {
+    label: string;
+  } | null;
+}) {
+  const hostInstitution = mobilityCase.hostInstitution?.trim();
+
+  if (hostInstitution) {
+    return hostInstitution;
+  }
+
+  return mobilityCase.academicYear?.label ?? mobilityCase.mobilityTypeOption?.label ?? "Mobility case";
+}
+
 export async function getStaffDashboardData(userId: string): Promise<StaffDashboardData | null> {
-  const [user, activeStatuses, activeAcademicYears, uploadSetting] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        academicTitleOption: {
-          select: {
-            label: true
-          }
-        },
-        faculty: {
-          select: {
-            name: true
-          }
-        },
-        department: {
-          select: {
-            name: true
+  const [user, activeStatuses, activeAcademicYears, uploadSetting, mobilityCases, latestComments] =
+    await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          academicTitleOption: {
+            select: {
+              label: true
+            }
+          },
+          faculty: {
+            select: {
+              name: true
+            }
+          },
+          department: {
+            select: {
+              name: true
+            }
           }
         }
-      }
-    }),
-    prisma.caseStatusDefinition.findMany({
-      where: { isActive: true },
-      select: {
-        id: true,
-        label: true
-      },
-      orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
-      take: 5
-    }),
-    prisma.academicYear.findMany({
-      where: { isActive: true },
-      select: {
-        label: true,
-        startYear: true,
-        endYear: true
-      },
-      orderBy: [{ sortOrder: "asc" }, { startYear: "asc" }]
-    }),
-    prisma.uploadSetting.findUnique({
-      where: { id: "default" },
-      select: {
-        maxUploadSizeMb: true,
-        allowedExtensions: true
-      }
-    })
-  ]);
+      }),
+      prisma.caseStatusDefinition.findMany({
+        where: { isActive: true },
+        select: {
+          id: true,
+          key: true,
+          label: true
+        },
+        orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
+        take: 10
+      }),
+      prisma.academicYear.findMany({
+        where: { isActive: true },
+        select: {
+          id: true,
+          label: true,
+          startYear: true,
+          endYear: true
+        },
+        orderBy: [{ sortOrder: "asc" }, { startYear: "asc" }]
+      }),
+      prisma.uploadSetting.findUnique({
+        where: { id: "default" },
+        select: {
+          maxUploadSizeMb: true,
+          allowedExtensions: true
+        }
+      }),
+      prisma.mobilityCase.findMany({
+        where: { staffUserId: userId },
+        select: {
+          id: true,
+          hostInstitution: true,
+          hostCountry: true,
+          hostCity: true,
+          startDate: true,
+          endDate: true,
+          updatedAt: true,
+          submittedAt: true,
+          academicYear: {
+            select: {
+              label: true
+            }
+          },
+          mobilityTypeOption: {
+            select: {
+              label: true
+            }
+          },
+          statusDefinition: {
+            select: {
+              id: true,
+              key: true,
+              label: true
+            }
+          }
+        },
+        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }]
+      }),
+      prisma.mobilityCaseComment.findMany({
+        where: {
+          mobilityCase: {
+            staffUserId: userId
+          }
+        },
+        select: {
+          id: true,
+          body: true,
+          createdAt: true,
+          mobilityCase: {
+            select: {
+              id: true,
+              hostInstitution: true
+            }
+          },
+          authorUser: {
+            select: {
+              name: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5
+      })
+    ]);
 
   if (!user) {
     return null;
   }
 
-  const currentAcademicYearLabel = getCurrentAcademicYearLabel(activeAcademicYears);
+  const currentAcademicYear = getCurrentAcademicYear(activeAcademicYears);
+  const currentAcademicYearLabel = currentAcademicYear?.label ?? null;
+  const caseCountByStatusId = new Map<string, number>();
+
+  for (const mobilityCase of mobilityCases) {
+    caseCountByStatusId.set(
+      mobilityCase.statusDefinition.id,
+      (caseCountByStatusId.get(mobilityCase.statusDefinition.id) ?? 0) + 1
+    );
+  }
+
+  const draftCases = mobilityCases.filter((mobilityCase) => mobilityCase.statusDefinition.key === "draft");
+  const submittedCases = mobilityCases.filter(
+    (mobilityCase) => mobilityCase.statusDefinition.key === "submitted"
+  );
   const openTasks: DashboardPanelItem[] = [];
 
   if (!user.academicTitleOption || !user.faculty || !user.department) {
@@ -143,7 +280,7 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
       id: "complete-profile",
       title: "Complete institutional profile",
       description:
-        "Add or confirm your academic title, faculty, and department before case workflows begin using this data.",
+        "Add or confirm your academic title, faculty, and department before submitted cases start reusing this data.",
       badge: "Action needed",
       meta: "/dashboard/profile"
     });
@@ -154,9 +291,20 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
       id: "missing-academic-year",
       title: "Await academic year configuration",
       description:
-        "No active academic year is configured yet, so new case work cannot be opened from the protected area.",
+        "No active academic year is configured yet, so submitted cases cannot be aligned with the current cycle.",
       badge: "Blocked",
       meta: "Admin setup required"
+    });
+  }
+
+  for (const mobilityCase of draftCases.slice(0, 4)) {
+    openTasks.push({
+      id: `draft-${mobilityCase.id}`,
+      title: mobilityCase.hostInstitution?.trim() || "Complete draft mobility case",
+      description:
+        "Draft case details remain editable. Complete the missing fields and submit the case when ready.",
+      badge: "Draft",
+      meta: `/dashboard/staff/cases/${mobilityCase.id}`
     });
   }
 
@@ -175,15 +323,46 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
       academicTitle: user.academicTitleOption?.label ?? "Not assigned"
     },
     currentAcademicYearLabel,
-    ownCasesCount: 0,
+    ownCasesCount: mobilityCases.length,
+    draftCasesCount: draftCases.length,
+    submittedCasesCount: submittedCases.length,
     missingDocumentsCount: 0,
     openTasksCount: openTasks.length,
-    statusAreas: activeStatuses.map((status) => ({
-      id: status.id,
-      title: status.label,
-      description: "No personal mobility cases are currently recorded in this status area.",
-      badge: "0",
-      meta: currentAcademicYearLabel ?? "No active academic year"
+    cases: mobilityCases.map((mobilityCase) => ({
+      id: mobilityCase.id,
+      academicYearLabel: mobilityCase.academicYear?.label ?? null,
+      mobilityTypeLabel: mobilityCase.mobilityTypeOption?.label ?? null,
+      hostInstitution: mobilityCase.hostInstitution?.trim() || "Host institution not set",
+      hostLocation: formatCaseLocation(mobilityCase.hostCity, mobilityCase.hostCountry),
+      dateRangeLabel: formatDateRangeLabel(mobilityCase.startDate, mobilityCase.endDate),
+      status: {
+        key: mobilityCase.statusDefinition.key,
+        label: mobilityCase.statusDefinition.label
+      },
+      updatedAtLabel: formatDashboardDate(mobilityCase.updatedAt),
+      submittedAtLabel: mobilityCase.submittedAt ? formatDashboardDate(mobilityCase.submittedAt) : null
+    })),
+    statusAreas: activeStatuses.map((status) => {
+      const count = caseCountByStatusId.get(status.id) ?? 0;
+
+      return {
+        id: status.id,
+        title: status.label,
+        description:
+          count > 0
+            ? `${count} personal mobility case${count === 1 ? "" : "s"} currently sit in this status area.`
+            : "No personal mobility cases are currently recorded in this status area.",
+        badge: count.toString(),
+        meta: currentAcademicYearLabel ?? "No active academic year"
+      };
+    }),
+    missingDocuments: [],
+    latestComments: latestComments.map((comment) => ({
+      id: comment.id,
+      title: comment.mobilityCase.hostInstitution?.trim() || "Mobility case comment",
+      description: comment.body,
+      badge: getUserDisplayName(comment.authorUser),
+      meta: formatDashboardDate(comment.createdAt)
     })),
     openTasks,
     uploadPolicySummary
@@ -191,50 +370,140 @@ export async function getStaffDashboardData(userId: string): Promise<StaffDashbo
 }
 
 export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
-  const [pendingRegistrations, activeAcademicYears, activeFacultyCount, activeDepartmentCount, activeStatusCount] =
-    await Promise.all([
-      prisma.user.findMany({
-        where: {
-          role: UserRole.STAFF,
-          status: UserApprovalStatus.PENDING
-        },
-        select: {
-          id: true,
-          name: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          createdAt: true,
-          faculty: {
-            select: {
-              name: true
-            }
+  const [
+    pendingRegistrations,
+    activeAcademicYears,
+    activeFacultyCount,
+    activeDepartmentCount,
+    activeStatusCount,
+    submittedCaseCount,
+    submittedCases,
+    changesRequiredCaseCount,
+    changesRequiredCases
+  ] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        role: UserRole.STAFF,
+        status: UserApprovalStatus.PENDING
+      },
+      select: {
+        id: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        createdAt: true,
+        faculty: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 6
+    }),
+    prisma.academicYear.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        label: true,
+        startYear: true,
+        endYear: true
+      },
+      orderBy: [{ sortOrder: "asc" }, { startYear: "asc" }]
+    }),
+    prisma.faculty.count({
+      where: { isActive: true }
+    }),
+    prisma.department.count({
+      where: { isActive: true }
+    }),
+    prisma.caseStatusDefinition.count({
+      where: { isActive: true }
+    }),
+    prisma.mobilityCase.count({
+      where: {
+        statusDefinition: {
+          key: "submitted"
+        }
+      }
+    }),
+    prisma.mobilityCase.findMany({
+      where: {
+        statusDefinition: {
+          key: "submitted"
+        }
+      },
+      select: {
+        id: true,
+        hostInstitution: true,
+        submittedAt: true,
+        updatedAt: true,
+        academicYear: {
+          select: {
+            label: true
           }
         },
-        orderBy: { createdAt: "desc" },
-        take: 6
-      }),
-      prisma.academicYear.findMany({
-        where: { isActive: true },
-        select: {
-          label: true,
-          startYear: true,
-          endYear: true
+        mobilityTypeOption: {
+          select: {
+            label: true
+          }
         },
-        orderBy: [{ sortOrder: "asc" }, { startYear: "asc" }]
-      }),
-      prisma.faculty.count({
-        where: { isActive: true }
-      }),
-      prisma.department.count({
-        where: { isActive: true }
-      }),
-      prisma.caseStatusDefinition.count({
-        where: { isActive: true }
-      })
-    ]);
+        staffUser: {
+          select: {
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      },
+      orderBy: [{ submittedAt: "desc" }, { updatedAt: "desc" }],
+      take: 6
+    }),
+    prisma.mobilityCase.count({
+      where: {
+        statusDefinition: {
+          key: "changes_required"
+        }
+      }
+    }),
+    prisma.mobilityCase.findMany({
+      where: {
+        statusDefinition: {
+          key: "changes_required"
+        }
+      },
+      select: {
+        id: true,
+        hostInstitution: true,
+        updatedAt: true,
+        academicYear: {
+          select: {
+            label: true
+          }
+        },
+        mobilityTypeOption: {
+          select: {
+            label: true
+          }
+        },
+        staffUser: {
+          select: {
+            name: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 6
+    })
+  ]);
 
-  const currentAcademicYearLabel = getCurrentAcademicYearLabel(activeAcademicYears);
+  const currentAcademicYear = getCurrentAcademicYear(activeAcademicYears);
+  const currentAcademicYearLabel = currentAcademicYear?.label ?? null;
   const registrationItems = pendingRegistrations.map((registration) => ({
     id: registration.id,
     title: getUserDisplayName(registration),
@@ -242,29 +511,54 @@ export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
       ? `Pending staff registration from ${registration.faculty.name}.`
       : "Pending staff registration awaiting faculty assignment.",
     badge: "Pending",
-    meta: `${registration.email} • ${formatDashboardDate(registration.createdAt)}`
+    meta: `${registration.email} | ${formatDashboardDate(registration.createdAt)}`
   }));
+  const submittedCaseItems = submittedCases.map((mobilityCase) => ({
+    id: mobilityCase.id,
+    title: buildCaseReviewTitle(mobilityCase),
+    description: `${getUserDisplayName(mobilityCase.staffUser)} submitted a ${mobilityCase.mobilityTypeOption?.label?.toLowerCase() ?? "mobility"} case${mobilityCase.academicYear?.label ? ` for ${mobilityCase.academicYear.label}` : ""}.`,
+    badge: "Submitted",
+    meta: formatDashboardDate(mobilityCase.submittedAt ?? mobilityCase.updatedAt)
+  }));
+  const casesNeedingChangesItems = changesRequiredCases.map((mobilityCase) => ({
+    id: mobilityCase.id,
+    title: buildCaseReviewTitle(mobilityCase),
+    description: `${getUserDisplayName(mobilityCase.staffUser)} has a case waiting on requested changes${mobilityCase.academicYear?.label ? ` for ${mobilityCase.academicYear.label}` : ""}.`,
+    badge: "Changes",
+    meta: formatDashboardDate(mobilityCase.updatedAt)
+  }));
+  const openReviews = [...submittedCaseItems, ...casesNeedingChangesItems].slice(0, 6);
+  const currentAcademicYearCaseCount = currentAcademicYear
+    ? await prisma.mobilityCase.count({
+        where: {
+          academicYearId: currentAcademicYear.id
+        }
+      })
+    : 0;
 
   return {
     currentAcademicYearLabel,
     newRegistrationsCount: pendingRegistrations.length,
-    newSubmittedCasesCount: 0,
+    newSubmittedCasesCount: submittedCaseCount,
     missingDocumentsCount: 0,
-    casesNeedingChangesCount: 0,
-    openReviewsCount: pendingRegistrations.length,
+    casesNeedingChangesCount: changesRequiredCaseCount,
+    openReviewsCount: submittedCaseCount + changesRequiredCaseCount,
     newRegistrations: registrationItems,
-    openReviews: registrationItems.map((registration) => ({
-      ...registration,
-      description:
-        "Registration approval is the only live review queue today. Case reviews will appear here once that module is implemented.",
-      badge: "Review"
-    })),
+    newSubmittedCases: submittedCaseItems,
+    casesNeedingChanges: casesNeedingChangesItems,
+    openReviews,
     academicYearOverview: [
       {
         id: "current-academic-year",
         title: currentAcademicYearLabel ?? "Not configured",
         description: "Current academic year label used for protected workflows and reporting context.",
         meta: currentAcademicYearLabel ? "Current academic year" : "Admin setup required"
+      },
+      {
+        id: "current-academic-year-cases",
+        title: currentAcademicYearCaseCount.toString(),
+        description: "Mobility case records currently linked to the active academic year context.",
+        meta: "Case records"
       },
       {
         id: "active-academic-years",
@@ -287,7 +581,7 @@ export async function getReviewDashboardData(): Promise<ReviewDashboardData> {
       {
         id: "tracked-statuses",
         title: activeStatusCount.toString(),
-        description: "Active workflow statuses prepared for the future case lifecycle.",
+        description: "Active workflow statuses prepared for the case lifecycle.",
         meta: "Status records"
       }
     ]

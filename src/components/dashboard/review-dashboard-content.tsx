@@ -13,8 +13,8 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
   const title = mode === "admin" ? "Admin operations dashboard" : "Officer review dashboard";
   const description =
     mode === "admin"
-      ? "This dashboard combines the live approval queue with honest review placeholders for the broader mobility workflow that still remains ahead."
-      : "This dashboard provides read-only operational visibility into the live approval queue and the future review areas that will receive case data later.";
+      ? "This dashboard now combines the live approval queue with real submitted-case intake and honest empty states where later document workflows still remain ahead."
+      : "This dashboard provides operational visibility into pending registrations and the real case-review queues now available in the staff workflow.";
 
   return (
     <div className="space-y-6">
@@ -27,27 +27,27 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
         <OverviewMetric
           title="New registrations"
           value={data.newRegistrationsCount.toString()}
-          description="Pending staff registrations are the first live operational queue in the protected workspace."
+          description="Pending staff registrations remain a live operational queue in the protected workspace."
         />
         <OverviewMetric
           title="New submitted cases"
           value={data.newSubmittedCasesCount.toString()}
-          description="No submitted mobility cases exist yet because the case module is not implemented."
+          description="Staff-submitted mobility cases that are ready for the first review pass."
         />
         <OverviewMetric
           title="Cases with missing documents"
           value={data.missingDocumentsCount.toString()}
-          description="Document issues will appear here once secure uploads and case records are available."
+          description="Document issues will appear here once secure uploads and checks are available."
         />
         <OverviewMetric
           title="Cases needing changes"
           value={data.casesNeedingChangesCount.toString()}
-          description="Correction loops will populate this metric once officers can return submitted cases."
+          description="Cases returned to staff for corrections will populate this metric."
         />
         <OverviewMetric
           title="Open reviews"
           value={data.openReviewsCount.toString()}
-          description="Registration approvals currently make up the live review queue for operational oversight."
+          description="Current submitted and changes-required case reviews awaiting officer or admin attention."
         />
         <OverviewMetric
           title="Current academic year"
@@ -77,17 +77,17 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
         />
         <DashboardListPanel
           title="Open reviews"
-          description="The review queue is intentionally limited to registration approvals until the case-review workflow is built."
+          description="Combined live review queue for submitted cases and records currently waiting on staff changes."
           items={data.openReviews}
           emptyTitle="No open reviews"
-          emptyDescription="There are no current review items waiting for operational attention."
+          emptyDescription="There are no current case reviews waiting for operational attention."
         />
         <DashboardListPanel
           title="New submitted cases"
-          description="Future submitted-case intake will appear here with direct links into review work."
-          items={[]}
+          description="Submitted staff cases ready for the first review pass."
+          items={data.newSubmittedCases}
           emptyTitle="No submitted cases yet"
-          emptyDescription="The mobility case workflow is not live yet, so there are no submitted cases to review."
+          emptyDescription="Staff have not submitted any mobility cases yet."
         />
         <DashboardListPanel
           title="Cases with missing documents"
@@ -98,14 +98,14 @@ export function ReviewDashboardContent({ mode, data }: ReviewDashboardContentPro
         />
         <DashboardListPanel
           title="Cases needing changes"
-          description="Returned applications and correction requests will surface here once officers can send cases back."
-          items={[]}
+          description="Returned applications and correction requests that still await staff follow-up."
+          items={data.casesNeedingChanges}
           emptyTitle="No changes-required cases"
-          emptyDescription="Change-request workflows do not exist yet, so there are no cases awaiting staff corrections."
+          emptyDescription="There are no cases currently marked as needing changes."
         />
         <DashboardListPanel
           title="Current academic year overview"
-          description="Live master-data metrics that show whether the protected workspace has the administrative context it needs."
+          description="Live master-data and case metrics that show whether the protected workspace has the administrative context it needs."
           items={data.academicYearOverview}
           emptyTitle="No academic year metrics"
           emptyDescription="No active academic year data is available for the operational dashboard."

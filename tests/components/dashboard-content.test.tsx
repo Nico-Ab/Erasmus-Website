@@ -20,7 +20,7 @@ describe("DashboardListPanel", () => {
 
     expect(screen.getByText(/draft/i)).toBeInTheDocument();
     expect(screen.getByText(/submitted/i)).toBeInTheDocument();
-    expect(screen.getAllByText("0")).toHaveLength(2);
+    expect(screen.getAllByText("1")).toHaveLength(2);
   });
 
   it("shows the empty state when no items exist", () => {
@@ -40,30 +40,27 @@ describe("DashboardListPanel", () => {
 });
 
 describe("Dashboard content", () => {
-  it("renders staff dashboard areas with real empty states and tasks", () => {
+  it("renders staff dashboard areas with live case data and tasks", () => {
     renderWithUser(<StaffDashboardContent data={createStaffDashboardData()} />);
 
-    expect(
-      screen.getByRole("heading", { name: /staff operational dashboard/i })
-    ).toBeInTheDocument();
-    expect(screen.getByText(/own cases overview/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /staff mobility workspace/i })).toBeInTheDocument();
+    expect(screen.getByText(/my mobility cases/i)).toBeInTheDocument();
     expect(screen.getByText(/current status areas/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^open tasks$/i })).toBeInTheDocument();
-    expect(screen.getByText(/complete institutional profile/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /open profile editor/i })).toHaveAttribute(
-      "href",
-      "/dashboard/profile"
-    );
+    expect(screen.getAllByText(/university of graz/i).length).toBeGreaterThan(0);
+
+    const createCaseLinks = screen.getAllByRole("link", { name: /create new case/i });
+    expect(createCaseLinks[0]).toHaveAttribute("href", "/dashboard/staff/cases/new");
   });
 
-  it("renders admin review dashboard links and live registration items", () => {
+  it("renders admin review dashboard links and live queue items", () => {
     renderWithUser(<ReviewDashboardContent data={createReviewDashboardData()} mode="admin" />);
 
     expect(
       screen.getByRole("heading", { name: /admin operations dashboard/i })
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/new registrations/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/^Pending Staff$/i)).toHaveLength(2);
+    expect(screen.getAllByText(/new submitted cases/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/university of graz/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /open user management/i })).toHaveAttribute(
       "href",
       "/dashboard/admin/users"

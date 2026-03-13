@@ -1,10 +1,10 @@
 # Progress Log
 
 ## Status snapshot
-- Date: March 12, 2026
-- Overall phase: Foundation, authentication, staff profile baseline, dashboard baseline, and admin master data baseline implemented; larger product workflows still pending
-- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, and multi-layer automated tests
-- Active milestones: M4 completed for the current scope, M7 in progress through dashboard visibility, M8 in progress through the current baseline
+- Date: March 13, 2026
+- Overall phase: Foundation, authentication, staff profile baseline, admin master data baseline, role dashboards, and the first staff-owned mobility-case workflow are implemented; larger review and document workflows are still pending
+- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, real role dashboards, admin-managed master data, staff mobility-case drafting and submission, and multi-layer automated tests
+- Active milestones: M5 completed for the current scope, M7 in progress through dashboard visibility only, M8 in progress through the current baseline
 
 ## Foundation completed on March 11, 2026
 ### What was done
@@ -59,7 +59,7 @@
 ### What was done
 - Added a shared server-side dashboard service layer that queries live registration, academic-year, faculty, department, and status data where it exists.
 - Added reusable formal list-panel widgets so dashboard pages can show structured queues and explicit empty states instead of placeholder prose.
-- Replaced the staff placeholder page with a real dashboard that shows profile-linked context, academic-year status, status areas sourced from master data, a missing-documents area, a latest-comments area, and open tasks with honest zero states where case data does not yet exist.
+- Replaced the staff placeholder page with a real dashboard that shows profile-linked context, academic-year status, status areas sourced from master data, a missing-documents area, a latest-comments area, and open tasks with honest zero states where case data did not yet exist.
 - Replaced the officer placeholder page with a real review dashboard that shows new registrations, open reviews, current academic year overview metrics, and honest empty states for submitted-case, missing-document, and changes-required queues.
 - Replaced the admin placeholder page with a real operational dashboard that shows the same live oversight metrics plus direct actions into user management and master data.
 - Added component tests for dashboard panels and role dashboard content.
@@ -67,29 +67,44 @@
 - Tightened Playwright local execution for stability by using a single worker in the current local-first setup.
 - Adjusted auth E2E registration coverage to use the live `/api/register` endpoint plus browser pending-approval and approval-unlock flows because direct `/register` page navigation was unreliable in local Playwright dev mode, while the register form UI remains covered in integration tests.
 
+## Staff mobility-case management implemented on March 13, 2026
+### What was done
+- Added Prisma case-domain models for `MobilityCase`, `MobilityCaseComment`, and `MobilityCaseStatusHistory` plus the required relations from `User`, `AcademicYear`, `CaseStatusDefinition`, and mobility-type `SelectOption` records.
+- Added the `20260313062930_mobility_case_management` Prisma migration and refreshed seed data so the workflow can run against real academic years, status definitions, mobility types, and role accounts.
+- Added server-side mobility-case validation with clear required-field and date-order rules for draft and submit flows.
+- Added protected staff APIs at `/api/staff/cases` and `/api/staff/cases/[caseId]` with approved-staff checks and ownership enforcement.
+- Added staff case routes at `/dashboard/staff/cases/new` and `/dashboard/staff/cases/[caseId]` for creating, resuming, editing, and submitting cases.
+- Added a structured staff case list and detail experience with formal tables, status badges, status history, comments, recorded-summary panels, and honest empty states where downstream review data does not yet exist.
+- Added real draft save and later-resume behavior so staff users can maintain multiple cases in progress.
+- Added submission behavior that moves a case into the submitted state and records explicit status-history entries when the workflow changes state.
+- Updated the staff dashboard so case overview, status areas, latest comments, and open tasks now consume real case data where available instead of only shell placeholders.
+- Updated navigation so the protected shell exposes the case workspace and new-case entry point.
+- Added unit coverage for mobility-case validation, integration coverage for create, update, and submit service and form behavior, component coverage for the readable case table, and E2E coverage for draft creation, draft editing, submission, own-case list/detail access, and protected-route enforcement.
+- Hardened the mobility-case browser tests by scoping create and edit interactions to explicit form instances after client-side navigation, which removed a real local flake where overlapping route transitions could momentarily expose both forms.
+
 ### What is intentionally incomplete
-- Role changes and account deactivation controls in the admin UI
-- Password reset, email verification, and richer account recovery flows
-- Staff-owned mobility case creation, draft, submission, and status history workflows
+- Officer and admin review actions on submitted cases
+- Officer or admin comment authoring and change-request loops
+- Real missing-document logic tied to uploaded files
 - Private document upload, versioning, and review workflows
 - Reporting, CSV export, archive management, and broader admin operations
-- Audit history for master data changes
-- Domain models beyond the current auth, dashboard, profile, and master-data baseline
+- Audit history for master-data changes
+- Role changes and account deactivation controls in the admin UI
+- Password reset, email verification, and richer account recovery flows
+- Direct browser interaction with the `/register` page in Playwright
 
 ### Risks and follow-up notes
 - The current Prisma setup still emits a deprecation warning for `package.json#prisma`; it works now but should move to a dedicated Prisma config before Prisma 7.
-- The `20260312110000_profile_master_data` database change was applied through Prisma diff and execute commands instead of `migrate dev`; that is valid for the current local setup, but the team should keep the generated migration SQL under review because it included column-removal behavior.
 - Negative-path browser tests trigger expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
-- Direct browser navigation to `/register` was unreliable under the current local Playwright-plus-dev-server combination, so registration browser coverage currently exercises the live endpoint rather than the page UI itself.
-- Case-status and select-list master data now exist, but they are not yet connected to real case workflows because those modules remain out of scope for the current slice.
-- The admin surface currently provides create and update flows for master data, but not richer guardrails such as audit history, bulk actions, or change review.
+- Direct browser navigation to `/register` remains unreliable under the current local Playwright-plus-dev-server combination, so registration browser coverage still exercises the live endpoint rather than the page UI itself.
+- The current mobility workflow covers staff-owned drafting, editing, listing, and submission only; submitted cases are visible but there is no officer review or changes-required loop yet.
+- Case comments are readable on the detail page, but there is not yet a workflow for officers or admins to add them.
+- Missing-documents and open-task areas now surface honest case-aware states, but they are not yet backed by document requirements or task-assignment records.
+- The `20260312110000_profile_master_data` database change was applied through Prisma diff and execute commands instead of `migrate dev`; that is valid for the current local setup, but the generated SQL should remain under review because it included column-removal behavior.
 
 ## Verification summary
 - `docker compose up -d`: passed
-- `node .\node_modules\prisma\build\index.js migrate diff --from-schema-datasource prisma\schema.prisma --to-schema-datamodel prisma\schema.prisma --script --output prisma\migrations\20260312110000_profile_master_data\migration.sql`: passed
-- `node .\node_modules\prisma\build\index.js db execute --file prisma\migrations\20260312110000_profile_master_data\migration.sql --schema prisma\schema.prisma`: passed
-- `node .\node_modules\prisma\build\index.js migrate resolve --applied 20260312110000_profile_master_data --schema prisma\schema.prisma`: passed
-- `npm run db:generate`: passed
+- `npm run db:migrate -- --name mobility-case-management`: passed
 - `npm run seed`: passed
 - `npm run lint`: passed
 - `npm run typecheck`: passed
@@ -99,37 +114,37 @@
 
 ## Coverage snapshot
 ### Covered now
-- unit coverage for login and registration validation, profile validation, master-data validation, navigation filtering, and shared formatting helpers
-- integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, and profile form behavior
-- component coverage for anonymous and authenticated home-page states plus dashboard panels and role dashboard content
-- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, and unauthorized admin-edit prevention
+- unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, navigation filtering, and shared formatting helpers
+- integration coverage for auth service login and registration outcomes, login form behavior, registration form behavior, profile form behavior, and mobility-case create, edit, and submit behavior
+- component coverage for anonymous and authenticated home-page states, dashboard panels and role dashboard content, and readable staff case-table rendering
+- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list/detail access, and unauthorized admin-edit prevention
 
 ### Still uncovered
 - direct browser interaction with the `/register` page in Playwright
 - rejection and deactivation actions in the admin UI
 - session behavior immediately after future role changes or deactivation actions
 - academic year, status, select-option, and upload-setting admin flows at the browser level
-- mobility case lifecycle and status transitions
+- officer or admin review actions on submitted cases
+- comments creation and review-history authoring on cases
 - document upload and download authorization
-- officer review actions beyond dashboard visibility
 - reporting and exports
 
 ## Milestone tracker
 | Milestone | Status | Notes |
 | --- | --- | --- |
 | M1 Workspace bootstrap and viewable shell | Completed | App shell, auth, status page, testing stack, migration, and seed are in place |
-| M2 Data foundation | In progress through current baseline | Core auth, profile, dashboard, and master data models exist; case and document domain models are still missing |
+| M2 Data foundation | In progress through current baseline | Core auth, profile, dashboard, master data, and initial mobility-case models exist; document and reporting domain models are still missing |
 | M3 Authentication and access control | Completed for current scope | Registration, approval gating, login, role protection, and admin approval page are live |
-| M4 Staff identity and dashboard baseline | Completed for current scope | Staff can edit their own profile and see a real dashboard shell with honest operational states |
-| M5 Mobility case drafting and submission | Not started | No case model or workflow yet |
+| M4 Staff identity and dashboard baseline | Completed for current scope | Staff can edit their own profile and see a real dashboard shell with live case-aware summaries |
+| M5 Mobility case drafting and submission | Completed for current scope | Staff can create, save drafts, resume, submit, and review their own case details and status history |
 | M6 Secure document management | Not started | No upload or storage workflow yet |
-| M7 Officer review workflow | In progress through dashboard visibility | Officer and admin dashboards now show live oversight metrics, but no case-review actions exist yet |
+| M7 Officer review workflow | In progress through dashboard visibility | Officer and admin dashboards show oversight metrics, but no case-review actions or change loops exist yet |
 | M8 Admin controls and master data | In progress through current baseline | Approval/rejection page plus master-data management and admin dashboard actions are live; broader admin controls remain unimplemented |
 | M9 Reporting, exports, and archive access | Not started | No reporting or export implementation yet |
-| M10 Hardening and release readiness | Not started | Foundation, auth, dashboard, profile, and master-data verification exist; full product hardening remains ahead |
+| M10 Hardening and release readiness | Not started | Foundation, auth, dashboard, profile, master-data, and mobility-case verification exist; full product hardening remains ahead |
 
 ## Next recommended move
-Start the first real mobility-case slice so the live dashboard shells can begin consuming actual case, document, comment, and task data instead of structured empty states.
+Start the officer review and document-management slices so submitted mobility cases can advance beyond the staff-owned draft and submit lifecycle.
 
 ## Update template
 Use this format for future entries:
