@@ -1,4 +1,6 @@
 import { UserRole } from "@prisma/client";
+import type { AppLocale } from "@/lib/i18n/config";
+import { getMessages } from "@/lib/i18n/messages";
 
 export type NavigationItem = {
   title: string;
@@ -7,97 +9,105 @@ export type NavigationItem = {
   roles?: UserRole[];
 };
 
-export const publicNavigation: NavigationItem[] = [
-  {
-    title: "Home",
-    href: "/",
-    description: "Portal overview"
-  },
-  {
-    title: "Status",
-    href: "/status",
-    description: "Local environment checks"
-  },
-  {
-    title: "Login",
-    href: "/login",
-    description: "Secure account access"
-  },
-  {
-    title: "Register",
-    href: "/register",
-    description: "Staff account request"
-  }
-];
+export function getPublicNavigation(locale: AppLocale): NavigationItem[] {
+  const { navigation } = getMessages(locale);
 
-const dashboardNavigation: NavigationItem[] = [
-  {
-    title: "Overview",
-    href: "/dashboard",
-    description: "Role-aware summary"
-  },
-  {
-    title: "My profile",
-    href: "/dashboard/profile",
-    description: "Institutional identity and assignment details",
-    roles: [UserRole.STAFF, UserRole.OFFICER, UserRole.ADMIN]
-  },
-  {
-    title: "Staff area",
-    href: "/dashboard/staff",
-    description: "Mobility cases, statuses, and comments",
-    roles: [UserRole.STAFF]
-  },
-  {
-    title: "New case",
-    href: "/dashboard/staff/cases/new",
-    description: "Create a new staff mobility case",
-    roles: [UserRole.STAFF]
-  },
-  {
-    title: "Officer area",
-    href: "/dashboard/officer",
-    description: "Review queues and case oversight",
-    roles: [UserRole.OFFICER, UserRole.ADMIN]
-  },
-  {
-    title: "Review cases",
-    href: "/dashboard/officer/cases",
-    description: "Search, filter, and review all mobility cases",
-    roles: [UserRole.OFFICER, UserRole.ADMIN]
-  },
-  {
-    title: "Reports",
-    href: "/dashboard/reports",
-    description: "Operational reporting and CSV exports",
-    roles: [UserRole.OFFICER, UserRole.ADMIN]
-  },
-  {
-    title: "Admin area",
-    href: "/dashboard/admin",
-    description: "Users, settings, and master data",
-    roles: [UserRole.ADMIN]
-  },
-  {
-    title: "User management",
-    href: "/dashboard/admin/users",
-    description: "Registrations, role changes, and account access control",
-    roles: [UserRole.ADMIN]
-  },
-  {
-    title: "Master data",
-    href: "/dashboard/admin/master-data",
-    description: "Faculties, departments, years, statuses, and settings",
-    roles: [UserRole.ADMIN]
-  },
-  {
-    title: "Audit log",
-    href: "/dashboard/admin/audit-log",
-    description: "Protected action history across users, cases, documents, and settings",
-    roles: [UserRole.ADMIN]
-  }
-];
+  return [
+    {
+      title: navigation.public.home.title,
+      href: "/",
+      description: navigation.public.home.description
+    },
+    {
+      title: navigation.public.status.title,
+      href: "/status",
+      description: navigation.public.status.description
+    },
+    {
+      title: navigation.public.login.title,
+      href: "/login",
+      description: navigation.public.login.description
+    },
+    {
+      title: navigation.public.register.title,
+      href: "/register",
+      description: navigation.public.register.description
+    }
+  ];
+}
 
-export function getDashboardNavigation(role: UserRole) {
-  return dashboardNavigation.filter((item) => !item.roles || item.roles.includes(role));
+function getDashboardNavigationItems(locale: AppLocale): NavigationItem[] {
+  const { navigation } = getMessages(locale);
+
+  return [
+    {
+      title: navigation.dashboard.overview.title,
+      href: "/dashboard",
+      description: navigation.dashboard.overview.description
+    },
+    {
+      title: navigation.dashboard.profile.title,
+      href: "/dashboard/profile",
+      description: navigation.dashboard.profile.description,
+      roles: [UserRole.STAFF, UserRole.OFFICER, UserRole.ADMIN]
+    },
+    {
+      title: navigation.dashboard.staff.title,
+      href: "/dashboard/staff",
+      description: navigation.dashboard.staff.description,
+      roles: [UserRole.STAFF]
+    },
+    {
+      title: navigation.dashboard.newCase.title,
+      href: "/dashboard/staff/cases/new",
+      description: navigation.dashboard.newCase.description,
+      roles: [UserRole.STAFF]
+    },
+    {
+      title: navigation.dashboard.officer.title,
+      href: "/dashboard/officer",
+      description: navigation.dashboard.officer.description,
+      roles: [UserRole.OFFICER, UserRole.ADMIN]
+    },
+    {
+      title: navigation.dashboard.reviewCases.title,
+      href: "/dashboard/officer/cases",
+      description: navigation.dashboard.reviewCases.description,
+      roles: [UserRole.OFFICER, UserRole.ADMIN]
+    },
+    {
+      title: navigation.dashboard.reports.title,
+      href: "/dashboard/reports",
+      description: navigation.dashboard.reports.description,
+      roles: [UserRole.OFFICER, UserRole.ADMIN]
+    },
+    {
+      title: navigation.dashboard.admin.title,
+      href: "/dashboard/admin",
+      description: navigation.dashboard.admin.description,
+      roles: [UserRole.ADMIN]
+    },
+    {
+      title: navigation.dashboard.users.title,
+      href: "/dashboard/admin/users",
+      description: navigation.dashboard.users.description,
+      roles: [UserRole.ADMIN]
+    },
+    {
+      title: navigation.dashboard.masterData.title,
+      href: "/dashboard/admin/master-data",
+      description: navigation.dashboard.masterData.description,
+      roles: [UserRole.ADMIN]
+    },
+    {
+      title: navigation.dashboard.auditLog.title,
+      href: "/dashboard/admin/audit-log",
+      description: navigation.dashboard.auditLog.description,
+      roles: [UserRole.ADMIN]
+    }
+  ];
+}
+
+export function getDashboardNavigation(role: UserRole, locale: AppLocale = "en") {
+  return getDashboardNavigationItems(locale).filter((item) => !item.roles || item.roles.includes(role));
 }

@@ -33,11 +33,11 @@ function buildHostLocationLabel(city: string, country: string) {
 
 export function ReviewCaseTable({ cases }: ReviewCaseTableProps) {
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid="review-case-table">
+    <Card className="border-slate-200 bg-white" data-testid="review-case-table">
       <CardHeader>
         <CardTitle>Review case register</CardTitle>
         <CardDescription>
-          Readable review rows that stay scannable even when status, assignment, and document state need to be checked together.
+          Review rows with staff, document, and workflow context.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -58,7 +58,7 @@ export function ReviewCaseTable({ cases }: ReviewCaseTableProps) {
                 <caption className="sr-only">
                   Officer review register with staff assignment details, document state, workflow status, and direct access to each case.
                 </caption>
-                <thead>
+                <thead className="bg-slate-50">
                   <tr className="text-left text-slate-500">
                     <th className="border-b border-slate-200 px-4 py-3 font-semibold" scope="col">Staff</th>
                     <th className="border-b border-slate-200 px-4 py-3 font-semibold" scope="col">Assignment</th>
@@ -72,14 +72,14 @@ export function ReviewCaseTable({ cases }: ReviewCaseTableProps) {
                 </thead>
                 <tbody>
                   {cases.map((item) => (
-                    <tr key={item.id} className="align-top text-slate-700 hover:bg-slate-50/60" data-testid={`review-case-row-${item.id}`}>
+                    <tr key={item.id} className="align-top text-slate-700 hover:bg-accent/40" data-testid={`review-case-row-${item.id}`}>
                       <td className="border-b border-slate-100 px-4 py-4">
                         <p className="font-semibold text-slate-950">{item.staffName}</p>
                         <p className="mt-1 text-xs text-slate-500">{item.staffEmail}</p>
                       </td>
                       <td className="border-b border-slate-100 px-4 py-4">
-                        <p className="font-medium text-slate-950">{item.facultyName}</p>
-                        <p className="mt-1 text-xs text-slate-500">{item.departmentName}</p>
+                        <p className="font-medium text-slate-950">{item.facultyName || "No faculty assigned"}</p>
+                        <p className="mt-1 text-xs text-slate-500">{item.departmentName || "No department assigned"}</p>
                       </td>
                       <td className="border-b border-slate-100 px-4 py-4">
                         <p className="font-medium text-slate-950">{item.mobilityTypeLabel ?? "Not set"}</p>

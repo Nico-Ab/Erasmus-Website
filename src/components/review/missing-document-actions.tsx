@@ -20,7 +20,7 @@ export function MissingDocumentActions({ caseId, missingDocuments }: MissingDocu
 
   if (missingDocuments.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="text-lg font-semibold text-slate-950">Missing required documents</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
           All required document types currently have a stored current version.
@@ -30,7 +30,7 @@ export function MissingDocumentActions({ caseId, missingDocuments }: MissingDocu
   }
 
   return (
-    <div className="space-y-4 rounded-xl border border-slate-200 bg-white/95 p-5">
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
       <div>
         <h2 className="text-lg font-semibold text-slate-950">Missing required documents</h2>
         <p className="mt-1 text-sm leading-6 text-slate-600">

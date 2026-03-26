@@ -47,7 +47,7 @@ export default async function AdminUsersPage() {
         <OverviewMetric title="Deactivated users" value={deactivatedCount.toString()} description="Accounts that remain blocked from new sign-ins." />
       </section>
 
-      <Card className="border-slate-200 bg-white/95">
+      <Card className="border-slate-200 bg-white">
         <CardHeader>
           <CardTitle>Registration and access control</CardTitle>
           <CardDescription className="leading-6">

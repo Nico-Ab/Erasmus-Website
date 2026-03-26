@@ -37,9 +37,9 @@ For each uploaded version, the portal records:
 ## Validation
 - Allowed extensions come from `ALLOWED_UPLOAD_EXTENSIONS`.
 - Maximum file size comes from upload settings with environment-based fallback.
-- Validation currently checks filename extension and size.
+- Validation checks filename extension, maximum size, declared MIME type, and basic file signatures for supported formats.
 
 ## Operational notes
 - The local filesystem driver is suitable for reliable local use and single-host evaluation.
 - For future hosted environments, the storage abstraction should be backed by persistent shared storage rather than local instance disk.
-- Backup, retention, and malware scanning are not implemented in v1.
+- Backup, retention, and full malware scanning are not implemented in v1.

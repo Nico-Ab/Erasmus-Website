@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 type SectionCardProps = {
   title: string;
   description: string;
-  points: string[];
+  points: readonly string[];
 };
 
 export function SectionCard({ title, description, points }: SectionCardProps) {
   return (
-    <Card className="border-slate-200 bg-white/95">
+    <Card className="border-slate-200 bg-white/96">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription className="leading-6">{description}</CardDescription>

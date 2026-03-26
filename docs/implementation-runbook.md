@@ -1,7 +1,7 @@
 # Implementation Runbook
 
 ## Purpose
-This runbook defines how future implementation work should be executed so the project stays aligned with `AGENTS.md` and the project docs.
+This runbook defines how future implementation work should be executed so the project stays aligned with the project docs and established codebase conventions.
 
 ## Coding rules
 - Use TypeScript for all application code, scripts, and shared modules where practical.

@@ -1,0 +1,463 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{enumitem}
+
+\definecolor{swured}{HTML}{8B1E2D}
+\definecolor{swudark}{HTML}{2F3440}
+\definecolor{swuline}{HTML}{D7DCE2}
+\definecolor{swusurface}{HTML}{F7F8FA}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=black,
+  pdftitle={SWU Erasmus Staff Mobility Portal Handbook},
+  pdfauthor={SWU Erasmus Staff Mobility Portal Project}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\setlength{\headheight}{14pt}
+\setlist[itemize]{leftmargin=1.5em}
+\setlist[enumerate]{leftmargin=1.7em}
+\renewcommand{\arraystretch}{1.22}
+\arrayrulecolor{swuline}
+
+\titleformat{\section}
+  {\Large\bfseries\color{swured}}
+  {}
+  {0pt}
+  {}
+
+\titleformat{\subsection}
+  {\large\bfseries\color{swudark}}
+  {}
+  {0pt}
+  {}
+
+\titlespacing*{\section}{0pt}{1.7em}{0.7em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.35em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{swudark}{\footnotesize SWU Erasmus Staff Mobility Portal}}
+\fancyhead[R]{\textcolor{swudark}{\footnotesize Handbook}}
+\fancyfoot[C]{\textcolor{swudark}{\footnotesize \thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand{\handbooktitle}[1]{{\Huge\bfseries\color{swudark} #1\par}}
+\newcommand{\handbooksubtitle}[1]{{\Large\color{swured} #1\par}}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\thispagestyle{empty}
+\vspace*{1.5cm}
+{\color{swured}\rule{\textwidth}{1.4pt}}
+\vspace{1.1cm}
+\handbooktitle{SWU Erasmus Staff Mobility Portal}
+\vspace{0.2cm}
+\handbooksubtitle{Handbook}
+\vspace{0.45cm}
+{\large Direct guide for first-time users\par}
+\vspace{1.6cm}
+
+\begin{tabular}{@{}p{3.2cm}p{9.3cm}@{}}
+\textbf{Document} & User handbook \\
+\textbf{Scope} & Current website functionality and navigation \\
+\textbf{Version} & March 2026 \\
+\end{tabular}
+
+\vfill
+{\color{swured}\rule{\textwidth}{1.4pt}}
+\newpage
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+
+\section*{What this handbook is for}
+This handbook explains what the portal can do and how to move through it. It is written for someone who opens the website for the first time and needs a clear overview without reading technical documentation first.
+
+The portal is an internal university system for Erasmus staff mobility. It is used by three user groups:
+
+\begin{itemize}
+  \item staff users, who create and manage their own mobility cases
+  \item officers, who review submitted cases and documents
+  \item admins, who manage users, master data, settings, and the audit log
+\end{itemize}
+
+\section*{1. Before you start}
+When you open the website, you begin in the public area. From there you can go to the login page, the registration page, or the system status page.
+
+At the top of the page you will also see a language toggle. It uses the English and Bulgarian flags. Use it to switch the interface language. The selection stays active when you move to another page and also after you sign in.
+
+\section*{2. Public pages}
+\subsection*{Home}
+The home page is the main entry point. It gives you the quickest routes into the system:
+
+\begin{itemize}
+  \item \texttt{Login} if you already have an approved account
+  \item \texttt{Register} if you need to request a staff account
+  \item \texttt{Status} if you want to check whether the local system is running correctly
+\end{itemize}
+
+The home page is intentionally short. It is there to get you to the next step quickly.
+
+\subsection*{Login}
+Use the login page if your account is already approved. Enter your email address and password and select \texttt{Sign in}.
+
+Possible results:
+
+\begin{itemize}
+  \item if the account is approved, you enter the protected workspace
+  \item if the account is still pending, you are sent to the pending approval page
+  \item if the account is rejected or deactivated, access is blocked
+  \item if the credentials are wrong, the form shows an error
+\end{itemize}
+
+\subsection*{Register}
+The registration page is for staff accounts only. Fill in:
+
+\begin{itemize}
+  \item first name
+  \item last name
+  \item email
+  \item password
+  \item password confirmation
+\end{itemize}
+
+After submission, the account is created in a pending state. You do not get dashboard access immediately.
+
+\subsection*{Pending approval}
+This page confirms that your registration was received. It also shows that an administrator must approve the account before you can use the protected workspace.
+
+\subsection*{Status}
+The status page is mostly useful for local operation and testing. It shows whether the application, database, and storage are ready.
+
+\section*{3. How the signed-in area is organised}
+After login, the website changes into a protected workspace.
+
+The workspace has three main navigation elements:
+
+\begin{itemize}
+  \item a left navigation menu
+  \item a page title and breadcrumb area at the top of each page
+  \item a signed-in account area with role and account status
+\end{itemize}
+
+The left menu changes depending on your role. Not every user sees the same pages.
+
+\subsection*{Common pages for all approved users}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{9.3cm}}
+\rowcolor{swusurface}\textbf{Page} & \textbf{Purpose} \\
+\midrule
+Overview & Common protected landing page after login \\
+My profile & Edit personal and institutional profile information \\
+\end{longtable}
+
+\subsection*{Staff pages}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{9.3cm}}
+\rowcolor{swusurface}\textbf{Page} & \textbf{Purpose} \\
+\midrule
+Staff workspace & Main dashboard for staff work \\
+New case & Start a new mobility case \\
+Case detail & Open, update, submit, and monitor one case \\
+\end{longtable}
+
+\subsection*{Officer pages}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{9.3cm}}
+\rowcolor{swusurface}\textbf{Page} & \textbf{Purpose} \\
+\midrule
+Review dashboard & Review-oriented summary page \\
+Review cases & Search, filter, and open all cases \\
+Reports & Reporting and CSV export \\
+\end{longtable}
+
+\subsection*{Admin pages}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{9.3cm}}
+\rowcolor{swusurface}\textbf{Page} & \textbf{Purpose} \\
+\midrule
+Admin dashboard & Admin overview page \\
+User management & Approve, reject, change roles, and deactivate users \\
+Master data & Maintain faculties, departments, academic years, statuses, and settings \\
+Audit log & Review important recorded actions \\
+Reports & Same reporting area used by officers \\
+\end{longtable}
+
+\section*{4. Staff user guide}
+\subsection*{Step 1: Check your profile}
+After your first login, open \texttt{My profile}. This page stores the information the system uses in case ownership, filtering, and reporting.
+
+The profile includes:
+
+\begin{itemize}
+  \item first name
+  \item last name
+  \item email
+  \item academic title
+  \item faculty
+  \item department
+\end{itemize}
+
+The faculty field is important for staff users. Department depends on the selected faculty. If you are not sure what to choose, update the profile only with values that match your actual assignment.
+
+\subsection*{Step 2: Use the staff dashboard}
+The staff dashboard is your main working page. It helps you see:
+
+\begin{itemize}
+  \item how many cases you already have
+  \item whether you still have draft cases
+  \item whether required documents are missing
+  \item whether officers have added comments
+  \item what still needs action from your side
+\end{itemize}
+
+If you already created a case earlier, the case overview table is the fastest place to open it again.
+
+\subsection*{Step 3: Create a mobility case}
+Open \texttt{New case}. A case can be saved as a draft first and submitted later.
+
+The form includes:
+
+\begin{itemize}
+  \item academic year
+  \item mobility type
+  \item host institution
+  \item host country
+  \item host city
+  \item start date
+  \item end date
+  \item optional notes
+\end{itemize}
+
+Use \texttt{Save draft} if you are not finished yet. Use \texttt{Submit case} only when the required information is complete.
+
+\subsection*{Step 4: Reopen a draft}
+To continue working on a draft:
+
+\begin{enumerate}
+  \item open \texttt{Staff workspace}
+  \item find the case in the overview table
+  \item select the link to open the case
+  \item update the fields
+  \item save again or submit
+\end{enumerate}
+
+\subsection*{Step 5: Read the case detail page}
+The case detail page is where you follow the full life of one case.
+
+It shows:
+
+\begin{itemize}
+  \item the current case status
+  \item the stored case details
+  \item status history
+  \item comments from the review side
+  \item required document panels
+\end{itemize}
+
+When a case is already submitted, the page becomes read-only for staff until the workflow allows further changes.
+
+\subsection*{Step 6: Upload documents}
+Each case has two required document types:
+
+\begin{itemize}
+  \item Mobility Agreement
+  \item Final Certificate of Attendance
+\end{itemize}
+
+Each document panel shows the current review state, the current version, the version history, and the upload action.
+
+Important points:
+
+\begin{itemize}
+  \item every upload becomes a new version
+  \item older versions stay visible
+  \item only one version is marked as current
+  \item files are checked against the allowed extensions and maximum size
+\end{itemize}
+
+If a document is rejected, read the note first and then upload a corrected version.
+
+\subsection*{Step 7: Follow comments and status changes}
+Use the comments and status history panels on the case detail page to understand what happened and what is still required.
+
+This is the best place to answer questions like:
+
+\begin{itemize}
+  \item Is my case still in draft or already under review?
+  \item Did an officer reject a document?
+  \item Was a correction requested?
+  \item Has the case been completed or archived?
+\end{itemize}
+
+\section*{5. Officer user guide}
+\subsection*{Review dashboard}
+The review dashboard is a quick summary. It shows new registrations, open reviews, and the current academic year overview. Use it as a starting page.
+
+\subsection*{Review register}
+Open \texttt{Review cases} when you need to work with the full case list. This page is built for searching and filtering.
+
+You can combine filters for:
+
+\begin{itemize}
+  \item status
+  \item academic year
+  \item faculty
+  \item department
+  \item mobility type
+  \item country
+  \item host institution
+\end{itemize}
+
+This is the main page for locating a case quickly.
+
+\subsection*{Case review page}
+When you open a case from the register, you get the full review page. This page combines the main review actions in one place:
+
+\begin{itemize}
+  \item read the case details
+  \item review uploaded documents
+  \item add comments
+  \item mark missing documents
+  \item change the case status
+\end{itemize}
+
+\subsection*{Comments}
+Use comments when you need to record a review note without changing the formal case status. Comments show the author and the time they were added.
+
+\subsection*{Document decisions}
+Each document panel lets you accept or reject the current version.
+
+If you reject a document, add a clear reason. Staff users can then upload a corrected version.
+
+\subsection*{Status changes}
+Use the workflow status form when the formal case status needs to change. Status changes are recorded separately from document review.
+
+This matters because a document can be rejected while the case status stays the same until you decide how the overall case should continue.
+
+\subsection*{Archive}
+Completed cases can be archived. Archived cases are no longer active, but they remain searchable and can still appear in reports and exports.
+
+\section*{6. Admin user guide}
+\subsection*{Admin dashboard}
+The admin dashboard gives a system-wide view with direct access to the main admin pages.
+
+\subsection*{User management}
+This page is used for account decisions and access control.
+
+Typical actions:
+
+\begin{itemize}
+  \item approve a pending registration
+  \item reject a registration
+  \item change a user role
+  \item deactivate a user
+\end{itemize}
+
+Sensitive actions require confirmation before they are accepted.
+
+\subsection*{Master data}
+This page controls shared reference data used by the rest of the portal.
+
+It includes:
+
+\begin{itemize}
+  \item faculties
+  \item departments
+  \item academic years
+  \item status definitions
+  \item select-list values
+  \item upload settings
+  \item report display settings
+\end{itemize}
+
+Changes made here affect forms, filters, and reports across the system.
+
+\subsection*{Audit log}
+The audit log is the place to check who did what and when. Use it when you need traceability for user changes, case actions, document review, and other protected operations.
+
+\section*{7. Reports and CSV export}
+The reporting area is available to officers and admins.
+
+You can filter reports by academic year, faculty, department, mobility type, country, host institution, and status.
+
+The page supports:
+
+\begin{itemize}
+  \item summary tables
+  \item missing-document reporting
+  \item filtered case lists
+  \item CSV export
+\end{itemize}
+
+Available exports:
+
+\begin{itemize}
+  \item filtered case register
+  \item yearly summary
+  \item faculty summary
+\end{itemize}
+
+Archived cases remain available in the reporting area.
+
+\section*{8. Statuses at a glance}
+\subsection*{Case statuses}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{9.3cm}}
+\rowcolor{swusurface}\textbf{Status} & \textbf{Meaning} \\
+\midrule
+Draft & The case was started but not submitted yet \\
+Submitted & The case was sent for review \\
+Under Review & Officer review is in progress \\
+Changes Required & Corrections are needed before the workflow can continue \\
+Approved & The case was approved at the current review stage \\
+Mobility Ongoing & The mobility period is in progress \\
+Completed & The case is complete \\
+Archived & The case is closed but still searchable \\
+\end{longtable}
+
+\subsection*{Document review states}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{9.3cm}}
+\rowcolor{swusurface}\textbf{State} & \textbf{Meaning} \\
+\midrule
+Not uploaded & No file is available yet \\
+Pending review & A file was uploaded and still needs review \\
+Accepted & The current version was accepted \\
+Rejected & The current version was rejected \\
+\end{longtable}
+
+\section*{9. Practical tips for new users}
+\begin{itemize}
+  \item Use the left menu for normal navigation. It is clearer than relying on the browser back button.
+  \item If you are a staff user, complete your profile before starting your first case.
+  \item Save a draft if you are not ready to submit. You can always come back later.
+  \item Read comments and document notes carefully before uploading a corrected version.
+  \item Use filters in the officer register and reports. They are meant to be combined.
+  \item If something looks wrong locally, check the \texttt{/status} page first.
+  \item If you need Bulgarian, use the flag toggle at the top of the page before you begin working.
+\end{itemize}
+
+\section*{10. Current limits}
+This version already supports the full local workflow for registration, approval, case handling, document review, reporting, and audit tracking. A few things are still outside the current scope:
+
+\begin{itemize}
+  \item password reset and email verification
+  \item bulk officer actions
+  \item saved views and pagination for larger operational queues
+  \item non-CSV export formats
+  \item deeper file inspection such as malware scanning
+\end{itemize}
+
+\end{document}

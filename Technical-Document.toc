@@ -1,0 +1,52 @@
+\contentsline {section}{\numberline {1}Purpose of this document}{3}{section.1}%
+\contentsline {section}{\numberline {2}System summary}{3}{section.2}%
+\contentsline {section}{\numberline {3}Technology stack}{3}{section.3}%
+\contentsline {section}{\numberline {4}Repository layout}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Main folders}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Important application subfolders}{4}{subsection.4.2}%
+\contentsline {section}{\numberline {5}Application layout and navigation}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Public area}{4}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Protected workspace}{5}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Main page routes}{5}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}API route groups}{6}{subsection.5.4}%
+\contentsline {section}{\numberline {6}User roles and access model}{6}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Role model}{6}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Authentication flow}{6}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Authorisation model}{7}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Main functional areas}{7}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Registration and account approval}{7}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Profile management}{7}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Mobility case management}{8}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Document handling}{8}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}Officer review workflow}{8}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}Reporting and CSV export}{9}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}Audit logging}{9}{subsection.7.7}%
+\contentsline {section}{\numberline {8}Data model overview}{9}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Core entities}{9}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Important design choices}{10}{subsection.8.2}%
+\contentsline {section}{\numberline {9}Document storage and private downloads}{10}{section.9}%
+\contentsline {section}{\numberline {10}Validation and security model}{10}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Validation}{10}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Current security controls}{11}{subsection.10.2}%
+\contentsline {subsection}{\numberline {10.3}Current security limits}{11}{subsection.10.3}%
+\contentsline {section}{\numberline {11}Testing and quality}{11}{section.11}%
+\contentsline {section}{\numberline {12}Local installation on another machine}{12}{section.12}%
+\contentsline {subsection}{\numberline {12.1}Prerequisites}{12}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}Configuration files}{12}{subsection.12.2}%
+\contentsline {subsection}{\numberline {12.3}First-time local startup}{12}{subsection.12.3}%
+\contentsline {subsection}{\numberline {12.4}Important environment values}{12}{subsection.12.4}%
+\contentsline {subsection}{\numberline {12.5}Seed data}{13}{subsection.12.5}%
+\contentsline {section}{\numberline {13}Deployment process on another internal system}{13}{section.13}%
+\contentsline {subsection}{\numberline {13.1}What the repository already supports}{13}{subsection.13.1}%
+\contentsline {subsection}{\numberline {13.2}Current recommended deployment model}{13}{subsection.13.2}%
+\contentsline {subsection}{\numberline {13.3}Deployment sequence}{14}{subsection.13.3}%
+\contentsline {subsection}{\numberline {13.4}Production-like commands}{14}{subsection.13.4}%
+\contentsline {subsection}{\numberline {13.5}Optional demo setup}{14}{subsection.13.5}%
+\contentsline {subsection}{\numberline {13.6}What is not yet included in the repository}{14}{subsection.13.6}%
+\contentsline {section}{\numberline {14}Operational notes for maintainers}{15}{section.14}%
+\contentsline {subsection}{\numberline {14.1}Database}{15}{subsection.14.1}%
+\contentsline {subsection}{\numberline {14.2}Storage}{15}{subsection.14.2}%
+\contentsline {subsection}{\numberline {14.3}External temporary access}{15}{subsection.14.3}%
+\contentsline {section}{\numberline {15}Current limitations and scope boundaries}{15}{section.15}%
+\contentsline {section}{\numberline {16}Recommended technical demo flow}{16}{section.16}%
+\contentsline {section}{\numberline {17}Conclusion}{16}{section.17}%

@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import { screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProfileForm } from "@/components/profile/profile-form";
@@ -21,6 +22,12 @@ describe("ProfileForm", () => {
     vi.stubGlobal("fetch", fetchMock);
   });
 
+  async function waitForProfileFormReady() {
+    await waitFor(() => {
+      expect(screen.getByLabelText(/first name/i)).toBeEnabled();
+    });
+  }
+
   it("shows validation feedback before submit", async () => {
     const referenceData = createProfileReferenceData();
     const { user } = renderWithUser(
@@ -28,11 +35,14 @@ describe("ProfileForm", () => {
         academicTitleOptions={referenceData.academicTitleOptions}
         faculties={referenceData.faculties}
         initialValues={createProfileInput()}
+        legacySelection={referenceData.legacySelection}
+        role={UserRole.STAFF}
       />
     );
 
+    await waitForProfileFormReady();
     await user.clear(screen.getByLabelText(/first name/i));
-    await user.click(screen.getByRole("button", { name: /save profile/i }));
+    await user.click(await screen.findByRole("button", { name: /save profile/i }));
 
     expect(await screen.findByText("First name is required")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
@@ -45,10 +55,13 @@ describe("ProfileForm", () => {
         academicTitleOptions={referenceData.academicTitleOptions}
         faculties={referenceData.faculties}
         initialValues={createProfileInput()}
+        legacySelection={referenceData.legacySelection}
+        role={UserRole.STAFF}
       />
     );
 
-    await user.selectOptions(screen.getByLabelText(/faculty/i), "faculty_law");
+    await waitForProfileFormReady();
+    await user.selectOptions(screen.getByLabelText(/faculty/i), "faculty_law_history");
 
     expect(screen.getByLabelText(/department/i)).toHaveValue("");
   });
@@ -68,14 +81,17 @@ describe("ProfileForm", () => {
         academicTitleOptions={referenceData.academicTitleOptions}
         faculties={referenceData.faculties}
         initialValues={createProfileInput()}
+        legacySelection={referenceData.legacySelection}
+        role={UserRole.STAFF}
       />
     );
 
+    await waitForProfileFormReady();
     await user.clear(screen.getByLabelText(/first name/i));
     await user.type(screen.getByLabelText(/first name/i), "Elena Updated");
-    await user.selectOptions(screen.getByLabelText(/faculty/i), "faculty_law");
+    await user.selectOptions(screen.getByLabelText(/faculty/i), "faculty_law_history");
     await user.selectOptions(screen.getByLabelText(/department/i), "department_public");
-    await user.click(screen.getByRole("button", { name: /save profile/i }));
+    await user.click(await screen.findByRole("button", { name: /save profile/i }));
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith("/api/profile", {
@@ -86,7 +102,7 @@ describe("ProfileForm", () => {
         body: JSON.stringify({
           ...createProfileInput(),
           firstName: "Elena Updated",
-          facultyId: "faculty_law",
+          facultyId: "faculty_law_history",
           departmentId: "department_public"
         })
       });
@@ -118,17 +134,75 @@ describe("ProfileForm", () => {
         academicTitleOptions={referenceData.academicTitleOptions}
         faculties={referenceData.faculties}
         initialValues={createProfileInput()}
+        legacySelection={referenceData.legacySelection}
+        role={UserRole.STAFF}
       />
     );
 
+    await waitForProfileFormReady();
     await user.clear(screen.getByLabelText(/email/i));
     await user.type(screen.getByLabelText(/email/i), "duplicate@swu.local");
-    await user.click(screen.getByRole("button", { name: /save profile/i }));
+    await user.click(await screen.findByRole("button", { name: /save profile/i }));
 
     const duplicateMessages = await screen.findAllByText(
       /another account already uses this email address\./i
     );
 
     expect(duplicateMessages).toHaveLength(2);
+  });
+
+  it("allows central admin and officer profiles to save without faculty or department", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ message: "Profile updated successfully." }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+    );
+    const referenceData = createProfileReferenceData();
+    const { user } = renderWithUser(
+      <ProfileForm
+        academicTitleOptions={referenceData.academicTitleOptions}
+        faculties={referenceData.faculties}
+        initialValues={createProfileInput({ facultyId: "", departmentId: "" })}
+        legacySelection={referenceData.legacySelection}
+        role={UserRole.ADMIN}
+      />
+    );
+
+    await waitForProfileFormReady();
+    await user.selectOptions(screen.getByLabelText(/faculty/i), "");
+    await user.click(await screen.findByRole("button", { name: /save profile/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(createProfileInput({ facultyId: "", departmentId: "" }))
+      });
+    });
+  });
+
+  it("renders Bulgarian profile labels when the locale is switched", async () => {
+    const referenceData = createProfileReferenceData();
+    renderWithUser(
+      <ProfileForm
+        academicTitleOptions={referenceData.academicTitleOptions}
+        faculties={referenceData.faculties}
+        initialValues={createProfileInput()}
+        legacySelection={referenceData.legacySelection}
+        role={UserRole.STAFF}
+      />,
+      { locale: "bg" }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^име$/i)).toBeEnabled();
+    });
+    expect(screen.getByLabelText(/академична титла/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /запази профила/i })).toBeInTheDocument();
   });
 });

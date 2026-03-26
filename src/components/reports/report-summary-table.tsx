@@ -10,7 +10,7 @@ type ReportSummaryTableProps = {
 
 export function ReportSummaryTable({ title, description, rows, testId }: ReportSummaryTableProps) {
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid={testId}>
+    <Card className="border-slate-200 bg-white" data-testid={testId}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription className="leading-6">{description}</CardDescription>
@@ -39,7 +39,7 @@ export function ReportSummaryTable({ title, description, rows, testId }: ReportS
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.label} className="align-top text-slate-700 hover:bg-slate-50/60">
+                  <tr key={row.label} className="align-top text-slate-700 hover:bg-slate-50">
                     <td className="border-b border-slate-100 px-4 py-4 font-medium text-slate-950">{row.label}</td>
                     <td className="border-b border-slate-100 px-4 py-4 text-right">{row.totalCount}</td>
                     <td className="border-b border-slate-100 px-4 py-4 text-right">{row.openCount}</td>

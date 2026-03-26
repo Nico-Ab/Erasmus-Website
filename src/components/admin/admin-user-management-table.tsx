@@ -166,7 +166,7 @@ export function AdminUserManagementTable({ users }: AdminUserManagementTableProp
               return (
                 <tr
                   key={user.id}
-                  className="align-top text-slate-700 transition-colors hover:bg-slate-50/60"
+                  className="align-top text-slate-700 transition-colors hover:bg-accent/40"
                   data-testid={`admin-user-row-${user.id}`}
                 >
                   <td className="border-b border-slate-100 px-4 py-4">

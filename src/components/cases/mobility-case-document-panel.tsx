@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useHydrated } from "@/hooks/use-hydrated";
 import type { CaseDocumentPanel } from "@/lib/documents/service";
 
 type MobilityCaseDocumentPanelProps = {
@@ -41,9 +42,11 @@ export function MobilityCaseDocumentPanel({
   uploadPolicy
 }: MobilityCaseDocumentPanelProps) {
   const router = useRouter();
+  const isReady = useHydrated();
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const isInteractive = isReady && !isUploading;
 
   async function handleUpload(formData: FormData) {
     const selectedFile = formData.get("file");
@@ -86,7 +89,7 @@ export function MobilityCaseDocumentPanel({
   }
 
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid={`document-panel-${document.documentType.key}`}>
+    <Card className="border-slate-200 bg-white" data-testid={`document-panel-${document.documentType.key}`}>
       <CardHeader>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -100,7 +103,7 @@ export function MobilityCaseDocumentPanel({
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-3">
+        <div className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current version</p>
             <p className="mt-2 text-sm font-semibold text-slate-950">
@@ -152,14 +155,20 @@ export function MobilityCaseDocumentPanel({
               <Label htmlFor={`documentFile-${document.documentType.key}`}>Upload new version</Label>
               <Input
                 accept={buildAcceptAttribute(uploadPolicy.allowedExtensions)}
-                disabled={isUploading}
+                disabled={!isInteractive}
                 id={`documentFile-${document.documentType.key}`}
                 name="file"
                 type="file"
               />
             </div>
-            <Button disabled={isUploading} type="submit">
-              {isUploading ? "Uploading..." : document.currentVersion ? "Upload next version" : "Upload document"}
+            <Button disabled={!isInteractive} type="submit">
+              {isUploading
+                ? "Uploading..."
+                : isReady
+                  ? document.currentVersion
+                    ? "Upload next version"
+                    : "Upload document"
+                  : "Preparing upload..."}
             </Button>
           </form>
         ) : (
@@ -188,7 +197,7 @@ export function MobilityCaseDocumentPanel({
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Version history</h3>
               <p className="mt-1 text-sm text-slate-600">
-                Every upload is preserved. The current version marker moves forward when a newer file becomes the active record.
+                Every upload is preserved. The current marker moves forward when a newer file becomes active.
               </p>
             </div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -201,7 +210,7 @@ export function MobilityCaseDocumentPanel({
               No versions uploaded yet. Upload the first file once this requirement is ready for review.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
               <table aria-label={`${document.documentType.label} version history`} className="min-w-full divide-y divide-slate-200 text-sm">
                 <caption className="sr-only">
                   Version history for {document.documentType.label}, including current-version markers, review state, and secure downloads.
@@ -218,7 +227,7 @@ export function MobilityCaseDocumentPanel({
                 <tbody className="divide-y divide-slate-200 bg-white">
                   {document.versions.map((version) => (
                     <tr
-                      className="transition-colors hover:bg-slate-50/60"
+                      className="transition-colors hover:bg-accent/40"
                       key={version.id}
                       data-testid={`document-version-${document.documentType.key}-${version.versionNumber}`}
                     >

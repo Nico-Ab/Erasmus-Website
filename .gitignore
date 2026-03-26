@@ -30,7 +30,6 @@ Thumbs.db
 coverage/
 playwright-report/
 test-results/
-AGENTS.md
 
 # local uploads
 storage/

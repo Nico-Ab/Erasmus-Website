@@ -35,7 +35,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
   const currentVersionId = document.currentVersion?.id ?? "";
 
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid={`review-document-panel-${document.documentType.key}`}>
+    <Card className="border-slate-200 bg-white" data-testid={`review-document-panel-${document.documentType.key}`}>
       <CardHeader>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -49,7 +49,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-3">
+        <div className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current version</p>
             <p className="mt-2 text-sm font-semibold text-slate-950">
@@ -78,7 +78,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
 
         {document.currentVersion ? (
           <form
-            className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4"
+            className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4"
             data-testid={`review-document-form-${document.documentType.key}`}
             onSubmit={async (event) => {
               event.preventDefault();
@@ -160,7 +160,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Version history</h3>
               <p className="mt-1 text-sm text-slate-600">
-                Document review remains version-specific. Case status changes must still be recorded separately.
+                Document review is version-specific. Case status changes are recorded separately.
               </p>
             </div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -173,7 +173,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
               No versions uploaded yet.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
               <table aria-label={`${document.documentType.label} review history`} className="min-w-full divide-y divide-slate-200 text-sm">
                 <caption className="sr-only">
                   Review history for {document.documentType.label}, including current version markers, review notes, and secure downloads.
@@ -190,7 +190,7 @@ export function ReviewDocumentPanel({ caseId, document }: ReviewDocumentPanelPro
                 <tbody className="divide-y divide-slate-200 bg-white">
                   {document.versions.map((version) => (
                     <tr
-                      className="transition-colors hover:bg-slate-50/60"
+                      className="transition-colors hover:bg-accent/40"
                       key={version.id}
                       data-testid={`review-document-version-${document.documentType.key}-${version.versionNumber}`}
                     >

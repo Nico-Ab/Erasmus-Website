@@ -11,11 +11,11 @@ type ReviewCaseFiltersProps = {
 
 export function ReviewCaseFilters({ data }: ReviewCaseFiltersProps) {
   return (
-    <form className="space-y-4 rounded-xl border border-slate-200 bg-white/95 p-5" data-testid="review-case-filters" method="get">
+    <form className="space-y-4 rounded-xl border border-slate-200 bg-white p-5" data-testid="review-case-filters" method="get">
       <div>
         <h2 className="text-lg font-semibold text-slate-950">Search and filters</h2>
         <p className="mt-1 text-sm leading-6 text-slate-600">
-          Combine filters to narrow the review queue while keeping archived records searchable for later reference.
+          Combine filters to narrow the review queue while keeping archived records searchable.
         </p>
       </div>
 

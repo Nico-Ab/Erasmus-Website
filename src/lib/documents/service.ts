@@ -14,6 +14,7 @@ import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
 import type { StorageDriver } from "@/lib/storage/driver";
 import {
+  validateDocumentUploadBuffer,
   validateDocumentUploadFile,
   type DocumentUploadPolicy
 } from "@/lib/validation/documents";
@@ -357,8 +358,21 @@ export async function uploadDocumentVersionForStaff(
         }
       })
     : null;
-  const storageKey = buildStorageKey(caseId, documentTypeKey, validation.data.fileExtension);
   const fileBuffer = Buffer.from(await file.arrayBuffer());
+  const contentValidation = validateDocumentUploadBuffer(
+    fileBuffer,
+    validation.data.fileExtension,
+    validation.data.mimeType
+  );
+
+  if (!contentValidation.success) {
+    return {
+      status: "invalid_file",
+      message: contentValidation.message
+    };
+  }
+
+  const storageKey = buildStorageKey(caseId, documentTypeKey, validation.data.fileExtension);
 
   await storageDriver.write({
     key: storageKey,

@@ -1,4 +1,5 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { approvePendingUserAsAdmin, registerStaffViaUi, updateProfile } from "./helpers/portal";
 
 const adminCredentials = {
   email: "admin@swu.local",
@@ -38,56 +39,29 @@ async function signOutCurrentUser(page: Page) {
   await expect(page).toHaveURL(/\/$/);
 }
 
-async function registerStaffAccount(
-  request: APIRequestContext,
-  registration: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }
-) {
-
-  const response = await request.post("/api/register", {
-    data: {
-      ...registration,
-      confirmPassword: registration.password
-    }
-  });
-
-  expect(response.status()).toBe(201);
-  const payload = (await response.json()) as { email?: string };
-
-  return {
-    email: payload.email ?? registration.email
-  };
-}
-
-test("registration creates a pending approval outcome", async ({ page, request }) => {
+test("registration creates a pending approval outcome", async ({ page }) => {
   const registration = createRegistrationData();
-  const result = await registerStaffAccount(request, registration);
-
-  await page.goto(`/pending-approval?email=${encodeURIComponent(result.email)}&registered=1`);
+  await registerStaffViaUi(page, registration);
 
   await expect(page).toHaveURL(/\/pending-approval/);
   await expect(page.getByRole("heading", { name: /account pending approval/i })).toBeVisible();
-  await expect(page.getByText(result.email)).toBeVisible();
+  await expect(page.getByText(registration.email)).toBeVisible();
 });
 
 test("approved seeded users can log in", async ({ page }) => {
   await signInWith(page, staffCredentials);
 
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole("heading", { name: /dashboard navigation/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^navigation$/i })).toBeVisible();
   await expect(page.getByText(/signed in as/i)).toBeVisible();
 });
 
-test("pending users are blocked from the protected workspace", async ({ page, request }) => {
+test("pending users are blocked from the protected workspace", async ({ page }) => {
   const registration = createRegistrationData();
-  const result = await registerStaffAccount(request, registration);
+  await registerStaffViaUi(page, registration);
 
   await signInWith(page, {
-    email: result.email,
+    email: registration.email,
     password: registration.password
   });
 
@@ -95,29 +69,38 @@ test("pending users are blocked from the protected workspace", async ({ page, re
   await expect(page.getByRole("heading", { name: /account pending approval/i })).toBeVisible();
 });
 
-test("admin approval unlocks the new staff account", async ({ page, request }) => {
+test("admin approval unlocks the new staff account", async ({ page }) => {
   const registration = createRegistrationData();
-  const result = await registerStaffAccount(request, registration);
+  await registerStaffViaUi(page, registration);
 
-  await signInWith(page, adminCredentials);
-  await expect(page).toHaveURL(/\/dashboard/);
-
-  await page.goto("/dashboard/admin/users");
-  const row = page.getByRole("row").filter({ hasText: result.email });
-  await expect(row).toBeVisible();
-  await row.getByRole("button", { name: /approve/i }).click();
-  await expect(page.getByRole("row").filter({ hasText: result.email })).toContainText(
-    /approved/i
-  );
-
-  await signOutCurrentUser(page);
+  await approvePendingUserAsAdmin(page, registration.email);
   await signInWith(page, {
-    email: result.email,
+    email: registration.email,
     password: registration.password
   });
 
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByText(/pending staff/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^navigation$/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /staff workspace/i })).toBeVisible();
+});
+
+test("central admin profiles can remain without faculty and department assignments", async ({ page }) => {
+  await signInWith(page, adminCredentials);
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto("/dashboard/profile");
+  const form = page.getByTestId("profile-form");
+
+  await expect(page.getByRole("heading", { name: /my institutional profile/i })).toBeVisible();
+  await expect(form.getByLabel(/^faculty$/i)).toHaveValue("");
+  await expect(form.getByLabel(/department/i)).toBeDisabled();
+  await updateProfile(page, {
+    firstName: "Ivana Maria",
+    facultyLabel: null,
+    departmentLabel: null
+  });
+  await expect(form.getByLabel(/^faculty$/i)).toHaveValue("");
+  await expect(form.getByLabel(/department/i)).toBeDisabled();
 });
 
 test("protected routes enforce authentication and role access", async ({ page }) => {

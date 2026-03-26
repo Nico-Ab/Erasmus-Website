@@ -1,10 +1,126 @@
 # Progress Log
 
 ## Status snapshot
-- Date: March 13, 2026
-- Overall phase: Foundation, authentication, staff identity, admin master data, explicit audit logging, core admin lifecycle controls, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, operational reporting with CSV exports, and an initial focused hardening pass are implemented for the current scope; broader release hardening and later workflow depth are still pending
-- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, explicit audit history, admin-managed user lifecycle controls, real role dashboards, admin-managed master data and reporting settings, staff mobility-case drafting and submission, private document storage with version history, officer review actions, reporting surfaces, CSV exports, and multi-layer automated tests
+- Date: March 23, 2026
+- Overall phase: Foundation, authentication, staff identity, admin master data, explicit audit logging, core admin lifecycle controls, role dashboards, staff mobility-case management, secure private document handling, officer review workflow, operational reporting with CSV exports, visual polish, bilingual shell support, and a focused local reliability pass are implemented for the current scope; broader release hardening and later workflow depth are still pending
+- Portal status: Runnable application with production-minded auth, approval gating, editable staff profiles, official SWU faculty data, explicit audit history, admin-managed user lifecycle controls, real role dashboards, admin-managed master data and reporting settings, staff mobility-case drafting and submission, private document storage with version history, officer review actions, reporting surfaces, CSV exports, English and Bulgarian language switching, and multi-layer automated tests
 - Active milestones: M8 is completed for the current scope, M9 is completed for the current scope, M10 is completed for reliable local-use scope with future hosting follow-up documented separately
+
+## Focused security hardening completed on March 26, 2026
+### What was done
+- Replaced the remaining unsafe raw SQL health check helper with Prisma's safe tagged query form.
+- Hardened staff document uploads with multipart request validation, request-size prechecks, declared MIME checks, basic file-signature inspection, PDF active-content blocking, and DOCX macro or embedded-object blocking.
+- Kept uploads private and server-side authorized while rejecting disguised files before they reach storage or create metadata.
+- Added stricter headers on private document downloads and CSV exports to reduce content sniffing and caching risk.
+- Neutralized spreadsheet-formula payloads in CSV exports so untrusted text fields cannot execute formulas when opened in spreadsheet tools.
+- Moved the safer default upload extension baseline in checked-in config and seed data to `pdf,docx`, while still keeping the setting environment-based.
+- Expanded unit and integration coverage for file-content validation, disguised upload rejection, CSV formula neutralization, and hardened CSV download headers.
+
+### Docs updated
+- `README.md`
+- `docs/storage-behavior.md`
+- `docs/testing-strategy.md`
+- `docs/progress-log.md`
+- `.env.example`
+
+### Verification run
+- `docker compose up -d`
+- `npm run seed`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run test:e2e`
+- `npm run build`
+
+### Risk-focused notes
+- This pass materially reduces upload and export risk, but it does not provide full antivirus or sandbox scanning.
+- Legacy `.doc` support still exists in code for compatibility, but the safer checked-in default is now `pdf,docx`.
+- Any existing local `.env` file can still override the safer defaults, so local operators should review upload settings before exposing the portal externally.
+
+## English and Bulgarian language support plus test expansion completed on March 23, 2026
+### What was done
+- Added a real English and Bulgarian language toggle to the shared shell, indicated by the respective flags and persisted through a locale cookie.
+- Added shared locale infrastructure for messages, server-side locale resolution, localized label formatting, and date formatting.
+- Localized the public shell, home page, login, registration, pending-approval page, status page, dashboard shell, profile surface, staff dashboard content, key case workflow controls, and the main status and review badges.
+- Hardened the language toggle so it only becomes interactive after hydration, which prevents no-op clicks before the client handlers are ready.
+- Expanded unit, integration, and browser coverage for locale-aware validation, shared formatting, public language switching, locale persistence into login and after sign-in, and stable cross-locale selectors in Playwright helpers.
+- Tightened Playwright reliability by starting a fresh local server by default instead of reusing an older local dev session.
+
+### Docs updated
+- `README.md`
+- `docs/testing-strategy.md`
+- `docs/progress-log.md`
+
+### Verification run
+- `docker compose up -d`
+- `npm run seed`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run test:e2e`
+- `npm run build`
+
+### Risk-focused notes
+- The shared shell and main workflow surfaces now support English and Bulgarian, but some deeper admin and reporting copy still remains English.
+- The automated suite is materially broader now, but it still does not literally cover every possible future scenario; the main uncovered areas remain listed later in this log.
+
+## External sharing runbook added on March 23, 2026
+### What was done
+- Added a dedicated `docs/external-sharing.md` runbook for zero-cost short-term sharing of the portal with external reviewers.
+- Documented the recommended sharing model for this repo: local production app process, local PostgreSQL through Docker, local filesystem storage, and a temporary public tunnel from the Windows host.
+- Clarified that this is a temporary self-hosted review setup rather than full hosting.
+- Linked the new runbook from the README and the deployment-readiness notes so it is easy to find from the main documentation entry points.
+- Added a short account-handling note to the demo-account guide so external sessions default to non-admin users unless admin access is actually needed.
+
+### Risk-focused notes
+- This change adds operational documentation only. It does not change hosting architecture, app behavior, auth flows, storage behavior, or deployment state.
+- Temporary tunnel-based sharing still depends on the local machine remaining on, connected, awake, and actively running the app, database, and tunnel process.
+
+## Red-and-white usability overhaul completed on March 23, 2026
+### What was done
+- Reworked the shared portal theme around a calmer red-and-white university-administration palette aligned to the SWU public site tone instead of the earlier blue-heavy shell.
+- Removed the remaining decorative gradients, backdrop blur, and heavy shaded surfaces from the global shell, the public entry pages, and the protected workspace framing.
+- Simplified the public home page so it now acts as a direct entry point for login, registration, and system status instead of functioning like a feature overview.
+- Flattened and tightened the public login, registration, and pending-approval surfaces so they read more like real operational pages and less like a staged demo.
+- Reworked the protected shell with a lighter sidebar, red active navigation states, calmer page headers, and more consistent account, action, and breadcrumb framing.
+- Tightened dashboard, table, filter, report, case-detail, and document-detail copy so the portal surfaces focus more directly on the task being completed.
+- Standardized badge and table styling so status, review state, and current-version markers are easier to scan without relying on decorative visual effects.
+- Updated the shared component and browser tests that depended on the previous public copy and navigation heading wording.
+
+### Risk-focused notes
+- This pass changes presentation and wording, not the underlying workflow rules, permissions, or data model.
+- The portal now feels closer to a usable internal university system, but larger lists still do not have pagination or density controls.
+- The stand-in SWU mark remains a placeholder and not an approved official university asset.
+
+## SWU-inspired shell overhaul and local reliability pass completed on March 23, 2026
+### What was done
+- Reworked the public and protected shell around a calmer SWU-inspired university-administration visual system with a shared institutional identity block, stronger page hierarchy, denser dashboard framing, and more consistent cards, tables, badges, and form surfaces.
+- Kept the portal in English while aligning the tone and information structure more closely with the official South-West University site, without turning the portal into a public marketing clone.
+- Replaced the older faculty baseline with an official SWU faculty list sourced from the university website and wired the profile flow so only canonical active faculties appear in selectors.
+- Removed bogus active faculty choices such as central-unit placeholders from normal staff selection, kept departments admin-managed and optional for this pass, and allowed central admin and officer accounts to remain outside faculty and department assignments.
+- Preserved legacy faculty and department assignments safely in the profile page so users with older records can still open the form and correct them instead of hitting a broken state.
+- Fixed the real browser registration journey through `/register` and restored direct Playwright coverage for that page instead of relying on the `/api/register` shortcut.
+- Hardened the login, registration, profile, and staff document-upload forms so they only become interactive after hydration, which removed local dev races where fast interaction could fall back to native form submission or stale client state.
+- Switched `npm run dev` to the stable webpack-backed Next.js development server because the default local dev compiler stalled on `/register` in this workspace.
+- Updated Playwright helpers and assertions to use the real SWU faculty names, the current shell wording, and the direct `/register` browser path.
+
+### Docs updated
+- `README.md`
+- `docs/testing-strategy.md`
+- `docs/progress-log.md`
+
+### Verification run
+- `npm run seed`
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run test:e2e`
+- `npm run build`
+
+### Risk-focused notes
+- The current SWU logo treatment is still a stand-in rather than an approved official asset.
+- Departments remain intentionally admin-managed and partial; the repo does not yet include a verified full public SWU department dataset.
+- The local webpack-backed dev server is the stable default for this workspace, but that change is a local reliability choice rather than a hosted deployment decision.
 ## Foundation completed on March 11, 2026
 ### What was done
 - Added a real Next.js App Router application with `src/` layout.
@@ -148,7 +264,7 @@
 - Updated the testing strategy document to explain the new helper layer, the critical workflow coverage, the exact local full-suite commands, and the remaining gaps.
 
 ### Follow-up notes
-- The critical E2E journey now exercises the live `/api/register` endpoint plus browser-visible pending-approval and approval-unlock behavior for local reliability. The `/register` page UI itself remains covered in integration tests because direct Playwright navigation to that route is still unstable in local Next.js dev mode.
+- The critical E2E journey now exercises the real `/register` page, pending-approval behavior, approval unlock, and the remaining cross-role workflow in one browser path.
 - Negative-path auth browser coverage continues to emit expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked before approval.
 
 ## Focused hardening pass completed on March 13, 2026
@@ -165,7 +281,6 @@
 - The earlier Prisma package configuration warning has since been resolved by moving configuration into `prisma.config.ts`.
 - Upload validation is still filename-extension and size based; MIME verification, content inspection, and malware scanning are still out of scope.
 - Negative-path auth browser coverage still emits expected `CredentialsSignin` logs in Next.js dev mode when pending users are blocked at sign-in.
-- Direct Playwright interaction with the `/register` page remains unstable in local Next.js dev mode, so browser registration coverage still uses the live `/api/register` endpoint.
 ## UI polish pass completed on March 13, 2026
 ### What was done
 - Standardized page framing across the protected portal with calmer page headers, breadcrumbs, clearer descriptions, and cleaner action placement for staff, officer, admin, profile, reporting, and case-detail pages.
@@ -184,7 +299,6 @@
 ### What is intentionally incomplete
 - Bulk review actions, assignment queues, and pagination for larger officer workloads
 - Password reset, email verification, and richer account recovery flows
-- Direct browser interaction with the `/register` page in Playwright
 - A dedicated structured change-request model for missing or incorrect documents beyond officer comments and document review state
 - Broader report variants, scheduled exports, and non-CSV export formats beyond the current filtered case list, yearly summary, and faculty summary outputs
 
@@ -209,10 +323,9 @@
 - unit coverage for login and registration validation, profile validation, master-data validation, mobility-case validation, document upload validation, navigation filtering, and shared formatting helpers
 - integration coverage for auth service login and registration outcomes, admin lifecycle actions, login form behavior, registration form behavior, profile form behavior, mobility-case create, edit, and submit behavior, document storage behavior, document versioning, secure download authorization handling, officer status transitions, officer comment creation, document review decisions, missing-document review actions, reporting aggregation, CSV generation, and explicit audit-log creation on major protected actions
 - component coverage for anonymous and authenticated home-page states, dashboard panels and role dashboard content, and readable staff case-table rendering
-- e2e coverage for live registration endpoint outcome, pending approval, approved login, admin approval, admin role change, admin deactivation, audit-log visibility for major admin actions, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, corrected re-upload, final-certificate upload, case completion, archive visibility, combined review filters, reporting filters, filtered CSV export, and the full cross-role critical journey through audit visibility
+- e2e coverage for direct `/register` outcome, pending approval, approved login, admin approval, admin role change, admin deactivation, audit-log visibility for major admin actions, protected-route access control, home, login, authenticated app shell rendering, role-specific dashboard visibility, staff profile editing, admin faculty and department management, staff mobility-case creation, draft editing, submission, own-case list and detail access, document upload, version rollover, current-version marker behavior, unauthorized document download prevention, officer case review, officer comments, officer document rejection, corrected re-upload, final-certificate upload, case completion, archive visibility, combined review filters, reporting filters, filtered CSV export, and the full cross-role critical journey through audit visibility
 
 ### Still uncovered
-- direct browser interaction with the `/register` page in Playwright; the register UI itself remains covered in integration tests, while the browser suite uses the live registration endpoint for local reliability
 - registration rejection browser coverage in the admin UI
 - session behavior after future role changes or account deactivation
 - academic year, status, select-option, and upload-setting management flows in browser coverage

@@ -15,6 +15,7 @@ This document defines how automated testing should be used in the Erasmus staff 
 Use Vitest for:
 - validation schemas
 - document file-validation rules
+- document file-signature and active-content validation rules
 - formatting helpers
 - navigation logic
 - other pure functions with minimal dependencies
@@ -65,6 +66,7 @@ Characteristics:
 - run against the local app at `http://127.0.0.1:3000`
 - can start the local dev server automatically through Playwright
 - currently uses a single browser worker locally for stability in this workspace
+- starts a fresh local app server by default so browser runs do not silently reuse stale markup from an older dev session
 - should stay small, stable, and high-signal
 - stored under `tests/e2e/`
 
@@ -93,7 +95,8 @@ Before Playwright browser tests, the local environment should have:
 - seeded local users present
 - Node.js available on the host machine
 
-Playwright is configured to reuse an already running local server when available. If no local server is running, it will start one with `npm run dev`.
+Playwright starts its own local server with `npm run dev` by default.
+The local `dev` script uses the stable webpack-backed Next.js development server, because the default dev compiler stalled on `/register` in this workspace.
 
 ## Helpers and factories
 Current shared testing utilities:
@@ -112,13 +115,15 @@ Guidance:
 ### Unit coverage
 - login schema trimming and validation rules
 - registration schema trimming, password-length rules, and confirmation matching
+- localized auth validation messages for English and Bulgarian
 - profile schema trimming and required-field rules
+- localized profile validation messages for English and Bulgarian
 - faculty, department, academic year, and upload-setting validation rules
 - mobility-case validation rules
 - review-workflow filter and action validation rules
-- document upload filename, extension, empty-file, and max-size rules
+- document upload filename, extension, empty-file, declared MIME, size, signature, and active-content rules
 - role-aware navigation filtering
-- shared formatting helpers
+- shared formatting and locale helpers
 
 ### Integration coverage
 - auth service login outcomes for approved and pending users
@@ -128,15 +133,16 @@ Guidance:
 - pending approval routing from login
 - failed credentials submit flow with user-visible error state
 - registration form validation and submission behavior
+- language-toggle submit behavior and no-op behavior when the active locale is selected
 - profile form validation, department reset behavior, successful submit, and duplicate-email handling
 - mobility-case create, update, and submit service and form behavior
 - local filesystem storage write/read behavior and traversal blocking
-- document upload metadata creation, version rollover, storage cleanup on failure, secure download authorization behavior, and final-certificate status progression
+- document upload metadata creation, version rollover, disguised-file rejection, storage cleanup on failure, secure download authorization behavior, and final-certificate status progression
 - officer case-status transitions and status-history recording
 - officer comment creation and missing-document note behavior
 - officer document review decisions, including rejection-reason enforcement and reviewer metadata persistence
 - reporting aggregation by academic year, faculty, department, mobility type, country, institution, and status
-- CSV generation for filtered case lists, yearly summaries, and faculty summaries
+- CSV generation for filtered case lists, yearly summaries, and faculty summaries, including spreadsheet-formula neutralization
 - admin lifecycle actions and audit-log creation on major protected actions
 
 ### Component coverage
@@ -150,7 +156,9 @@ Guidance:
 ### E2E browser coverage
 - home page loads
 - login page loads
-- live registration endpoint creates the pending approval outcome
+- public language switching between English and Bulgarian
+- locale persistence from the public shell into login and after sign-in
+- direct `/register` page submission creates the pending approval outcome
 - pending accounts remain blocked from the protected workspace
 - approved seeded users can log in
 - admin approval unlocks a newly registered staff account
@@ -172,7 +180,6 @@ Guidance:
 
 ## What remains uncovered
 Critical flows still needing future coverage:
-- direct browser interaction with the `/register` page in Playwright; the register UI itself remains covered in integration tests, while E2E uses the live registration endpoint for local dev stability
 - registration rejection in the admin UI
 - session behavior after future role changes or account deactivation
 - academic year, status, select-option, and upload-setting management flows in browser coverage
@@ -182,6 +189,7 @@ Critical flows still needing future coverage:
 - storage-missing recovery handling through the UI
 - broader report variants and export formats beyond the current CSV surfaces
 - audit-sensitive server actions in later workflow modules
+- deeper page-by-page Bulgarian copy coverage in admin and reporting modules
 
 ## Test authoring rules
 - Test behavior, not implementation trivia.

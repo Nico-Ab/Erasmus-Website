@@ -3,7 +3,7 @@
 Internal Erasmus+ staff mobility management portal for university staff, officers, and admins.
 
 ## v1 status
-The repository now contains a locally runnable v1 portal for internal use. It supports role-based access, approval-gated accounts, editable staff profiles, staff mobility cases, private document handling, officer review, admin management, reporting, CSV export, and automated test coverage.
+The repository now contains a locally runnable v1 portal for internal use. It supports role-based access, approval-gated accounts, editable staff profiles, staff mobility cases, private document handling, officer review, admin management, reporting, CSV export, an English and Bulgarian interface toggle, and automated test coverage.
 
 It is ready for reliable local use and evaluation. It is not yet a fully hosted production rollout.
 
@@ -17,6 +17,7 @@ It is ready for reliable local use and evaluation. It is not yet a fully hosted 
 - admin-managed master data, upload settings, and report display settings
 - reporting, filtered case views, and CSV exports
 - explicit audit logging for important actions
+- English and Bulgarian language switching across the shared shell, auth flow, profile flow, and core workspace surfaces
 - local health and status checks
 
 ## Main routes
@@ -63,20 +64,21 @@ Included seeded accounts:
 
 More detail:
 - [docs/local-startup.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/local-startup.md)
+- [docs/external-sharing.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/external-sharing.md)
 - [docs/storage-behavior.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/storage-behavior.md)
 - [docs/deployment-readiness.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/deployment-readiness.md)
 
 ## Scripts
 | Script | Purpose |
 | --- | --- |
-| `npm run dev` | Start the local development server on `127.0.0.1:3000` |
+| `npm run dev` | Start the stable local webpack-backed development server on `127.0.0.1:3000` |
 | `npm run build` | Generate Prisma client and build the Next.js app |
 | `npm run start` | Start the production build locally |
 | `npm run lint` | Run ESLint |
 | `npm run typecheck` | Run TypeScript without emitting files |
 | `npm run test` | Run Vitest unit, integration, and component tests |
 | `npm run test:watch` | Run Vitest in watch mode |
-| `npm run test:e2e` | Run Playwright end-to-end tests |
+| `npm run test:e2e` | Run Playwright end-to-end tests against a fresh local app server |
 | `npm run test:e2e:headed` | Run Playwright with a visible browser |
 | `npm run db:migrate` | Apply existing Prisma migrations in local development |
 | `npm run db:migrate:deploy` | Apply committed migrations in deployment-style environments |
@@ -98,22 +100,27 @@ Testing guidance is documented in [docs/testing-strategy.md](/C:/Users/Nico/Docu
 
 ## Documentation map
 - [docs/local-startup.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/local-startup.md)
+- [docs/external-sharing.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/external-sharing.md)
 - [docs/test-execution.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/test-execution.md)
 - [docs/demo-accounts.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/demo-accounts.md)
 - [docs/storage-behavior.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/storage-behavior.md)
 - [docs/deployment-readiness.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/deployment-readiness.md)
+- [docs/user-manual.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/user-manual.md)
 - [docs/progress-log.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/progress-log.md)
-
 ## Known limitations
 - The storage driver is local filesystem only in v1.
-- File validation is extension and size based; MIME inspection and malware scanning are not implemented.
-- Direct Playwright interaction with the `/register` page is still less stable than the API-backed registration browser path used in the suite.
+- File validation now checks extension, size, declared MIME type, and basic file signatures, but full malware scanning is not implemented.
 - Larger officer and reporting queues do not yet include pagination, saved views, or bulk actions.
 - Password reset, email verification, and account recovery are still out of scope for v1.
+- Bulgarian localization currently covers the shared shell and key workflow surfaces, but some deeper admin and reporting copy still remains English.
 
 ## Notes for later hosting
+- For short external review sessions without paid hosting, use the temporary public-tunnel approach in [docs/external-sharing.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/external-sharing.md).
 - Move from local filesystem storage to a persistent shared storage driver if the app will run on more than one instance.
 - Keep `AUTH_SECRET`, `DATABASE_URL`, and storage settings environment-based.
 - Use `npm run db:migrate:deploy` for deployment-style schema updates.
 - Treat the current docs as the handoff baseline for future hosting work, not as a claim that hosting is already complete.
+
+
+
 

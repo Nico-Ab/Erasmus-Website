@@ -27,14 +27,14 @@ export function DashboardNav({ items }: { items: NavigationItem[] }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "block rounded-xl border px-4 py-3.5 transition-colors",
+              "block rounded-[1.05rem] border px-4 py-3.5 transition-colors",
               active
-                ? "border-primary/20 bg-primary/8 text-primary shadow-sm"
-                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                ? "border-primary/20 bg-primary/10 text-primary"
+                : "border-transparent bg-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950"
             )}
           >
             <div className="text-sm font-semibold">{item.title}</div>
-            <div className={cn("mt-1 text-xs leading-5", active ? "text-primary/80" : "text-slate-500")}>
+            <div className={cn("mt-1 text-xs leading-5", active ? "text-primary/75" : "text-slate-500")}>
               {item.description}
             </div>
           </Link>

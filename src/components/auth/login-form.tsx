@@ -9,7 +9,9 @@ import { signIn } from "next-auth/react";
 import { AlertCircle, LogIn } from "lucide-react";
 import { authErrorCodes, getLoginErrorMessage } from "@/lib/auth/error-codes";
 import { buildPendingApprovalPath } from "@/lib/auth/paths";
-import { loginSchema, type LoginInput } from "@/lib/validation/auth";
+import { useHydrated } from "@/hooks/use-hydrated";
+import { createLoginSchema, type LoginInput } from "@/lib/validation/auth";
+import { useAppLocale } from "@/components/app/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,11 +38,14 @@ function resolveRedirectPath(url?: string | null) {
 
 export function LoginForm({ initialMessage = null }: LoginFormProps) {
   const router = useRouter();
+  const { locale, messages } = useAppLocale();
+  const isReady = useHydrated();
   const [notice, setNotice] = useState<string | null>(initialMessage);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isInteractive = isReady && !isSubmitting;
   const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(createLoginSchema(locale)),
     defaultValues: {
       email: "",
       password: ""
@@ -67,47 +72,54 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
       }
 
       if (!result || result.error) {
-        setFormError(getLoginErrorMessage(result?.code));
+        setFormError(getLoginErrorMessage(result?.code, locale));
         return;
       }
 
       router.push(resolveRedirectPath(result.url));
       router.refresh();
     } catch {
-      setFormError(getLoginErrorMessage());
+      setFormError(getLoginErrorMessage(undefined, locale));
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <Card className="border-slate-200 bg-white/95">
+    <Card className="border-slate-200 bg-white">
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <CardTitle>Secure login</CardTitle>
-            <CardDescription>Use your university portal credentials to continue.</CardDescription>
+            <CardTitle>{messages.auth.login.title}</CardTitle>
+            <CardDescription>{messages.auth.login.description}</CardDescription>
           </div>
-          <div className="rounded-full bg-slate-100 p-3 text-slate-700">
+          <div className="rounded-full bg-accent p-3 text-primary">
             <LogIn className="h-5 w-5" />
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
+            <Label htmlFor="email">{messages.auth.fields.email}</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              disabled={!isInteractive}
+              {...form.register("email")}
+            />
             {form.formState.errors.email ? (
               <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
             ) : null}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{messages.auth.fields.password}</Label>
             <Input
               id="password"
               type="password"
               autoComplete="current-password"
+              disabled={!isInteractive}
               {...form.register("password")}
             />
             {form.formState.errors.password ? (
@@ -132,12 +144,16 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
               <span>{formError}</span>
             </div>
           ) : null}
-          <Button className="w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Signing in..." : "Sign in"}
+          <Button className="w-full" disabled={!isInteractive} type="submit">
+            {isSubmitting
+              ? messages.auth.login.submitting
+              : isReady
+                ? messages.auth.login.submit
+                : messages.auth.login.preparing}
           </Button>
         </form>
         <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-          <p className="font-semibold text-slate-900">Development seed accounts</p>
+          <p className="font-semibold text-slate-900">{messages.auth.login.demoAccounts}</p>
           <p className="mt-2">
             <code>staff@swu.local</code> / <code>StaffPass123!</code>
           </p>
@@ -149,16 +165,16 @@ export function LoginForm({ initialMessage = null }: LoginFormProps) {
           </p>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
-          Need a staff account first?{" "}
+          {messages.auth.login.needAccount}{" "}
           <Link className="font-medium text-primary hover:underline" href="/register">
-            Register for approval
+            {messages.auth.login.registerLink}
           </Link>
           .
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Need the system overview first?{" "}
+          {messages.auth.login.needEntry}{" "}
           <Link className="font-medium text-primary hover:underline" href="/">
-            Return to the home page
+            {messages.auth.login.homeLink}
           </Link>
           .
         </p>

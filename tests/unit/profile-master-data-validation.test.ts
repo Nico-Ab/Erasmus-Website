@@ -1,15 +1,16 @@
+import { UserRole } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import {
   academicYearSchema,
   departmentSchema,
   uploadSettingSchema
 } from "@/lib/validation/master-data";
-import { profileSchema } from "@/lib/validation/profile";
+import { createProfileSchema } from "@/lib/validation/profile";
 import { createProfileInput } from "../factories/profile";
 
 describe("profileSchema", () => {
   it("trims names and email before submit", () => {
-    const result = profileSchema.parse(
+    const result = createProfileSchema(UserRole.STAFF).parse(
       createProfileInput({
         firstName: "  Elena  ",
         lastName: "  Petrova  ",
@@ -22,11 +23,28 @@ describe("profileSchema", () => {
     expect(result.email).toBe("staff@swu.local");
   });
 
-  it("requires a department selection", () => {
-    const result = profileSchema.safeParse(createProfileInput({ departmentId: "" }));
+  it("requires a faculty selection for staff accounts", () => {
+    const result = createProfileSchema(UserRole.STAFF).safeParse(createProfileInput({ facultyId: "" }));
 
     expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.message).toBe("Department is required");
+    expect(result.error?.issues[0]?.message).toBe("Faculty is required for staff accounts");
+  });
+
+  it("returns Bulgarian validation messages for staff profiles when requested", () => {
+    const result = createProfileSchema(UserRole.STAFF, "bg").safeParse(
+      createProfileInput({ facultyId: "" })
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Факултетът е задължителен за staff акаунти");
+  });
+
+  it("allows officer profiles without a faculty or department assignment", () => {
+    const result = createProfileSchema(UserRole.OFFICER).safeParse(
+      createProfileInput({ facultyId: "", departmentId: "" })
+    );
+
+    expect(result.success).toBe(true);
   });
 });
 

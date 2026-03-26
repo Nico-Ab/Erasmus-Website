@@ -45,7 +45,7 @@ export default async function ReviewCaseDetailPage({ params }: ReviewCaseDetailP
           { label: "Review cases", href: "/dashboard/officer/cases" },
           { label: "Case detail" }
         ]}
-        description="Review case data, document decisions, comments, and explicit workflow history from one protected review workspace."
+        description="Review case data, document decisions, comments, and workflow history from one protected workspace."
         eyebrow="Review administration"
         meta={
           <dl className="grid gap-3 text-sm sm:grid-cols-4">
@@ -78,10 +78,10 @@ export default async function ReviewCaseDetailPage({ params }: ReviewCaseDetailP
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="border-slate-200 bg-white/95">
+        <Card className="border-slate-200 bg-white">
           <CardHeader>
             <CardTitle>Case record</CardTitle>
-            <CardDescription className="leading-6">Current case details and staff assignment context for officer review.</CardDescription>
+            <CardDescription className="leading-6">Current case details and staff assignment context.</CardDescription>
           </CardHeader>
           <CardContent>
             <dl className="grid gap-4 text-sm text-slate-700 md:grid-cols-2">
@@ -129,7 +129,7 @@ export default async function ReviewCaseDetailPage({ params }: ReviewCaseDetailP
       </section>
 
       <section className="space-y-4">
-        <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-slate-950">Document review</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Accept or reject current uploaded versions without changing the case status automatically.
@@ -143,7 +143,7 @@ export default async function ReviewCaseDetailPage({ params }: ReviewCaseDetailP
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <Card className="border-slate-200 bg-white/95" data-testid="review-comments-list">
+        <Card className="border-slate-200 bg-white" data-testid="review-comments-list">
           <CardHeader>
             <CardTitle>Comments</CardTitle>
             <CardDescription>Reviewer comments remain timestamped and attributable to the author.</CardDescription>
@@ -156,7 +156,7 @@ export default async function ReviewCaseDetailPage({ params }: ReviewCaseDetailP
             ) : (
               <div className="space-y-3">
                 {detail.comments.map((comment) => (
-                  <div key={comment.id} className="rounded-lg border border-slate-200 bg-slate-50/40 px-4 py-3">
+                  <div key={comment.id} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                       <span className="text-sm font-semibold text-slate-950">{comment.authorName}</span>
                       <span>{comment.authorRoleLabel}</span>

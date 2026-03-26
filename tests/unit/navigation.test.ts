@@ -1,6 +1,6 @@
 import { UserRole } from "@prisma/client";
 import { describe, expect, it } from "vitest";
-import { getDashboardNavigation } from "@/lib/navigation";
+import { getDashboardNavigation, getPublicNavigation } from "@/lib/navigation";
 
 describe("getDashboardNavigation", () => {
   it("returns staff routes for staff users", () => {
@@ -28,5 +28,13 @@ describe("getDashboardNavigation", () => {
       "/dashboard/admin/master-data",
       "/dashboard/admin/audit-log"
     ]);
+  });
+});
+
+describe("getPublicNavigation", () => {
+  it("returns localized public navigation items", () => {
+    const items = getPublicNavigation("bg");
+
+    expect(items.map((item) => item.title)).toEqual(["Начало", "Статус", "Вход", "Регистрация"]);
   });
 });

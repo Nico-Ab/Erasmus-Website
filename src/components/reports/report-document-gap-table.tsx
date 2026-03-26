@@ -7,7 +7,7 @@ type ReportDocumentGapTableProps = {
 
 export function ReportDocumentGapTable({ rows }: ReportDocumentGapTableProps) {
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid="report-document-gap-table">
+    <Card className="border-slate-200 bg-white" data-testid="report-document-gap-table">
       <CardHeader>
         <CardTitle>Missing required document reports</CardTitle>
         <CardDescription className="leading-6">
@@ -26,7 +26,7 @@ export function ReportDocumentGapTable({ rows }: ReportDocumentGapTableProps) {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.key} className="align-top text-slate-700 hover:bg-slate-50/60">
+                <tr key={row.key} className="align-top text-slate-700 hover:bg-slate-50">
                   <td className="border-b border-slate-100 px-4 py-4 font-medium text-slate-950">{row.label}</td>
                   <td className="border-b border-slate-100 px-4 py-4 text-right">{row.count}</td>
                 </tr>

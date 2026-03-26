@@ -35,6 +35,10 @@ function buildCaseSeed(overrides?: Partial<CaseSeed>): CaseSeed {
   };
 }
 
+function buildSafePdfBuffer(contents: string) {
+  return Buffer.from(`%PDF-1.4\n${contents}\n%%EOF`, "utf8");
+}
+
 async function signInWith(page: Page, credentials: { email: string; password: string }) {
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(credentials.email);
@@ -79,7 +83,7 @@ async function createSubmittedCaseAsStaff(
     await panel.locator('input[type="file"]').setInputFiles({
       name: "report-agreement.pdf",
       mimeType: "application/pdf",
-      buffer: Buffer.from("report-agreement")
+      buffer: buildSafePdfBuffer("report-agreement")
     });
     await panel.getByRole("button", { name: /upload document/i }).click();
     await expect(panel.getByTestId("document-version-mobility_agreement-1")).toBeVisible();
@@ -93,8 +97,10 @@ async function archiveCaseAsOfficer(page: Page, hostInstitution: string) {
   await page.goto(`/dashboard/officer/cases?hostInstitution=${encodeURIComponent(hostInstitution)}`);
   const row = page.locator("tbody tr").filter({ hasText: hostInstitution });
   await expect(row).toBeVisible();
-  await row.getByRole("link", { name: /open case/i }).click();
-  await expect(page).toHaveURL(/\/dashboard\/officer\/cases\//);
+  await Promise.all([
+    page.waitForURL(/\/dashboard\/officer\/cases\//),
+    row.getByRole("link", { name: /open case/i }).click()
+  ]);
   await expect(page.getByRole("heading", { name: /mobility case detail/i })).toBeVisible();
   await expect(page.getByText(hostInstitution).first()).toBeVisible();
 
@@ -142,7 +148,7 @@ test("officers can open report pages and apply combined filters", async ({ page 
 
   const filters = page.getByTestId("report-filters");
   await filters.getByLabel(/academic year/i).selectOption({ label: "2025/2026" });
-  await filters.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law" });
+  await filters.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law and History" });
   await filters.getByLabel(/department/i).selectOption({ label: "Public Law" });
   await filters.getByLabel(/mobility type/i).selectOption({ label: "Training" });
   await filters.getByLabel(/country/i).fill("Belgium");
@@ -156,7 +162,9 @@ test("officers can open report pages and apply combined filters", async ({ page 
   await expect(
     caseTable.locator("tbody tr").filter({ hasText: firstSeed.hostInstitution })
   ).toHaveCount(0);
-  await expect(page.getByTestId("report-summary-faculty")).toContainText(/faculty of law/i);
+  await expect(page.getByTestId("report-summary-faculty")).toContainText(
+    /faculty of law and history/i
+  );
 });
 
 test("officers can export csv from filtered reporting data and archived cases remain exportable", async ({ page }) => {

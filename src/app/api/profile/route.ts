@@ -2,7 +2,7 @@ import { UserApprovalStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { updateOwnProfile } from "@/lib/profile/service";
-import { profileSchema } from "@/lib/validation/profile";
+import { createProfileSchema } from "@/lib/validation/profile";
 
 export async function PATCH(request: Request) {
   const session = await auth();
@@ -26,7 +26,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Request body must be valid JSON." }, { status: 400 });
   }
 
-  const parsed = profileSchema.safeParse(body);
+  const parsed = createProfileSchema(session.user.role).safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -64,6 +64,18 @@ export async function PATCH(request: Request) {
     );
   }
 
+  if (result.status === "faculty_required") {
+    return NextResponse.json(
+      {
+        message: "Select an official faculty for a staff profile.",
+        fieldErrors: {
+          facultyId: ["Select an official faculty for a staff profile."]
+        }
+      },
+      { status: 400 }
+    );
+  }
+
   if (result.status === "invalid_faculty") {
     return NextResponse.json(
       {
@@ -76,12 +88,16 @@ export async function PATCH(request: Request) {
     );
   }
 
-  if (result.status === "invalid_department" || result.status === "department_mismatch") {
+  if (
+    result.status === "invalid_department" ||
+    result.status === "department_mismatch" ||
+    result.status === "department_requires_faculty"
+  ) {
     return NextResponse.json(
       {
-        message: "Select a department that belongs to the selected faculty.",
+        message: "Select a department that belongs to the selected faculty, or leave it blank.",
         fieldErrors: {
-          departmentId: ["Select a department that belongs to the selected faculty."]
+          departmentId: ["Select a department that belongs to the selected faculty, or leave it blank."]
         }
       },
       { status: 400 }

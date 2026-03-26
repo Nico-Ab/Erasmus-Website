@@ -1,0 +1,172 @@
+﻿\documentclass{Vorlage}
+
+\begin{document}
+
+\newgeometry{top=2.5cm,bottom=2.0cm,left=2.5cm,right=2.5cm} % Befehl wird nur benötigt, falls Änderungen an den Seitenrändern in der Datei "Vorlage.cls" vorgenommen werden.
+
+\begin{titlepage}
+
+\titelseite{Praktikumsbericht}{Universität Rostock}
+
+\vspace*{6cm}
+
+\titel{Arbeitsthema / Titel}{Untertitel}
+
+\vspace{1cm}
+
+\begin{tabular}{p{3.5cm}|p{0.1cm} p{10cm}l}
+\textsc{Name:} & & \textsc{}\\
+\textsc{Vorname:} & & \textsc{}\\
+\textsc{Matrikel-Nr.:} & & \textsc{}\\
+\textsc{Studiengang:} & & \textsc{}\\
+\textsc{E-Mail:} & & \textsc{}\\
+\textsc{Seminar:} & & \textsc{}\\
+\textsc{DozentIn:} & & \textsc{}\\
+\textsc{Lehrstuhl:} & & \textsc{}\\
+\textsc{Institut:} & & \textsc{}\\
+\textsc{Fakultät:} & & \textsc{}\\
+\textsc{Modul:} & & \textsc{}\\
+\textsc{Fachsemester:} & & \textsc{}\\
+\textsc{Abgabedatum:} & & \textsc{}\\
+\end{tabular}
+\end{titlepage}
+
+\restoregeometry
+
+\pagenumbering{Roman} % \pagenumbering{roman} = Kleinschreibung: II -> ii.
+
+\tableofcontents % Inhaltsverzeichnis.
+
+\newpage % Neue Seite.
+
+\listoffigures % Abbildungsverzeichnis.
+
+\listoftables % Tabellenverzeichnis.
+
+\newpage
+
+\pagenumbering{arabic} % Ab hier folgt die arabische Seitennummerierung.
+
+\renewcommand{\thesection}{\Roman{section}} % Römische Nummerierung der Kapitelüberschriften.
+
+\section{Die Praktikumsstelle - Formale Bedingungen}
+
+\begin{itemize}
+
+\item Genaue Beschreibung der Institution, Was macht die Institution? Wie groß usw.? Welche Aufgabe hat meine Abteilung? Leitungs- / Organisationsstruktur?
+
+\item Wie habe ich die Praktikumsstelle gefunden (Bewerbung, Kontaktaufnahme)? Welche Erfahrungen gewinne ich aus dem Vorgehen bei der Bewerbung?
+
+\item Wie sind die Arbeitsbedingungen? Gab es Fahrtkostenzuschuss, Aufwandsentschädi-gung, sonstige Unterstützung? Wie waren die Arbeitszeiten?
+
+\end{itemize}
+
+\newpage
+
+\section{Aufgaben und Tätigkeiten - Der Ablauf des Praktikums}
+
+\renewcommand{\thesection}{\arabic{section}}
+
+\subsection{Umfeld der Praktikumstätigkeit}
+
+Im Mittelpunkt meiner Praktikumstätigkeit stand die Entwicklung eines internen Erasmus-Portals für die Verwaltung von Staff-Mobility-Fällen. Im Repository ist zu sehen, dass die Anwendung als Webanwendung mit Next.js und TypeScript umgesetzt wurde und auf einer PostgreSQL-Datenbank mit Prisma basiert. Die Anwendung ist in Bereiche für Staff, Officer und Admin gegliedert und deckt damit Antragstellung, Prüfung und Administration in einem System ab.
+
+Meine Arbeit betraf nicht nur einzelne Oberflächen, sondern auch Frontend, Backend, Datenmodellierung und Tests. Im Repository sind neben Seiten und UI-Komponenten auch API-Routen, Datenbankschemata, Seed-Daten, Konfigurationsdateien sowie Unit-, Integrations- und End-to-End-Tests vorhanden. Daran sieht man, dass die Arbeit nicht nur im sichtbaren Interface stattfand, sondern auch in der fachlichen Logik, bei den Zugriffsrechten und in der technischen Absicherung des Projekts.
+
+\subsection{Aufgabe und Ziel}
+
+Meine Aufgabe bestand darin, die Anforderungen an ein internes Erasmus-Portal in konkrete Funktionen zu übersetzen. Im Repository ist zu sehen, dass dafür mehrere zusammenhängende Bereiche entwickelt wurden, also öffentliche Seiten wie Start, Login und Registrierung, geschützte Bereiche für Staff, Officer und Admin, serverseitig abgesicherte API-Routen sowie ein Datenmodell für Benutzer, Mobilitätsfälle, Dokumente, Statusverläufe, Stammdaten und Berichte. Es ging also nicht nur um einzelne Formulare, sondern um einen vollständigen Verwaltungsablauf.
+
+Wichtig war dabei, die fachlichen Anforderungen so umzusetzen, dass die Anwendung im Alltag nutzbar ist. Dazu gehörte zum Beispiel, dass neue Staff-Konten erst nach einer Freigabe nutzbar sind, dass Mitarbeitende mehrere Mobilitätsfälle anlegen und als Entwurf weiterbearbeiten können und dass Officer diese Fälle später prüfen, kommentieren und im Status weiterführen können. Gleichzeitig sollte der Stand lokal lauffähig, testbar und sauber dokumentiert sein. Das sieht man an den Setup-Dateien, den Seed-Daten, der Statusseite, den Testskripten und den Dokumentationen für lokalen Start, Speicherverhalten und spätere Bereitstellung.
+
+\subsection{Tätigkeiten und Arbeitsergebnisse}
+
+Zu Beginn habe ich die technische Grundlage der Anwendung aufgebaut. Im Projekt wurden eine Next.js-Anwendung mit App Router, TypeScript, Tailwind CSS, Prisma und PostgreSQL eingerichtet und dazu passende Skripte für Entwicklung, Build, Tests, Datenbankmigrationen und Seed-Daten ergänzt. Außerdem wurden eine lokale Statusseite und Dokumentationen für den Start der Anwendung angelegt. Dadurch war die Anwendung früh lokal nutzbar und konnte nicht nur im Code, sondern auch im laufenden Zustand überprüft werden.
+
+Danach habe ich mich um Benutzerkonten, Rollen und Rechte gekümmert. Im Repository sind dafür Login, Registrierung, Freigabezustände und rollenbezogene Navigationsstrukturen vorhanden. Neue Staff-Nutzer können sich registrieren, befinden sich danach aber zunächst in einem Freigabezustand und erhalten erst nach der Freigabe Zugriff auf ihren Arbeitsbereich. Officer- und Admin-Bereiche sind serverseitig geschützt. Dazu kamen Profilseiten und Stammdatenbereiche. Dort werden zum Beispiel Fakultäten, Departments, akademische Jahre, Statuswerte, Upload-Einstellungen und weitere Auswahllisten verwaltet. Daran sieht man gut, wie fachliche Anforderungen in ein Datenmodell übersetzt werden mussten, damit Formulare nicht mit freien Texteingaben arbeiten, sondern mit sauberen Relationen und überprüfbaren Auswahlwerten.
+
+Ein großer Teil meiner Arbeit war die Umsetzung der eigentlichen Mobilitätsfälle. Für Staff-Nutzer gibt es einen Bereich, in dem mehrere Fälle angelegt, als Entwurf gespeichert, später wieder geöffnet und schließlich eingereicht werden können. Die Formulare erfassen unter anderem akademisches Jahr, Mobilitätstyp, Gastinstitution, Gastland, Stadt sowie Beginn und Ende des Aufenthalts. Wichtig war dabei, dass ein Fall auch unvollständig begonnen werden kann und erst bei der Einreichung alle Pflichtangaben vorhanden sein müssen. Im Projekt ist deshalb zu sehen, dass Entwürfe und Einreichungen unterschiedlich validiert werden und Statuswechsel ausdrücklich in einer eigenen Historie gespeichert werden.
+
+Danach kam die Dokumentenverwaltung dazu. Für jeden Mobilitätsfall können die vorgesehenen Unterlagen hochgeladen werden, vor allem das Mobility Agreement und später die Teilnahmebescheinigung. Die Dateien liegen nicht in einem öffentlichen Ordner, sondern werden über eine eigene Speicherabstraktion verwaltet und nur über geschützte Download-Routen ausgeliefert. Zusätzlich bleibt die Versionshistorie erhalten, und es wird festgehalten, welche Version aktuell gilt. So bleiben Änderungen nachvollziehbar und Dokumente werden nicht einfach überschrieben.
+
+Für Officer und Admin wurde später der Prüfablauf ergänzt. Fälle können in einer Übersicht gesucht und mit mehreren Filtern eingegrenzt werden, etwa nach Status, akademischem Jahr, Fakultät, Department, Mobilitätstyp, Gastland oder Gastinstitution. In der Detailansicht lassen sich Kommentare hinterlassen, Dokumente annehmen oder mit Begründung ablehnen und Fallstatus weiterführen. Abgeschlossene Fälle können archiviert werden, bleiben aber weiter auffindbar. Auf Admin-Seite kamen zusätzlich Benutzerverwaltung, Rollenänderungen, Deaktivierung von Konten, Einstellungen für Uploads und Berichte sowie ein Audit-Log hinzu. Damit ging die Anwendung über die reine Fallanlage hinaus und bildete auch Prüfung und Verwaltung ab.
+
+Ein weiterer Teil meiner Arbeit betraf Berichte, Tests und Überarbeitung. Im Projekt gibt es Berichtsseiten mit serverseitigen Auswertungen und CSV-Exporten, zum Beispiel nach akademischem Jahr, Fakultät, Department, Mobilitätstyp, Gastland, Gastinstitution und Status. Zusätzlich wurde ein Testaufbau mit Unit-, Integrations- und End-to-End-Tests erweitert. Abgedeckt sind unter anderem Registrierung, Freigabe, Login, Profilbearbeitung, Fallanlage, Entwurfsspeicherung, Dokumenten-Upload, Review-Schritte, Archivierung, Reporting und Rechteabgrenzung zwischen den Rollen. Im weiteren Verlauf wurden Fehlermeldungen, Validierungstexte, Tabellen, Statuskennzeichnungen, leere Zustände und die allgemeine Oberfläche überarbeitet. Für die Einrichtung ist damit noch kein fertiger Produktivbetrieb entstanden, aber es gibt eine lokal lauffähige Grundlage, mit der sich die internen Abläufe für Staff Mobility bereits weitgehend im System abbilden lassen.
+
+\subsection{Fachspezifische Reflexion über das Praktikum}
+
+Fachlich lag der Schwerpunkt klar auf der Verbindung von Webentwicklung mit der Logik eines Verwaltungssystems. Die Arbeit bestand nicht nur darin, Seiten zu gestalten, sondern Anforderungen aus einem Verwaltungsprozess in Datenmodelle, Formulare, geschützte Routen und überprüfbare Statusabläufe zu übersetzen. Das sieht man im Repository an der Trennung von Benutzerrollen, an den Relationen zwischen Fakultäten und Departments, an den Fall- und Dokumentstatus sowie an der eigenen Historie für Statuswechsel und wichtige Aktionen.
+
+Dabei ist mir vor allem klar geworden, wie eng Frontend, Backend und Datenbank zusammenhängen. Eine Eingabe im Formular musste nicht nur auf der Oberfläche sinnvoll sein, sondern auch serverseitig validiert, in das Schema eingeordnet und bei Bedarf gegen Rechte und Zustände geprüft werden. Dazu kam die Frage, wie man Änderungen nachvollziehbar hält, zum Beispiel bei Dokumentversionen, Kommentaren oder administrativen Eingriffen. Wichtig war auch die wiederholte Überprüfung der vorhandenen Umsetzung. Dass im Repository viele Abläufe mit automatisierten Tests abgesichert sind und später noch einmal überarbeitet wurden, zeigt auch, dass die Arbeit nicht nach der ersten Implementierung beendet war, sondern immer wieder geprüft und angepasst wurde.
+
+
+\renewcommand{\thesection}{\Roman{section}}
+
+\section{Fazit und Bewertung}
+
+\begin{itemize}
+
+\item Wie ist das Praktikum insgesamt zu bewerten?
+
+\item Wie gut oder schlecht gestaltete sich die Zusammenarbeit mit den Mitarbeitern?
+
+\item Wie ist die Verbindung von Theorie und Praxis?
+
+\item Was habe ich im Praktikum gelernt, das ich im Studium nicht lernen konnte?
+
+\item Was lerne ich im Studium, das ich im Praktikum nicht vermittelt bekomme?
+
+\item Wird sich aufgrund der Praktikumserfahrung mein Studierverhalten ändern? Wie?
+
+\item Habe ich für zukünftige Praktikanten Anregungen?
+
+\item Welche Verbesserungsvorschläge zur Durchführung von Praktika habe ich?
+
+\end{itemize}
+
+\newpage
+
+\section{Anhang}
+
+\begin{itemize}
+
+\item Kopie des Praktikumszeugnisses und ggf. Kopie von Arbeitsproben
+
+\item Bestätigung der Teilnahme am Praktikum mit Stempel und Unterschrift der Institution.
+
+\end{itemize}
+
+\newpage
+
+\section{Literaturverzeichnis}
+
+Literaturverzeichnisse lassen sich ebenfalls mit \LaTeX erstellen, dies ist jedoch eine komplexe Angelegenheit. Eine Möglichkeit besteht in der Einbindung von Literaturdaten in ein \LaTeX-Dokument über die Pakete "`BibTeX" bzw. "`BiblaTeX"' BibTeX ist in fast allen Distributionen von \LaTeX enthalten. BiblaTeX ist mit einer sehr ausführlichen englischen Dokumentation unter folgendem Link zu finden: \url{http://www.ctan.org/pkg/biblatex}
+
+Zusätzlich empfiehlt sich die Verwendung einer Literaturverwaltung wie \textit{JabRef}, die ebenfalls frei verfügbar ist und unter diesem Link zum Download bereitsteht: \url{http://jabref.sourceforge.net/}
+
+Literaturverzeichnisse lassen sich weiterhin auch - wie im folgenden Beispiel - manuell einbinden. Ab der zweiten Zeile erfolgt eine Einrückung um 1cm.
+
+\begin{description} % Absatzumgebung mit hängendem Einzug.
+
+\item Franck, Norbert / Stary, Joachim (Hrsg.) (2006): Die Technik wissenschaftlichen Arbeitens. Eine praktische Anleitung. 13. Auflage. Paderborn: Schönigh
+
+\end{description}
+
+\newpage
+
+\section{Eidesstattliche Versicherung}
+
+Ich versichere eidesstattlich durch eigenhändige Unterschrift, dass ich die Arbeit selbstständig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Alle Stellen, die wörtlich oder sinngemäß aus Veröffentlichungen entnommen sind, habe ich als solche kenntlich gemacht. Die Arbeit ist noch nicht veröffentlicht und ist in gleicher oder ähnlicher Weise noch nicht als Studienleistung zur Anerkennung oder Bewertung vorgelegt worden. Ich weiß, dass bei Abgabe einer falschen Versicherung die Prüfung als nicht bestanden zu gelten hat.
+
+\vspace*{1cm}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{3cm} p{4cm} p{0.5cm} p{6cm}}
+Rostock & & &\\[0.5cm]
+\cline{2-2} \cline{4-4}
+& (Abgabedatum) & & (Vollständige Unterschrift)\\
+\end{tabular}
+\end{table}
+
+\end{document}

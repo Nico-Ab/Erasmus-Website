@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buildLoginStatePath } from "@/lib/auth/paths";
+import { getMessages } from "@/lib/i18n/messages";
+import { getRequestLocale } from "@/lib/i18n/server";
 
 type PendingApprovalPageProps = {
   searchParams: Promise<{
@@ -20,6 +22,8 @@ function readSingleValue(value?: string | string[]) {
 
 export default async function PendingApprovalPage({ searchParams }: PendingApprovalPageProps) {
   const session = await auth();
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
 
   if (session?.user?.status === UserApprovalStatus.APPROVED) {
     redirect("/dashboard");
@@ -39,43 +43,41 @@ export default async function PendingApprovalPage({ searchParams }: PendingAppro
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <Card className="border-slate-200 bg-white/95">
+      <Card className="border-slate-200 bg-white">
         <CardHeader className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            {registered ? <Badge variant="success">Registration submitted</Badge> : null}
-            <Badge variant="warning">Approval required</Badge>
+            {registered ? <Badge variant="success">{messages.auth.pending.submitted}</Badge> : null}
+            <Badge variant="warning">{messages.auth.pending.approvalRequired}</Badge>
           </div>
           <div>
-            <CardTitle className="text-3xl text-slate-950">Account pending approval</CardTitle>
+            <CardTitle className="text-3xl text-slate-950">{messages.auth.pending.title}</CardTitle>
             <CardDescription className="mt-2 max-w-2xl text-base leading-7 text-slate-600">
-              Your account has been recorded, but access to the protected workspace stays disabled until an administrator approves the registration.
+              {messages.auth.pending.description}
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-6 text-sm text-slate-700">
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="font-semibold text-slate-900">Registration status</p>
-            <p className="mt-2">Current state: Pending administrative review</p>
+            <p className="font-semibold text-slate-900">{messages.auth.pending.registrationStatus}</p>
+            <p className="mt-2">{messages.auth.pending.currentState}</p>
             {email ? (
               <p className="mt-1">
-                Submitted email: <span className="font-medium text-slate-900">{email}</span>
+                {messages.auth.pending.submittedEmail}: <span className="font-medium text-slate-900">{email}</span>
               </p>
             ) : null}
           </div>
-          <div>
-            <p className="font-semibold text-slate-900">What happens next</p>
-            <ol className="mt-3 space-y-2 text-slate-700">
-              <li>1. An administrator reviews the registration inside the user management workspace.</li>
-              <li>2. Approved accounts can sign in and reach the role-appropriate dashboard area.</li>
-              <li>3. Rejected or deactivated accounts are blocked from the protected routes.</li>
-            </ol>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="font-semibold text-slate-900">{messages.auth.pending.nextStep}</p>
+            <p className="mt-2 leading-6">
+              {messages.auth.pending.nextStepDescription}
+            </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild>
-              <Link href="/login">Return to login</Link>
+              <Link href="/login">{messages.auth.pending.returnLogin}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/">Return home</Link>
+              <Link href="/">{messages.auth.pending.returnHome}</Link>
             </Button>
           </div>
         </CardContent>

@@ -22,9 +22,9 @@ test("staff users can edit their own profile", async ({ page }) => {
   await signInWith(page, staffCredentials);
   await page.goto("/dashboard/profile");
 
-  await expect(page.getByRole("heading", { name: /editable staff profile/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /my institutional profile/i })).toBeVisible();
   await page.getByLabel(/first name/i).fill("Elena Updated");
-  await page.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law" });
+  await page.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law and History" });
   await page.getByLabel(/department/i).selectOption({ label: "Public Law" });
   await page.getByRole("button", { name: /save profile/i }).click();
 
@@ -33,7 +33,7 @@ test("staff users can edit their own profile", async ({ page }) => {
   await expect(page.getByLabel(/first name/i)).toHaveValue("Elena Updated");
   await expect(page.getByLabel(/faculty/i)).toHaveValue(/.+/);
   await expect(page.getByLabel(/department/i)).toHaveValue(/.+/);
-  await expect(page.getByRole("heading", { name: /editable staff profile/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /my institutional profile/i })).toBeVisible();
 });
 
 test("admins can create and edit faculties and departments", async ({ page }) => {

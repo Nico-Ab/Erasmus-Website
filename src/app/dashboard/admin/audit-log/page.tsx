@@ -35,7 +35,7 @@ export default async function AdminAuditLogPage() {
         <OverviewMetric title="Workflow actions" value={data.metrics.workflowActions.toString()} description="Case, document, and settings actions outside direct user administration." />
       </section>
 
-      <Card className="border-slate-200 bg-white/95">
+      <Card className="border-slate-200 bg-white">
         <CardHeader>
           <CardTitle>Recent activity</CardTitle>
           <CardDescription className="leading-6">
@@ -57,7 +57,7 @@ export default async function AdminAuditLogPage() {
               </thead>
               <tbody>
                 {data.entries.map((entry) => (
-                  <tr key={entry.id} className="border-b border-slate-100 align-top text-slate-700 hover:bg-slate-50/60 last:border-b-0" data-testid={`audit-log-entry-${entry.id}`}>
+                  <tr key={entry.id} className="border-b border-slate-100 align-top text-slate-700 hover:bg-slate-50 last:border-b-0" data-testid={`audit-log-entry-${entry.id}`}>
                     <td className="whitespace-nowrap px-3 py-4 text-xs text-slate-500">{entry.createdAtLabel}</td>
                     <td className="px-3 py-4">
                       <div className="font-medium text-slate-900">{entry.actorName}</div>

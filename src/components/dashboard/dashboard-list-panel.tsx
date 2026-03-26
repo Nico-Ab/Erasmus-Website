@@ -25,7 +25,7 @@ export function DashboardListPanel({
   footer
 }: DashboardListPanelProps) {
   return (
-    <Card className="border-slate-200 bg-white/95">
+    <Card className="border-slate-200 bg-white">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription className="leading-6">{description}</CardDescription>
@@ -42,10 +42,7 @@ export function DashboardListPanel({
               {items.length} item{items.length === 1 ? "" : "s"}
             </p>
             {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3"
-              >
+              <div key={item.id} className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold text-slate-950">{item.title}</p>

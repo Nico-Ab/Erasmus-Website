@@ -34,6 +34,10 @@ function buildCaseSeed(overrides?: Partial<CaseSeed>): CaseSeed {
   };
 }
 
+function buildSafePdfBuffer(contents: string) {
+  return Buffer.from(`%PDF-1.4\n${contents}\n%%EOF`, "utf8");
+}
+
 async function signInWith(page: Page, credentials: { email: string; password: string }) {
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(credentials.email);
@@ -79,7 +83,7 @@ async function createSubmittedCaseAsStaff(
     await panel.locator('input[type="file"]').setInputFiles({
       name: "review-agreement.pdf",
       mimeType: "application/pdf",
-      buffer: Buffer.from("review-agreement")
+      buffer: buildSafePdfBuffer("review-agreement")
     });
     await panel.getByRole("button", { name: /upload document/i }).click();
     await expect(panel.getByTestId("document-version-mobility_agreement-1")).toBeVisible();
@@ -191,7 +195,7 @@ test("officers can combine filters to isolate a target review case", async ({ pa
   const filters = page.getByTestId("review-case-filters");
   await filters.getByLabel(/status/i).selectOption({ label: "Submitted" });
   await filters.getByLabel(/academic year/i).selectOption({ label: "2025/2026" });
-  await filters.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law" });
+  await filters.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law and History" });
   await filters.getByLabel(/department/i).selectOption({ label: "Public Law" });
   await filters.getByLabel(/mobility type/i).selectOption({ label: "Training" });
   await filters.getByLabel(/country/i).fill("Belgium");
@@ -200,6 +204,6 @@ test("officers can combine filters to isolate a target review case", async ({ pa
 
   const matchingRow = page.locator("tbody tr").filter({ hasText: secondSeed.hostInstitution });
   await expect(matchingRow).toBeVisible();
-  await expect(matchingRow).toContainText(/faculty of law/i);
+  await expect(matchingRow).toContainText(/faculty of law and history/i);
   await expect(page.locator("tbody tr").filter({ hasText: firstSeed.hostInstitution })).toHaveCount(0);
 });

@@ -1,0 +1,225 @@
+\documentclass{Vorlage}
+
+\begin{document}
+
+\newgeometry{top=2.5cm,bottom=2.0cm,left=2.5cm,right=2.5cm} % Befehl wird nur benoetigt, falls Aenderungen an den Seitenraendern in der Datei "Vorlage.cls" vorgenommen werden.
+
+\begin{titlepage}
+
+\titelseite{Praktikumsbericht}{Universit\"at Rostock}
+
+\vspace*{6cm}
+
+\titel{Arbeitsthema / Titel}{Untertitel}
+
+\vspace{1cm}
+
+\begin{tabular}{p{3.5cm}|p{0.1cm} p{10cm}l}
+\textsc{Name:} & & \textsc{}\\
+\textsc{Vorname:} & & \textsc{}\\
+\textsc{Matrikel-Nr.:} & & \textsc{}\\
+\textsc{Studiengang:} & & \textsc{}\\
+\textsc{E-Mail:} & & \textsc{}\\
+\textsc{Seminar:} & & \textsc{}\\
+\textsc{DozentIn:} & & \textsc{}\\
+\textsc{Lehrstuhl:} & & \textsc{}\\
+\textsc{Institut:} & & \textsc{}\\
+\textsc{Fakult\"at:} & & \textsc{}\\
+\textsc{Modul:} & & \textsc{}\\
+\textsc{Fachsemester:} & & \textsc{}\\
+\textsc{Abgabedatum:} & & \textsc{}\\
+\end{tabular}
+\end{titlepage}
+
+\restoregeometry
+
+\pagenumbering{Roman} % \pagenumbering{roman} = Kleinschreibung: II -> ii.
+
+\tableofcontents % Inhaltsverzeichnis.
+
+\newpage % Neue Seite.
+
+\listoffigures % Abbildungsverzeichnis.
+
+\listoftables % Tabellenverzeichnis.
+
+\newpage
+
+\pagenumbering{arabic} % Ab hier folgt die arabische Seitennummerierung.
+
+\renewcommand{\thesection}{\Roman{section}} % Roemische Nummerierung der Kapitelueberschriften.
+
+\section{Die Praktikumsstelle - Formale Bedingungen}
+
+\begin{itemize}
+
+\item Genaue Beschreibung der Institution, Was macht die Institution? Wie gro\ss{} usw.? Welche Aufgabe hat meine Abteilung? Leitungs- / Organisationsstruktur?
+
+\item Wie habe ich die Praktikumsstelle gefunden (Bewerbung, Kontaktaufnahme)? Welche Erfahrungen gewinne ich aus dem Vorgehen bei der Bewerbung?
+
+\item Wie sind die Arbeitsbedingungen? Gab es Fahrtkostenzuschuss, Aufwandsentschaedi-gung, sonstige Unterstuetzung? Wie waren die Arbeitszeiten?
+
+\end{itemize}
+
+\newpage
+
+\section{Aufgaben und T\"atigkeiten - Der Ablauf des Praktikums}
+
+\renewcommand{\thesection}{\arabic{section}}
+
+\subsection{Umfeld der Praktikumst\"atigkeit}
+
+Im Praktikum habe ich an zwei unterschiedlichen Softwareprojekten gearbeitet. Ein Teil meiner Arbeit betraf ein internes Erasmus-Portal f\"ur die Verwaltung von Staff-Mobility-F\"allen. In den Projektdateien ist zu sehen, dass die Anwendung als Webanwendung aufgebaut wurde und Bereiche f\"ur Staff, Officer und Admin enth\"alt. Damit ging es nicht nur um einzelne Seiten, sondern um einen zusammenh\"angenden Verwaltungsablauf mit Formularen, gesch\"utzten Bereichen, Datenmodell und Rollenlogik.
+
+Schon an der Navigation l\"asst sich erkennen, dass das Portal nicht nur aus einer einzelnen Antragsmaske bestand. Es gibt eine Startseite, Login und Registrierung, eine Statusseite f\"ur den lokalen Betrieb und danach getrennte Dashboard-Bereiche. Staff arbeitet mit Profil und eigenen F\"allen, Officer mit Review-Ansichten und Filtern, und Admin mit Benutzerverwaltung, Stammdaten und Audit-Log. Dadurch hatte das Projekt eher den Charakter eines kleinen internen Verwaltungssystems als den einer einfachen Website.
+
+Daneben habe ich an einer Android-App gearbeitet, mit der man Deutsch mit Karten lernen kann. Diese Anwendung ist als reine Android-App aufgebaut und arbeitet lokal, also ohne Server, Benutzerkonto oder Login. Nach dem Start landet man direkt in einer Kategorienansicht und wechselt von dort in Decklisten und Lernsitzungen. Dazu kommen eine Statistikseite, gemischte Lernsitzungen und ein seitliches Men\"u f\"ur Einstellungen. Im Code ist au\ss{}erdem klar getrennt, was zur UI, zur Fachlogik und zur Datenhaltung geh\"ort.
+
+Die App wirkte nach au\ss{}en kleiner als das Portal, war im Code aber trotzdem ziemlich vielschichtig. Es gibt nicht nur die eigentlichen Screens, sondern auch ViewModels, Use Cases, lokale Datenhaltung mit Room, Einstellungen \"uber DataStore und eine ganze Reihe von Tests. Gerade weil die App ohne Backend auskommt, musste vieles direkt auf dem Ger\"at sauber gel\"ost werden. Das betrifft zum Beispiel die Frage, wann Karten wieder f\"allig sind, wie Z\"ahler aktuell bleiben und welche Einstellungen nach einem Neustart noch vorhanden sind.
+
+Dadurch war das Praktikum insgesamt recht abwechslungsreich. Beim Webprojekt standen eher Rollen, Freigaben, Verwaltungsabl\"aufe und serverseitige Logik im Vordergrund. Bei der App ging es st\"arker um Lernfluss, lokale Speicherung und Zust\"ande auf dem Ger\"at selbst. In beiden Projekten musste ich aber \"uber die Oberfl\"ache hinausdenken und immer auch den Ablauf im Hintergrund mitber\"ucksichtigen.
+
+% TODO: Angaben zur direkten Zusammenarbeit mit anderen Beteiligten nur ergaenzen, wenn sie aus eigenen Unterlagen sicher belegt sind.
+
+\subsection{Aufgabe und Ziel}
+
+Meine Aufgabe war es, beide Projekte Schritt f\"ur Schritt zu einer brauchbaren Form weiterzuentwickeln. Beim Erasmus-Portal hie\ss{} das, Anforderungen aus einem internen Verwaltungsprozess in konkrete Funktionen zu \"ubersetzen. Aus den Dateien geht hervor, dass daf\"ur \"offentliche Seiten wie Login und Registrierung, gesch\"utzte Bereiche f\"ur die verschiedenen Rollen, serverseitig abgesicherte Abl\"aufe sowie ein Datenmodell f\"ur Benutzer, Mobilit\"atsf\"alle, Dokumente, Statusverl\"aufe und Berichte aufgebaut wurden. Es ging also nicht nur um einzelne Formulare, sondern um einen vollst\"andigen Ablauf von der Antragstellung bis zur Pr\"ufung und Verwaltung.
+
+Ein Teil der Aufgabe lag deshalb darin, eher allgemeine Anforderungen zuerst technisch greifbar zu machen. Wenn Departments zu Fakult\"aten geh\"oren, Dokumente privat bleiben sollen oder Statuswechsel sp\"ater nachvollziehbar sein m\"ussen, reicht eine sichtbare Seite allein nicht aus. Dann braucht man auch passende Relationen im Datenmodell, serverseitige Pr\"ufungen in den API-Routen und eine Struktur, in der sich Entwurf, Einreichung, Dokumentenpr\"ufung und Archivierung sauber auseinanderhalten lassen. Au\ss{}erdem sollte der Stand fr\"uh lokal startbar und testbar sein, damit neue Teile nicht nur im Code, sondern im laufenden System gepr\"uft werden konnten.
+
+Bei der Android-App lag das Ziel anders. Dort sollte aus einem ersten Ger\"ust eine nutzbare Lernanwendung werden, mit der man direkt arbeiten kann. Nach dem Start sollte man eine Kategorie ausw\"ahlen, ein Deck \"offnen, Karten aufdecken, bewerten und danach sinnvoll weitermachen k\"onnen. Gleichzeitig musste der Lernstand dauerhaft gespeichert werden. Dazu kamen Einstellungen wie Themes, Audio und zus\"atzliche \"Ubersetzungshilfen sowie kleinere gestalterische Aufgaben wie Hintergr\"unde und das App-Icon.
+
+Mir war bei der App au\ss{}erdem wichtig, dass sie nicht wie eine lose Sammlung einzelner Karten wirkt. Schon auf den ersten Seiten sollte erkennbar sein, welche Themen es gibt, wo Wiederholungen anstehen und wie viele neue Karten f\"ur den Tag noch sinnvoll sind. Die App sollte also nicht einfach alle Inhalte auf einmal zeigen, sondern Lernen in kleinen, nachvollziehbaren Schritten organisieren. Daraus ergaben sich viele technische Aufgaben, obwohl die Anwendung im Vergleich zum Webprojekt auf den ersten Blick einfacher aussieht.
+
+Ein weiterer Punkt war der Startzustand der App. Da es keinen Login, keinen Server und keinen externen Datenabruf gibt, musste die Anwendung ihren Ausgangszustand selbst mitbringen. Im Projekt ist deshalb eine Seed-Datei vorhanden, die beim ersten Start Kategorien, Decks, Karten und anf\"angliche Review-Zust\"ande anlegt. Dadurch war die Arbeit nicht nur auf Logik und Oberfl\"ache beschr\"ankt, sondern auch darauf, wie Inhalte vern\"unftig in die App gelangen und danach dauerhaft weiterverarbeitet werden.
+
+Gemeinsam war beiden Projekten, dass die sichtbare Oberfl\"ache nur ein Teil der Arbeit war. Ich musste immer gleichzeitig darauf achten, wie Screens oder Seiten zusammenh\"angen, wie Daten gespeichert werden, wie Zust\"ande weitergegeben werden und wie sich die Anwendung in typischen und untypischen F\"allen verh\"alt. Gerade dadurch wurde aus einzelnen Bausteinen nach und nach eine wirklich benutzbare Anwendung.
+
+\subsection{T\"atigkeiten und Arbeitsergebnisse}
+
+Ein gr\"o\ss{}erer Teil meiner Arbeit lag im Webprojekt. Zun\"achst musste eine Grundlage stehen, auf der sich die Anwendung lokal starten, testen und weiterentwickeln lie\ss{}. Im Projekt sind daf\"ur die eigentliche Webanwendung, Konfigurationsdateien, Skripte f\"ur Entwicklung und Build, Datenbankanbindung, Seed-Daten und Testaufbau vorhanden. Dadurch war die Anwendung nicht nur als Quellcode da, sondern in einem Zustand, in dem sich ganze Abl\"aufe lokal nachvollziehen lie\ss{}en.
+
+Zu dieser Grundlage geh\"orte nicht nur der eigentliche Anwendungscode. Im Projekt liegen auch Umgebungsvariablen, Migrationsskripte, Seed-Daten, Demo-Konten, eine Statusseite und Dokumentationen f\"ur den lokalen Start. F\"ur meine Arbeit war das wichtig, weil ich neue Teile immer wieder in einem laufenden System gegenpr\"ufen konnte, statt sie nur isoliert zu bauen.
+
+Danach ging es um Benutzerkonten, Rollen und Freigaben. Im Repository ist zu sehen, dass neue Staff-Nutzer sich registrieren k\"onnen, dann aber zun\"achst auf eine Freigabe warten. Officer- und Admin-Bereiche sind getrennt davon abgesichert. Dazu kamen Profilseiten und Stammdatenbereiche, in denen zum Beispiel Fakult\"aten, Departments, akademische Jahre, Statuswerte oder Upload-Einstellungen verwaltet werden. An solchen Stellen merkt man gut, dass fachliche Anforderungen zuerst in ein sauberes Datenmodell \"ubersetzt werden mussten, bevor die Oberfl\"ache sinnvoll funktionieren konnte.
+
+Praktisch war dabei oft wichtig, dieselben Daten aus verschiedenen Blickwinkeln zu behandeln. Staff sieht nur den eigenen Bereich und die eigenen F\"alle. Officer braucht Such- und Pr\"uffunktionen \"uber alle eingereichten Vorg\"ange hinweg. Admin bearbeitet Benutzer, Stammdaten und Einstellungen. Dadurch musste ich nicht nur Seiten bauen, sondern auch serverseitig absichern, wer welche Daten sehen oder ver\"andern darf.
+
+Viel Arbeit steckte au\ss{}erdem in den eigentlichen Mobilit\"atsf\"allen. Staff-Nutzer k\"onnen mehrere F\"alle anlegen, als Entwurf speichern, sp\"ater weiterbearbeiten und schlie\ss{}lich einreichen. Im Projekt ist zu sehen, dass Entw\"urfe und Einreichungen unterschiedlich behandelt werden und dass Statuswechsel in einer eigenen Historie gespeichert werden. Sp\"ater kamen Dokumenten-Upload, gesch\"utzte Download-Routen, Kommentierung, Pr\"ufung durch Officer, Archivierung und serverseitige Auswertungen dazu. Im weiteren Verlauf wurden auch Fehlermeldungen, Validierungstexte, Tabellen, Statuskennzeichnungen und leere Zust\"ande \"uberarbeitet. Dadurch ist aus einzelnen Verwaltungsseiten ein zusammenh\"angender Arbeitsablauf geworden.
+
+Bei den Mobilit\"atsf\"allen war au\ss{}erdem wichtig, dass der Ablauf nicht zu starr wird. Ein Fall kann zuerst unvollst\"andig als Entwurf beginnen und erst sp\"ater vollst\"andig eingereicht werden. Deshalb gibt es im Projekt getrennte Validierungsstufen und klare Regeln daf\"ur, wann ein Statuswechsel \"uberhaupt erlaubt ist. Gerade solche Unterschiede wirken in der Oberfl\"ache klein, entscheiden aber dar\"uber, ob ein Formular im Alltag brauchbar ist oder schnell im Weg steht.
+
+Besonders deutlich wurde das bei den Dokumenten. Es reichte nicht, einfach einen Upload-Button einzubauen. Die Dateien sollten privat bleiben, versioniert werden und nur \"uber gesch\"utzte Routen herunterladbar sein. Gleichzeitig musste sauber getrennt bleiben, was der aktuelle Stand eines Falls ist und was nur den Review-Zustand eines Dokuments betrifft. Genau an solchen Stellen wurde aus einer normalen Webanwendung eher ein Verwaltungswerkzeug mit nachvollziehbaren Regeln.
+
+Sp\"ater ging es nicht mehr nur um einzelne Vorg\"ange, sondern auch um den \"Uberblick \"uber den Gesamtstand. Officer und Admin k\"onnen F\"alle suchen, filtern, kommentieren, archivieren und in Berichten auswerten. Dazu kamen CSV-Exporte und ein Audit-Log f\"ur wichtige Aktionen. F\"ur mich war das ein anderer Arbeitsschritt als am Anfang, weil ich nicht mehr nur auf einzelne Formulare geschaut habe, sondern darauf, wie das System mit vielen F\"allen und verschiedenen Rollen zusammenh\"angt.
+
+Ein weiterer Teil der Website-Arbeit bestand aus \"Uberarbeitung und Absicherung. Im Repo ist zu sehen, dass neben Unit- und Integrations-Tests auch ein gr\"o\ss{}erer End-to-End-Ablauf vorhanden ist, der Registrierung, Freigabe, Profilbearbeitung, Fallanlage, Upload, Review, Archivierung und Reporting zusammennimmt. Dazu kamen kleinere Korrekturen an Fehlermeldungen, leeren Zust\"anden, Tabellen, Statuskennzeichnungen und der allgemeinen Oberfl\"ache. Gerade an diesen Stellen habe ich gemerkt, dass ein Projekt nicht nur durch neue Funktionen w\"achst, sondern auch durch wiederholtes Nachbessern.
+
+Zum Ende hin geh\"orte auch dazu, Setup, Testabl\"aufe, Demo-Konten und Speicherverhalten sauber zu dokumentieren. Das klingt weniger sichtbar als eine neue Seite, war aber wichtig, damit der Stand lokal reproduzierbar bleibt und man nicht jedes Mal wieder bei Null anf\"angt.
+
+Daneben habe ich an der Android-App gearbeitet, die im Vergleich dazu einen ganz anderen Schwerpunkt hatte. Dort ging es weniger um Rollen und Freigaben, sondern um einen klaren Lernfluss auf dem Ger\"at selbst. Ein wichtiger Schritt war die Umstellung von einer Fake-Repository-L\"osung auf eine lokale Speicherung mit SQLite beziehungsweise Room. Erst dadurch konnte die App Fortschritt, Kartenzust\"ande und Lernprotokolle wirklich speichern und \"uber mehrere Sitzungen hinweg mit echten Daten arbeiten.
+
+Am Commit-Verlauf l\"asst sich gut erkennen, dass die App nicht in einem Schritt entstanden ist. Am Anfang stand eher ein Framework mit ersten Beispielansichten. Sp\"ater kamen der Umbau der Architektur, die lokale Datenbank, ein gr\"o\ss{}erer Review-Flow und anschlie\ss{}end viele kleinere Korrekturen dazu. Das war f\"ur mich auch im Arbeitsprozess sp\"urbar, weil ich nicht einfach nur neue Teile gebaut habe, sondern fr\"uhere Entscheidungen immer wieder anpassen musste, sobald mehr echte Logik dazugekommen ist.
+
+Sp\"ater habe ich die Struktur des Projekts noch einmal st\"arker \"uberarbeitet. Im aktuellen Stand sind die Klassen klar in UI, Domain und Datenlogik aufgeteilt. In der Domain-Schicht liegen Modelle und Use Cases f\"ur Kartenauswahl, Bewertung und Statistik. In der Daten-Schicht liegen Entities, DAOs, Mapper und die Repository-Implementierung. Diese Trennung war f\"ur die weitere Arbeit hilfreich, weil der Code dadurch lesbarer wurde und sich leichter testen lie\ss{}.
+
+Auf der sichtbaren Seite musste die Navigation zwischen Kategorienansicht, Deckliste, Lernsitzung, Mixed Study und Statistik aufgebaut und \"ubersichtlich gehalten werden. Dazu kamen gemeinsame Komponenten wie Statistikleisten, Dialoge und das seitliche Men\"u f\"ur Einstellungen. Gleichzeitig steckte viel Arbeit in der Logik hinter dem Lernablauf. Neue und f\"allige Karten werden unterschiedlich behandelt, f\"ur neue Karten gibt es ein Tageslimit, und die Z\"ahler f\"ur Due und New werden direkt aus Datenbank und Lernprotokoll berechnet. Auch die n\"achste Karte wird nicht einfach starr ausgegeben, sondern aus einer kleinen Kandidatenmenge ausgew\"ahlt. Daran merkt man gut, dass es bei der App nicht nur um Screens ging, sondern genauso um den Ablauf dahinter.
+
+Gerade die sichtbaren Wege durch die App mussten nach und nach sauber zusammengesetzt werden. In der Kategorienansicht werden Themen mit ihren offenen Wiederholungen und neuen Karten angezeigt. Von dort geht es in die Decklisten, in denen jedes Deck eigene Due- und New-Z\"ahler hat. Per Long-Press l\"asst sich f\"ur ein Deck das Tageslimit neuer Karten anpassen. Daneben gibt es eine eigene Konfigurationsseite f\"ur gemischte Sitzungen, auf der Themen, Lernstufen, Modus und neue Karten pro Sitzung ausgew\"ahlt werden k\"onnen. Solche Stellen wirken in der fertigen App recht schlicht, machen in der Umsetzung aber nur dann Sinn, wenn Navigation, Z\"ahler und gespeicherte Einstellungen zusammenpassen.
+
+Auch die eigentliche Lernsitzung war aufwendiger, als es zuerst aussieht. Die Karte wird vorne gezeigt, dann kann die Antwort eingeblendet und anschlie\ss{}end mit Again, Hard, Good oder Easy bewertet werden. Zu den Buttons geh\"oren Intervallhinweise, damit ungef\"ahr sichtbar wird, wann eine Karte wiederkommt. Wenn TTS aktiviert ist, werden deutsche Karten vorgelesen. F\"ur bestimmte Inhalte lassen sich zus\"atzliche \"Ubersetzungen einblenden. Au\ss{}erdem muss die Sitzung sauber auf einen Abschlusszustand wechseln, wenn keine Karte mehr sinnvoll in die aktuelle Runde passt. Gerade bei einer Lern-App merkt man schnell, dass sich kleine Unstimmigkeiten im Ablauf sofort unangenehm anf\"uhlen.
+
+Auf Datenebene musste die App st\"arker ausformuliert werden, als man es auf den ersten Blick erwartet. Inhalte und Lernfortschritt liegen nicht zusammen in einer einzigen Struktur, sondern sind getrennt in Decks, Karten, ReviewState und StudyLog abgebildet. Das war notwendig, damit sich die Karteninhalte nicht bei jeder Bewertung mit\"andern und damit man aus den Logdaten sp\"ater Statistiken und Z\"ahler ableiten kann. Im Projekt ist auch zu sehen, dass die App die t\"aglichen New-Z\"ahler nicht einfach fest speichert, sondern aus dem aktuellen Zustand und den bisherigen Lerneintr\"agen neu berechnet. Dadurch musste ich mich viel intensiver mit Datenmodellierung und Abfragen besch\"aftigen, als man bei einer kleinen App vielleicht zuerst denkt.
+
+Der eigentliche Kern der App liegt in der Auswahl und Bewertung der Karten. Neue Karten und f\"allige Karten werden unterschiedlich behandelt. Nach einer Bewertung wird der n\"achste Zustand nicht nur auf dem Bildschirm angepasst, sondern in der Datenbank mit neuem F\"alligkeitszeitpunkt, Intervall und Wiederholungszahl gespeichert. Dazu kommt, dass die App nicht immer einfach die erste passende Karte nimmt. Stattdessen arbeitet sie mit einer Kandidatenmenge, vermeidet ganz frische Wiederholungen und mischt die Auswahl etwas auf. Das klingt nach einem kleinen Detail, war aber wichtig, damit sich eine Sitzung nicht zu mechanisch oder fehlerhaft anf\"uhlt.
+
+Besonders hilfreich f\"ur die Erweiterung der App war die Seed-Struktur. Beim ersten Start werden nicht nur ein paar Platzhalterkarten angelegt, sondern ein gr\"o\ss{}erer Startbestand an Themen wie Travel, Food \& Drinks, Shopping, Health oder Emergencies. Innerhalb dieser Themen gibt es mehrere Lernstufen, zum Beispiel Core Words, \"Ubersetzungen, Nomen, S\"atze und Kasus\"ubungen. Dadurch konnte ich nicht nur an leeren Strukturen arbeiten, sondern mit echten Inhalten testen, wie sich Z\"ahler, gemischte Sitzungen und Statistik in einem realistischeren Datenbestand verhalten.
+
+Ein weiterer Punkt war die Zustandsverwaltung. Der aktuelle Lernstatus, Lade- und Abschlusszust\"ande einer Sitzung sowie Einstellungen wie Theme, Audio und zus\"atzliche \"Ubersetzungen mussten nicht nur angezeigt, sondern auch \"uber einen Neustart der App hinweg behalten werden. Diese Werte werden lokal gespeichert und \"uber ViewModels wieder in die Oberfl\"ache gegeben. Gerade bei einer App, die in kurzen Sitzungen benutzt wird, war das wichtig, damit sich der Stand nach einer Unterbrechung nicht willk\"urlich anders anf\"uhlt.
+
+An diesem Punkt ging es nicht nur um funktionale Dinge, sondern auch um Feinarbeit. Im seitlichen Men\"u k\"onnen Theme, TTS und \"Ubersetzungshilfen umgeschaltet werden. F\"ur die Themes gibt es eigene Hintergr\"unde, und auch das Launcher-Icon wurde als eigene Ressource ausgearbeitet. Auf der Statistikseite werden nicht nur rohe Zahlen angezeigt, sondern auch Tageswerte, eine Serie von Lerntagen und eine einfache Wochenansicht. Solche Teile sind f\"ur die Kernlogik nicht das Wichtigste, machen aber einen gro\ss{}en Unterschied dabei, ob eine App sich am Ende nur technisch oder auch wirklich benutzbar anf\"uhlt.
+
+Zur Arbeit geh\"orte deshalb immer wieder auch Debugging und Absicherung. Im Testordner liegen nicht nur allgemeine Beispieltests, sondern Pr\"ufungen f\"ur Scheduling, Kartenauswahl, Counter-Logik, Live-Updates, Mixed Sessions und Regressionen. Im Commit-Verlauf sieht man au\ss{}erdem, dass zwischendurch auch Debug-Hilfen eingebaut und konkrete Probleme im Lernablauf behoben wurden, zum Beispiel bei der Frage, wie schnell Karten nach Again wieder erscheinen sollen. Gerade bei der App war das wichtig, weil viele Fehler nicht sofort zu einem Absturz f\"uhren, sondern eher zu falschen Z\"ahlern oder einem komischen Lerngef\"uhl im laufenden Gebrauch.
+
+R\"uckblickend waren die beiden Projekte inhaltlich unterschiedlich, aber im Arbeitsalltag gab es viele Gemeinsamkeiten. In beiden F\"allen musste ich neue Teile umsetzen, bestehende Logik \"uberarbeiten und Randf\"alle mitdenken. Beim Webprojekt betraf das zum Beispiel Rechte, Statuswechsel und Dokumentversionen. Bei der App waren es eher leere oder abgeschlossene Sitzungen, die erste Initialisierung der Daten und die Frage, ob Z\"ahler und Lernlogik konsistent bleiben. Dazu kamen in beiden Projekten Tests, kleinere UI-Korrekturen, Dokumentation und sichtbare Feinarbeit an Ressourcen und Darstellung.
+
+\subsection{Fachspezifische Reflexion \"uber das Praktikum}
+
+Fachlich war das Praktikum f\"ur mich spannend, weil ich an zwei sehr unterschiedlichen Arten von Anwendungen gearbeitet habe. Im Webprojekt ging es stark um Verwaltungslogik. Dort musste ich sehen, wie Frontend, Backend und Datenbank zusammenarbeiten, damit Rollen, Formulare, Status und Dokumente sauber ineinandergreifen. Bei der Android-App stand st\"arker im Vordergrund, wie eine mobile Anwendung lokal mit Zust\"anden, Navigation und Datenhaltung umgeht, ohne sich auf einen Server zu st\"utzen.
+
+Beim Webprojekt habe ich besonders gemerkt, wie schnell eine scheinbar einfache Regel mehrere Schichten betrifft. Die Aussage, dass nur freigegebene Staff-Nutzer eigene F\"alle bearbeiten d\"urfen, bedeutet nicht nur eine sichtbare Sperre in der Oberfl\"ache. Sie betrifft auch Session, Rollenlogik, API-Routen, Datenmodell und Tests. Dasselbe gilt f\"ur Dokumentversionen, Statushistorien oder die Frage, ob archivierte F\"alle in Berichten weiter auftauchen sollen.
+
+Au\ss{}erdem war das Portal f\"ur mich ein gutes Beispiel daf\"ur, dass Verwaltungssysteme oft weniger durch komplizierte Algorithmen als durch saubere Nachvollziehbarkeit schwierig werden. Ob ein Dokument abgelehnt wurde, wer einen Status ge\"andert hat oder welche Version gerade gilt, muss an mehreren Stellen konsistent bleiben. Dadurch habe ich im Webprojekt noch st\"arker verstanden, wie wichtig saubere Datenstrukturen, klare Rechte und Tests f\"ur sp\"atere \"Anderungen sind.
+
+Trotz der Unterschiede gab es auch eine klare Gemeinsamkeit. In beiden Projekten reicht es nicht, nur auf die sichtbare Oberfl\"ache zu schauen. Eine Eingabe im Formular oder ein Klick auf eine Lernkarte wirkt erst dann richtig, wenn die Daten im Hintergrund stimmen, Regeln sauber umgesetzt sind und der Zustand der Anwendung nachvollziehbar bleibt. Gerade deshalb waren Themen wie Datenmodellierung, Validierung, Zustandsverwaltung und Tests viel wichtiger, als es von au\ss{}en vielleicht wirkt.
+
+F\"ur mich war auch hilfreich zu sehen, wie unterschiedlich sich typische Probleme je nach Projektform zeigen. Beim Portal lagen die Schwierigkeiten eher bei Rollen, Rechten, Statuswechseln, Dokumenten und auswertbaren Daten. Bei der App ging es mehr um lokale Persistenz, den eigentlichen Lernablauf, die Auswahl der n\"achsten Karte und die Frage, wie sich eine mobile Oberfl\"ache auch nach mehreren Sitzungen noch stimmig anf\"uhlt. Dadurch wurde mir klarer, dass Softwareentwicklung zwar oft mit denselben Grundideen arbeitet, die praktische Umsetzung aber je nach Anwendung sehr verschieden aussieht.
+
+Bei der App habe ich noch einmal anders gemerkt, wie eng Oberfl\"ache und Datenlogik zusammenh\"angen. Ob auf einer Deckkarte drei neue Karten oder keine mehr angezeigt werden, h\"angt nicht an einem festen Wert im UI, sondern an den Datenbankeintr\"agen, an den bisherigen Lernprotokollen und an den Regeln f\"ur das Tageslimit. Dasselbe gilt f\"ur die Statistik, f\"ur gemischte Sitzungen und f\"ur die Frage, wann eine Karte nach einer Bewertung wieder auftauchen darf. Gerade solche Punkte waren f\"ur mich fachlich interessant, weil sie zeigen, dass auch eine kleine App schnell Datenbanklogik, Business-Regeln und Zustandsverwaltung gleichzeitig braucht.
+
+Au\ss{}erdem habe ich bei der App viel deutlicher gesehen, wie wichtig saubere \"Uberarbeitungen nach der ersten Version sind. Einige Dinge wirken in der fertigen Nutzung recht selbstverst\"andlich, zum Beispiel dass Einstellungen erhalten bleiben, dass deutsche Texte korrekt vorgelesen werden oder dass eine Sitzung sauber endet. Im Code steckt dahinter aber meist mehr Arbeit, weil solche Stellen oft erst mit echten Inhalten, mehreren Sitzungen und kleinen Randf\"allen auffallen. Das war f\"ur mich eine hilfreiche Erfahrung, weil Entwicklung dadurch weniger wie ein einmaliges Bauen und mehr wie ein schrittweises Verbessern wirkt.
+
+Aus dem Studium konnte ich dabei Kenntnisse zu Programmierung, Datenstrukturen, Datenbanken und Softwarearchitektur einbringen. Im Praktikum wurde das aber deutlich greifbarer, weil ich diese Themen nicht isoliert behandelt habe, sondern innerhalb von zwei zusammenh\"angenden Anwendungen. Gerade die Verbindung aus Build-Konfiguration, Datenhaltung, Oberfl\"ache, Tests und sp\"ateren \"Uberarbeitungen war f\"ur mich n\"aher an echter Entwicklungsarbeit als vieles, was ich bisher nur aus Lehrveranstaltungen kannte.
+
+\renewcommand{\thesection}{\Roman{section}}
+
+\section{Fazit und Bewertung}
+
+Aus meiner Sicht hat mir das Praktikum vor allem gezeigt, wie unterschiedlich Entwicklungsarbeit je nach Projekt aussehen kann. Beim Erasmus-Portal stand ein verwaltender Ablauf mit Rollen, Freigaben, Dokumenten und Berichten im Mittelpunkt. Bei der Android-App ging es mehr um lokalen Zustand, Lernlogik und eine einfache Bedienung auf dem Ger\"at selbst. Beide Projekte hatten also einen anderen Charakter, trotzdem musste ich in beiden F\"allen sorgf\"altig zwischen Oberfl\"ache, Fachlogik und Datenhaltung vermitteln.
+
+Positiv fand ich, dass in beiden Projekten nicht nur einzelne Ansichten entstanden sind, sondern nachvollziehbare Arbeitsst\"ande mit echter Logik dahinter. Im einen Fall sieht man das an Rechten, Statushistorien, Uploads, Filtern, Auswertungen und Tests. Im anderen Fall an Persistenz, Lernlogik, Statistiken, Seed-Daten, Einstellungen und der klaren Trennung der Anwendungsbereiche. Dadurch konnte ich nicht nur sehen, wie Funktionen gebaut werden, sondern auch, wie sie in eine gr\"o\ss{}ere Struktur eingebettet werden m\"ussen.
+
+Gerade der Website-Teil hat mir gezeigt, wie stark organisatorische Anforderungen im Code landen. Dinge wie Freigaben, Rollen, Statushistorien, private Dokumente oder Berichte wirken auf den ersten Blick eher verwaltend. In der Umsetzung bedeuten sie aber Datenmodell, serverseitige Pr\"ufungen, gesch\"utzte Routen, Tests und viele kleine Entscheidungen zur Nachvollziehbarkeit.
+
+Gerade der App-Teil war f\"ur mich ein gutes Beispiel daf\"ur, dass auch ein vergleichsweise kleines Projekt schnell viele Schichten bekommt. Von au\ss{}en sieht man vor allem Karten, Decks und ein paar Einstellungen. Dahinter liegen aber Datenmodell, Auswahlregeln, lokale Speicherung, Testf\"alle, Navigation und mehrere Zust\"ande, die gleichzeitig zusammenpassen m\"ussen. Dass sich diese Teile im Repo Schritt f\"ur Schritt entwickelt haben, macht den Arbeitsprozess f\"ur mich im Nachhinein gut nachvollziehbar.
+
+F\"ur die Verbindung von Theorie und Praxis war das Praktikum sehr hilfreich. Themen wie Datenmodellierung, SQL-Abfragen, Architekturmuster, Zustandsverwaltung, Build-Konfiguration und Tests waren nicht nur Stoff aus dem Studium, sondern Teil konkreter Entscheidungen im Code. Gleichzeitig sieht man in beiden Projekten auch, dass Software nicht mit der ersten lauff\"ahigen Version abgeschlossen ist. Viele Stellen wurden sp\"ater noch umgebaut, erweitert oder gegl\"attet. Genau das hat f\"ur mich einen realistischen Eindruck von Entwicklungsarbeit vermittelt.
+
+% TODO: Aussagen zur Zusammenarbeit mit Mitarbeitenden, zu organisatorischen Praktikumsbedingungen und zu persoenlichen Rahmenbedingungen bei Bedarf manuell ergaenzen.
+
+\newpage
+
+\section{Anhang}
+
+\begin{itemize}
+
+\item Kopie des Praktikumszeugnisses und ggf. Kopie von Arbeitsproben
+
+\item Best\"atigung der Teilnahme am Praktikum mit Stempel und Unterschrift der Institution.
+
+\end{itemize}
+
+\newpage
+
+\section{Literaturverzeichnis}
+
+Literaturverzeichnisse lassen sich ebenfalls mit \LaTeX erstellen, dies ist jedoch eine komplexe Angelegenheit. Eine M\"oglichkeit besteht in der Einbindung von Literaturdaten in ein \LaTeX-Dokument \"uber die Pakete "`BibTeX" bzw. "`BiblaTeX"' BibTeX ist in fast allen Distributionen von \LaTeX enthalten. BiblaTeX ist mit einer sehr ausf\"uhrlichen englischen Dokumentation unter folgendem Link zu finden: \url{http://www.ctan.org/pkg/biblatex}
+
+Zus\"atzlich empfiehlt sich die Verwendung einer Literaturverwaltung wie \textit{JabRef}, die ebenfalls frei verf\"ugbar ist und unter diesem Link zum Download bereitsteht: \url{http://jabref.sourceforge.net/}
+
+Literaturverzeichnisse lassen sich weiterhin auch - wie im folgenden Beispiel - manuell einbinden. Ab der zweiten Zeile erfolgt eine Einr\"uckung um 1cm.
+
+\begin{description} % Absatzumgebung mit haengendem Einzug.
+
+\item Franck, Norbert / Stary, Joachim (Hrsg.) (2006): Die Technik wissenschaftlichen Arbeitens. Eine praktische Anleitung. 13. Auflage. Paderborn: Sch\"onigh
+
+\end{description}
+
+\newpage
+
+\section{Eidesstattliche Versicherung}
+
+Ich versichere eidesstattlich durch eigenh\"andige Unterschrift, dass ich die Arbeit selbstst\"andig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Alle Stellen, die w\"ortlich oder sinngem\"\ss{} aus Ver\"offentlichungen entnommen sind, habe ich als solche kenntlich gemacht. Die Arbeit ist noch nicht ver\"offentlicht und ist in gleicher oder \"ahnlicher Weise noch nicht als Studienleistung zur Anerkennung oder Bewertung vorgelegt worden. Ich wei\ss{}, dass bei Abgabe einer falschen Versicherung die Pr\"ufung als nicht bestanden zu gelten hat.
+
+\vspace*{1cm}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{3cm} p{4cm} p{0.5cm} p{6cm}}
+Rostock & & &\\[0.5cm]
+\cline{2-2} \cline{4-4}
+& (Abgabedatum) & & (Vollst\"andige Unterschrift)\\
+\end{tabular}
+\end{table}
+
+\end{document}

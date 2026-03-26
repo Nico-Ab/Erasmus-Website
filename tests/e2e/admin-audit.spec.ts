@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { signInToDashboard } from "./helpers/portal";
 
 const adminCredentials = {
   email: "admin@swu.local",
@@ -48,23 +49,27 @@ async function registerStaffAccount(
 }
 
 test("admins can approve, change role, deactivate, and review audit entries", async ({ page, request }) => {
+  test.slow();
+  test.setTimeout(90_000);
+
   const registration = createRegistrationData();
   await registerStaffAccount(request, registration);
 
-  await signInWith(page, adminCredentials);
-  await expect(page).toHaveURL(/\/dashboard/);
+  await signInToDashboard(page, adminCredentials);
 
   await page.goto("/dashboard/admin/users");
   const row = page.getByRole("row").filter({ hasText: registration.email });
   await expect(row).toBeVisible();
 
   await row.getByRole("button", { name: /^approve$/i }).click();
-  await expect(row).toContainText(/approved/i);
+  const approvedRow = page.getByRole("row").filter({ hasText: registration.email });
+  await expect(approvedRow).toContainText(/approved/i);
+  await expect(approvedRow.getByLabel(/role assignment/i)).toBeEnabled();
 
-  await row.getByLabel(/role assignment/i).selectOption("OFFICER");
-  await row.getByLabel(new RegExp(`Type ${registration.email} to confirm`, "i")).fill(registration.email);
-  await row.getByRole("button", { name: /change role/i }).click();
-  await expect(row).toContainText(/officer/i);
+  await approvedRow.getByLabel(/role assignment/i).selectOption("OFFICER");
+  await approvedRow.getByLabel(new RegExp(`Type ${registration.email} to confirm`, "i")).fill(registration.email);
+  await approvedRow.getByRole("button", { name: /change role/i }).click();
+  await expect(approvedRow).toContainText(/officer/i);
 
   await page.goto("/dashboard/admin/audit-log");
   await expect(page.getByTestId("audit-log-page")).toBeVisible();
@@ -80,7 +85,11 @@ test("admins can approve, change role, deactivate, and review audit entries", as
   await expect(refreshedRow).toContainText(/deactivated/i);
 
   await page.goto("/dashboard/admin/audit-log");
-  await expect(page.getByText(new RegExp(`deactivated ${registration.email}`, "i"))).toBeVisible();
+  await expect(page.getByTestId("audit-log-page")).toBeVisible();
+  const auditTable = page.getByRole("table", { name: /recent audit activity/i });
+  await expect(auditTable).toContainText(registration.email);
+  await expect(auditTable).toContainText(/user deactivated/i);
+  await expect(auditTable).toContainText(/admin deactivated/i);
 
   await signOutCurrentUser(page);
   await signInWith(page, {

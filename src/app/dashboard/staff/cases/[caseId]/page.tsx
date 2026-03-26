@@ -66,7 +66,7 @@ export default async function MobilityCaseDetailPage({
           { label: "Staff area", href: "/dashboard/staff" },
           { label: "Case detail" }
         ]}
-        description="Review the current status, recorded case details, comments, and private document history for this mobility record."
+        description="Review the case record, status, comments, and document history for this mobility record."
         eyebrow="Case administration"
         meta={
           <dl className="grid gap-3 text-sm sm:grid-cols-3">
@@ -97,17 +97,17 @@ export default async function MobilityCaseDetailPage({
         <OverviewMetric
           title="Current status"
           value={detail.case.status.label}
-          description="Current workflow state stored in the case-status definition table."
+          description="Current workflow state."
         />
         <OverviewMetric
           title="Last updated"
           value={detail.case.updatedAtLabel}
-          description="Most recent persistence timestamp for the case record."
+          description="Most recent change to the case record."
         />
         <OverviewMetric
           title="Submitted on"
           value={detail.case.submittedAtLabel ?? "Not submitted"}
-          description="Submission date becomes available once the case leaves draft."
+          description="Submission date once the case leaves draft."
         />
       </section>
 
@@ -135,10 +135,10 @@ export default async function MobilityCaseDetailPage({
           )}
         </div>
 
-        <Card className="border-slate-200 bg-white/95">
+        <Card className="border-slate-200 bg-white">
           <CardHeader>
             <CardTitle>Case record</CardTitle>
-            <CardDescription className="leading-6">Current persisted values stored on the mobility case.</CardDescription>
+            <CardDescription className="leading-6">Current values stored on the mobility case.</CardDescription>
           </CardHeader>
           <CardContent>
             <dl className="grid gap-4 text-sm text-slate-700 sm:grid-cols-2">
@@ -180,7 +180,7 @@ export default async function MobilityCaseDetailPage({
       </section>
 
       <section className="space-y-4">
-        <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-slate-950">Required documents</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Documents stay private, remain versioned, and are available only through permission-checked download routes.

@@ -5,20 +5,15 @@ import {
   UserApprovalStatus,
   UserRole
 } from "@prisma/client";
+import { swuFacultyCatalog, swuFacultyCodes } from "../src/lib/master-data/swu-faculties";
 
 const prisma = new PrismaClient();
 
-const faculties = [
-  { code: "RECTORATE", name: "Rectorate" },
-  { code: "ECON", name: "Faculty of Economics" },
-  { code: "LAW", name: "Faculty of Law" }
-];
+const faculties = [...swuFacultyCatalog];
 
 const departments = [
-  { code: "SYS_ADMIN", name: "Systems Administration", facultyCode: "RECTORATE" },
-  { code: "ERASMUS_OFFICE", name: "Erasmus Office", facultyCode: "RECTORATE" },
   { code: "INTL_RELATIONS", name: "International Relations", facultyCode: "ECON" },
-  { code: "PUBLIC_LAW", name: "Public Law", facultyCode: "LAW" }
+  { code: "PUBLIC_LAW", name: "Public Law", facultyCode: "LAW_HISTORY" }
 ];
 
 const academicYears = [
@@ -67,8 +62,8 @@ const users = [
     firstName: "Ivana",
     lastName: "Dimitrova",
     academicTitleKey: "ms",
-    facultyCode: "RECTORATE",
-    departmentCode: "SYS_ADMIN",
+    facultyCode: null,
+    departmentCode: null,
     role: UserRole.ADMIN,
     status: UserApprovalStatus.APPROVED
   },
@@ -78,8 +73,8 @@ const users = [
     firstName: "Milan",
     lastName: "Georgiev",
     academicTitleKey: "mr",
-    facultyCode: "RECTORATE",
-    departmentCode: "ERASMUS_OFFICE",
+    facultyCode: null,
+    departmentCode: null,
     role: UserRole.OFFICER,
     status: UserApprovalStatus.APPROVED
   },
@@ -100,7 +95,7 @@ const users = [
     firstName: "Nadia",
     lastName: "Koleva",
     academicTitleKey: "ms",
-    facultyCode: "LAW",
+    facultyCode: "LAW_HISTORY",
     departmentCode: "PUBLIC_LAW",
     role: UserRole.STAFF,
     status: UserApprovalStatus.APPROVED
@@ -122,7 +117,7 @@ const users = [
     firstName: "Raya",
     lastName: "Stoicheva",
     academicTitleKey: "ms",
-    facultyCode: "LAW",
+    facultyCode: "LAW_HISTORY",
     departmentCode: "PUBLIC_LAW",
     role: UserRole.STAFF,
     status: UserApprovalStatus.REJECTED
@@ -245,6 +240,17 @@ async function main() {
     facultyIdsByCode.set(faculty.code, record.id);
   }
 
+  await prisma.faculty.updateMany({
+    where: {
+      code: {
+        notIn: swuFacultyCodes
+      }
+    },
+    data: {
+      isActive: false
+    }
+  });
+
   for (const department of departments) {
     const facultyId = facultyIdsByCode.get(department.facultyCode);
 
@@ -269,6 +275,17 @@ async function main() {
 
     departmentIdsByCode.set(department.code, record.id);
   }
+
+  await prisma.department.updateMany({
+    where: {
+      code: {
+        notIn: departments.map((department) => department.code)
+      }
+    },
+    data: {
+      isActive: false
+    }
+  });
 
   for (const academicYear of academicYears) {
     const record = await prisma.academicYear.upsert({
@@ -347,12 +364,12 @@ async function main() {
     where: { id: "default" },
     update: {
       maxUploadSizeMb: Number(process.env.MAX_UPLOAD_SIZE_MB ?? 15),
-      allowedExtensions: normalizeExtensions(process.env.ALLOWED_UPLOAD_EXTENSIONS ?? "pdf,doc,docx")
+      allowedExtensions: normalizeExtensions(process.env.ALLOWED_UPLOAD_EXTENSIONS ?? "pdf,docx")
     },
     create: {
       id: "default",
       maxUploadSizeMb: Number(process.env.MAX_UPLOAD_SIZE_MB ?? 15),
-      allowedExtensions: normalizeExtensions(process.env.ALLOWED_UPLOAD_EXTENSIONS ?? "pdf,doc,docx")
+      allowedExtensions: normalizeExtensions(process.env.ALLOWED_UPLOAD_EXTENSIONS ?? "pdf,docx")
     }
   });
 
@@ -384,8 +401,8 @@ async function main() {
       role: adminSeed.role,
       status: adminSeed.status,
       academicTitleOptionId: academicTitleIdsByKey.get(adminSeed.academicTitleKey) ?? null,
-      facultyId: facultyIdsByCode.get(adminSeed.facultyCode) ?? null,
-      departmentId: departmentIdsByCode.get(adminSeed.departmentCode) ?? null,
+      facultyId: adminSeed.facultyCode ? facultyIdsByCode.get(adminSeed.facultyCode) ?? null : null,
+      departmentId: adminSeed.departmentCode ? departmentIdsByCode.get(adminSeed.departmentCode) ?? null : null,
       reviewedAt: new Date(),
       reviewedById: null
     },
@@ -398,8 +415,8 @@ async function main() {
       role: adminSeed.role,
       status: adminSeed.status,
       academicTitleOptionId: academicTitleIdsByKey.get(adminSeed.academicTitleKey) ?? null,
-      facultyId: facultyIdsByCode.get(adminSeed.facultyCode) ?? null,
-      departmentId: departmentIdsByCode.get(adminSeed.departmentCode) ?? null,
+      facultyId: adminSeed.facultyCode ? facultyIdsByCode.get(adminSeed.facultyCode) ?? null : null,
+      departmentId: adminSeed.departmentCode ? departmentIdsByCode.get(adminSeed.departmentCode) ?? null : null,
       reviewedAt: new Date(),
       reviewedById: null
     }
@@ -421,8 +438,8 @@ async function main() {
         role: user.role,
         status: user.status,
         academicTitleOptionId: academicTitleIdsByKey.get(user.academicTitleKey) ?? null,
-        facultyId: facultyIdsByCode.get(user.facultyCode) ?? null,
-        departmentId: departmentIdsByCode.get(user.departmentCode) ?? null,
+        facultyId: user.facultyCode ? facultyIdsByCode.get(user.facultyCode) ?? null : null,
+        departmentId: user.departmentCode ? departmentIdsByCode.get(user.departmentCode) ?? null : null,
         reviewedAt: requiresReview(user.status) ? new Date() : null,
         reviewedById: requiresReview(user.status) ? adminRecord.id : null
       },
@@ -435,8 +452,8 @@ async function main() {
         role: user.role,
         status: user.status,
         academicTitleOptionId: academicTitleIdsByKey.get(user.academicTitleKey) ?? null,
-        facultyId: facultyIdsByCode.get(user.facultyCode) ?? null,
-        departmentId: departmentIdsByCode.get(user.departmentCode) ?? null,
+        facultyId: user.facultyCode ? facultyIdsByCode.get(user.facultyCode) ?? null : null,
+        departmentId: user.departmentCode ? departmentIdsByCode.get(user.departmentCode) ?? null : null,
         reviewedAt: requiresReview(user.status) ? new Date() : null,
         reviewedById: requiresReview(user.status) ? adminRecord.id : null
       }

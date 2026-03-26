@@ -15,11 +15,11 @@ function buildHostLocationLabel(city: string, country: string) {
 
 export function ReportCaseTable({ rows }: ReportCaseTableProps) {
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid="report-case-table">
+    <Card className="border-slate-200 bg-white" data-testid="report-case-table">
       <CardHeader>
         <CardTitle>Filtered case register</CardTitle>
         <CardDescription>
-          The filtered case list remains exportable and keeps archived records visible when they match the selected reporting scope.
+          Filtered case list with archived records included when they match the reporting scope.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -40,7 +40,7 @@ export function ReportCaseTable({ rows }: ReportCaseTableProps) {
                 <caption className="sr-only">
                   Filtered case register with archived cases still visible when they match the current reporting scope.
                 </caption>
-                <thead>
+                <thead className="bg-slate-50">
                   <tr className="text-left text-slate-500">
                     <th className="border-b border-slate-200 px-4 py-3 font-semibold" scope="col">Staff</th>
                     <th className="border-b border-slate-200 px-4 py-3 font-semibold" scope="col">Assignment</th>
@@ -54,14 +54,14 @@ export function ReportCaseTable({ rows }: ReportCaseTableProps) {
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr key={row.id} className="align-top text-slate-700 hover:bg-slate-50/60" data-testid={`report-case-row-${row.id}`}>
+                    <tr key={row.id} className="align-top text-slate-700 hover:bg-accent/40" data-testid={`report-case-row-${row.id}`}>
                       <td className="border-b border-slate-100 px-4 py-4">
                         <p className="font-semibold text-slate-950">{row.staffName}</p>
                         <p className="mt-1 text-xs text-slate-500">{row.staffEmail}</p>
                       </td>
                       <td className="border-b border-slate-100 px-4 py-4">
-                        <p className="font-medium text-slate-950">{row.facultyName}</p>
-                        <p className="mt-1 text-xs text-slate-500">{row.departmentName}</p>
+                        <p className="font-medium text-slate-950">{row.facultyName || "No faculty assigned"}</p>
+                        <p className="mt-1 text-xs text-slate-500">{row.departmentName || "No department assigned"}</p>
                       </td>
                       <td className="border-b border-slate-100 px-4 py-4">
                         <p className="font-medium text-slate-950">{row.mobilityTypeLabel}</p>

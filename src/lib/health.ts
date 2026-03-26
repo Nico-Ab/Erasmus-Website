@@ -11,7 +11,7 @@ export async function getHealthReport() {
   };
 
   try {
-    await prisma.$queryRawUnsafe("SELECT 1");
+    await prisma.$queryRaw`SELECT 1`;
     report.database = "ready";
     report.checks.push("Database connection succeeded.");
   } catch (error) {

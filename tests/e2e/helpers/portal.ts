@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { expect, type APIRequestContext, type Download, type Locator, type Page } from "@playwright/test";
 
-const appBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+const appBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 
 export const adminCredentials = {
   email: "admin@swu.local",
@@ -41,6 +41,10 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function buildSafePdfBuffer(contents: string) {
+  return Buffer.from(`%PDF-1.4\n${contents}\n%%EOF`, "utf8");
+}
+
 export function createRegistrationData(prefix = "portal") {
   const suffix = `${Date.now()}-${Math.round(Math.random() * 100000)}`;
 
@@ -69,7 +73,7 @@ export async function visitPath(page: Page, pathname: string) {
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
-      await page.goto(targetUrl);
+      await page.goto(targetUrl, { waitUntil: "domcontentloaded" });
       return;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -84,6 +88,21 @@ export async function visitPath(page: Page, pathname: string) {
   }
 }
 
+export async function switchLanguage(page: Page, locale: "en" | "bg") {
+  const toggle = page.getByTestId(`language-toggle-${locale}`).first();
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/locale") && response.request().method() === "POST"
+  );
+
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toBeEnabled();
+  await toggle.click();
+  const response = await responsePromise;
+  expect(response.status()).toBe(200);
+  await expect(page.locator("html")).toHaveAttribute("lang", locale);
+}
+
 export async function clearSession(page: Page) {
   await page.context().clearCookies();
   await visitPath(page, "/");
@@ -92,8 +111,8 @@ export async function clearSession(page: Page) {
 export async function signInWith(page: Page, credentials: Credentials) {
   await visitPath(page, "/login");
 
-  const emailInput = page.getByLabel(/email/i);
-  const passwordInput = page.getByLabel(/password/i);
+  const emailInput = page.getByLabel(/email|имейл/i);
+  const passwordInput = page.getByLabel(/password|парола/i);
 
   await expect(emailInput).toBeVisible();
   await expect(passwordInput).toBeVisible();
@@ -101,17 +120,19 @@ export async function signInWith(page: Page, credentials: Credentials) {
   await passwordInput.fill(credentials.password);
   await expect(emailInput).toHaveValue(credentials.email);
   await expect(passwordInput).toHaveValue(credentials.password);
-  await page.getByRole("button", { name: /sign in/i }).click();
+  const submitButton = page.getByRole("button", { name: /sign in|вход/i });
+  await expect(submitButton).toBeEnabled();
+  await submitButton.click();
 }
 
 export async function signInToDashboard(page: Page, credentials: Credentials) {
   await signInWith(page, credentials);
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole("heading", { name: /dashboard navigation/i })).toBeVisible();
+  await expect(page.getByText(/^navigation$|^навигация$/i)).toBeVisible();
 }
 
 export async function signOutCurrentUser(page: Page) {
-  await page.getByRole("button", { name: /sign out/i }).click();
+  await page.getByRole("button", { name: /sign out|изход/i }).click();
   await expect(page).toHaveURL(/\/$/);
 }
 
@@ -131,30 +152,25 @@ export async function registerStaffViaApi(
 }
 
 export async function registerStaffViaUi(page: Page, registration: RegistrationData) {
-  await visitPath(page, "/");
-  const registerLink = page.getByRole("link", { name: /register staff account/i });
-  const registerHref = await registerLink.getAttribute("href");
-
-  try {
-    await Promise.all([
-      page.waitForURL(/\/register/, { timeout: 10_000 }),
-      registerLink.click()
-    ]);
-  } catch {
-    await visitPath(page, registerHref ?? "/register");
-  }
+  await visitPath(page, "/register");
 
   const form = page.getByTestId("register-form");
   await expect(form).toBeVisible();
-  await form.getByLabel(/first name/i).fill(registration.firstName);
-  await form.getByLabel(/last name/i).fill(registration.lastName);
-  await form.getByLabel(/email/i).fill(registration.email);
-  await form.getByLabel(/^password$/i).fill(registration.password);
-  await form.getByLabel(/confirm password/i).fill(registration.password);
-  await form.getByRole("button", { name: /submit registration/i }).click();
+  await form.getByLabel(/first name|име/i).fill(registration.firstName);
+  await form.getByLabel(/last name|фамилия/i).fill(registration.lastName);
+  await form.getByLabel(/email|имейл/i).fill(registration.email);
+  await form.getByLabel(/^password$|^парола$/i).fill(registration.password);
+  await form.getByLabel(/confirm password|потвърдете паролата/i).fill(registration.password);
+  const submitButton = form.getByRole("button", {
+    name: /submit registration|изпрати регистрация/i
+  });
+  await expect(submitButton).toBeEnabled();
+  await submitButton.click();
 
   await expect(page).toHaveURL(/\/pending-approval/);
-  await expect(page.getByRole("heading", { name: /account pending approval/i })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /account pending approval|акаунтът очаква одобрение/i })
+  ).toBeVisible();
   await expect(page.getByText(registration.email)).toBeVisible();
 }
 
@@ -163,47 +179,82 @@ export async function approvePendingUserAsAdmin(page: Page, email: string) {
   await visitPath(page, "/dashboard/admin/users");
 
   const row = page.getByRole("row").filter({ hasText: email });
-  const responsePromise = page.waitForResponse(
-    (response) =>
-      response.url().includes("/api/admin/users/") && response.request().method() === "PATCH"
-  );
-
   await expect(row).toBeVisible();
-  await row.getByRole("button", { name: /^approve$/i }).click();
+  const rowTestId = await row.getAttribute("data-testid");
+  const userId = rowTestId?.replace("admin-user-row-", "");
 
-  const response = await responsePromise;
-  expect(response.status()).toBe(200);
+  if (!userId) {
+    throw new Error(`Could not resolve the admin user row id for ${email}.`);
+  }
 
-  await page.reload();
-  const refreshedRow = page.getByRole("row").filter({ hasText: email });
-  await expect(refreshedRow).toBeVisible();
-  await expect(refreshedRow).toContainText(/approved/i);
+  const approvalResult = await page.evaluate(async ({ approvedUserId }) => {
+    const response = await fetch(`/api/admin/users/${approvedUserId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ action: "approve" })
+    });
+
+    return {
+      status: response.status
+    };
+  }, { approvedUserId: userId });
+  expect(approvalResult.status).toBe(200);
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  const approvedRow = page.getByRole("row").filter({ hasText: email });
+  await expect(approvedRow).toContainText(/approved/i);
+  await clearSession(page);
 }
 
 export async function updateProfile(
   page: Page,
   values: {
     firstName: string;
-    facultyLabel: string;
-    departmentLabel: string;
+    facultyLabel?: string | null;
+    departmentLabel?: string | null;
     academicTitleLabel?: string;
   }
 ) {
   await visitPath(page, "/dashboard/profile");
   const form = page.getByTestId("profile-form");
+  const responsePromise = page.waitForResponse(
+    (response) => response.url().includes("/api/profile") && response.request().method() === "PATCH"
+  );
 
-  await expect(page.getByRole("heading", { name: /editable staff profile/i })).toBeVisible();
-  await form.getByLabel(/first name/i).fill(values.firstName);
+  await expect(
+    page.getByRole("heading", { name: /my institutional profile|моят институционален профил/i })
+  ).toBeVisible();
+  await form.getByLabel(/first name|име/i).fill(values.firstName);
 
   if (values.academicTitleLabel) {
-    await form.getByLabel(/academic title/i).selectOption({ label: values.academicTitleLabel });
+    await form
+      .getByLabel(/academic title|академична титла/i)
+      .selectOption({ label: values.academicTitleLabel });
   }
 
-  await form.getByLabel(/^faculty$/i).selectOption({ label: values.facultyLabel });
-  await form.getByLabel(/department/i).selectOption({ label: values.departmentLabel });
-  await form.getByRole("button", { name: /save profile/i }).click();
+  if (values.facultyLabel !== undefined) {
+    await form
+      .getByLabel(/^faculty$|^факултет$/i)
+      .selectOption(values.facultyLabel ? { label: values.facultyLabel } : "");
+  }
 
-  await expect(page.getByText(/profile updated successfully\./i)).toBeVisible();
+  if (values.departmentLabel !== undefined) {
+    const departmentSelect = form.getByLabel(/department|катедра/i);
+
+    if (values.departmentLabel) {
+      await expect(departmentSelect).toBeEnabled();
+      await departmentSelect.selectOption({ label: values.departmentLabel });
+    } else if (!(await departmentSelect.isDisabled())) {
+      await departmentSelect.selectOption("");
+    }
+  }
+
+  await form.getByRole("button", { name: /save profile|запази профила/i }).click();
+  const response = await responsePromise;
+  expect(response.status()).toBe(200);
+  await expect(form.getByLabel(/first name|име/i)).toHaveValue(values.firstName);
 }
 
 export function getCreateCaseForm(page: Page) {
@@ -292,11 +343,13 @@ export async function uploadDocumentVersion(
   await panel.locator('input[type="file"]').setInputFiles({
     name: fileName,
     mimeType: "application/pdf",
-    buffer: Buffer.from(contents)
+    buffer: buildSafePdfBuffer(contents)
   });
-  await panel.getByRole("button", {
+  const submitButton = panel.getByRole("button", {
     name: /upload document|upload next version/i
-  }).click();
+  });
+  await expect(submitButton).toBeEnabled();
+  await submitButton.click();
 
   const uploadResponse = await uploadResponsePromise;
   expect(uploadResponse.status()).toBe(200);

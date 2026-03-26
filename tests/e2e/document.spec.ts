@@ -20,6 +20,10 @@ function buildCaseSeed() {
   };
 }
 
+function buildSafePdfBuffer(contents: string) {
+  return Buffer.from(`%PDF-1.4\n${contents}\n%%EOF`, "utf8");
+}
+
 async function signInWith(page: Page, credentials: { email: string; password: string }) {
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(credentials.email);
@@ -66,7 +70,7 @@ async function uploadDocumentVersion(
   await panel.locator('input[type="file"]').setInputFiles({
     name: fileName,
     mimeType: "application/pdf",
-    buffer: Buffer.from(fileContents)
+    buffer: buildSafePdfBuffer(fileContents)
   });
   await panel.getByRole("button", {
     name: /upload document|upload next version/i
@@ -135,11 +139,13 @@ test("authorized users can download the current document version through the pri
   expect(downloadPath).toBeTruthy();
 
   const response = await page.request.get(downloadPath!);
+  const responseBody = await response.body();
 
   expect(response.status()).toBe(200);
   expect(response.headers()["content-disposition"]).toContain("mobility-agreement-download.pdf");
   expect(response.headers()["cache-control"]).toBe("private, no-store");
-  await expect(response.body()).resolves.toEqual(Buffer.from("agreement-download"));
+  expect(response.headers()["x-content-type-options"]).toBe("nosniff");
+  expect(responseBody.toString("latin1")).toContain("agreement-download");
 });
 
 test("other staff users cannot download a document they do not own", async ({ page }) => {

@@ -5,8 +5,23 @@ import type {
 
 type CsvCell = string | number | boolean;
 
+function neutralizeSpreadsheetFormula(value: string) {
+  if (/^[=+\-@]/.test(value) || /^[\t\r]/.test(value) || /^\s+[=+\-@]/.test(value)) {
+    return `'${value}`;
+  }
+
+  return value;
+}
+
 function escapeCsvCell(value: CsvCell) {
-  const normalizedValue = typeof value === "boolean" ? (value ? "Yes" : "No") : `${value}`;
+  const normalizedValue =
+    typeof value === "boolean"
+      ? value
+        ? "Yes"
+        : "No"
+      : typeof value === "number"
+        ? `${value}`
+        : neutralizeSpreadsheetFormula(value);
 
   if (/[",\n]/.test(normalizedValue)) {
     return `"${normalizedValue.replaceAll('"', '""')}"`;

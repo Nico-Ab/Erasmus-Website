@@ -1,0 +1,169 @@
+\documentclass{Vorlage}
+
+\begin{document}
+
+\newgeometry{top=2.5cm,bottom=2.0cm,left=2.5cm,right=2.5cm} % Befehl wird nur ben\"otigt, falls \"Anderungen an den Seitenr\"andern in der Datei "Vorlage.cls" vorgenommen werden.
+
+\begin{titlepage}
+
+\titelseite{Praktikumsbericht}{Universit\"at Rostock}
+
+\vspace*{6cm}
+
+\titel{Arbeitsthema / Titel}{Untertitel}
+
+\vspace{1cm}
+
+\begin{tabular}{p{3.5cm}|p{0.1cm} p{10cm}l}
+\textsc{Name:} & & \textsc{}\\
+\textsc{Vorname:} & & \textsc{}\\
+\textsc{Matrikel-Nr.:} & & \textsc{}\\
+\textsc{Studiengang:} & & \textsc{}\\
+\textsc{E-Mail:} & & \textsc{}\\
+\textsc{Seminar:} & & \textsc{}\\
+\textsc{DozentIn:} & & \textsc{}\\
+\textsc{Lehrstuhl:} & & \textsc{}\\
+\textsc{Institut:} & & \textsc{}\\
+\textsc{Fakult\"at:} & & \textsc{}\\
+\textsc{Modul:} & & \textsc{}\\
+\textsc{Fachsemester:} & & \textsc{}\\
+\textsc{Abgabedatum:} & & \textsc{}\\
+\end{tabular}
+\end{titlepage}
+
+\restoregeometry
+
+\pagenumbering{Roman} % \pagenumbering{roman} = Kleinschreibung: II -> ii.
+
+\tableofcontents % Inhaltsverzeichnis.
+
+\newpage % Neue Seite.
+
+\listoffigures % Abbildungsverzeichnis.
+
+\listoftables % Tabellenverzeichnis.
+
+\newpage
+
+\pagenumbering{arabic} % Ab hier folgt die arabische Seitennummerierung.
+
+\renewcommand{\thesection}{\Roman{section}} % R\"omische Nummerierung der Kapitel\"uberschriften.
+
+\section{Die Praktikumsstelle - Formale Bedingungen}
+
+\begin{itemize}
+
+\item Genaue Beschreibung der Institution, Was macht die Institution? Wie gro\ss{} usw.? Welche Aufgabe hat meine Abteilung? Leitungs- / Organisationsstruktur?
+
+\item Wie habe ich die Praktikumsstelle gefunden (Bewerbung, Kontaktaufnahme)? Welche Erfahrungen gewinne ich aus dem Vorgehen bei der Bewerbung?
+
+\item Wie sind die Arbeitsbedingungen? Gab es Fahrtkostenzuschuss, Aufwandsentsch\"adi-gung, sonstige Unterst\"utzung? Wie waren die Arbeitszeiten?
+
+\end{itemize}
+
+\newpage
+
+\section{Aufgaben und T\"atigkeiten - Der Ablauf des Praktikums}
+
+\renewcommand{\thesection}{\arabic{section}}
+
+\subsection{Umfeld der Praktikumst\"atigkeit}
+
+Im Praktikum habe ich an einer Android-App gearbeitet, mit der man Deutsch mit Karten lernen kann. Die Anwendung ist als reine Android-App aufgebaut und nicht plattform\"ubergreifend angelegt. Es gibt ein zentrales App-Modul, eine normale Gradle-Struktur und eine lokale Datenhaltung. Die App funktioniert ohne Server, ohne Benutzerkonto und ohne Login.
+
+Die Arbeit betraf nicht nur einzelne Screens. Nach dem Start landet man direkt in einer Kategorienansicht und wechselt von dort in Decklisten und Lernsitzungen. Dazu kommen eine Statistikseite, gemischte Lernsitzungen und ein seitliches Men\"u f\"ur Einstellungen. Im Code ist au\ss{}erdem klar getrennt, was zur UI, zur Fachlogik und zur Datenhaltung geh\"ort. Deshalb ging es bei der Arbeit nie nur um die Oberfl\"ache, sondern immer auch um Navigation, lokale Speicherung und Zust\"ande in der App.
+
+% TODO: Angaben zur direkten Zusammenarbeit mit anderen Beteiligten nur ergaenzen, wenn sie aus eigenen Unterlagen sicher belegt sind.
+
+\subsection{Aufgabe und Ziel}
+
+Meine Aufgabe in diesem Projekt war es, die App nach und nach von einem ersten Ger\"ust zu einer nutzbaren Lernanwendung weiterzuentwickeln. Im Mittelpunkt stand der eigentliche Lernfluss. Nach dem Start sollte man direkt etwas mit der App machen k\"onnen, also eine Kategorie ausw\"ahlen, ein Deck \"offnen, Karten aufdecken, bewerten und danach weitermachen. Der Lernstand sollte dabei nicht nur kurz auf dem Bildschirm erscheinen, sondern auch gespeichert bleiben.
+
+Technisch hie\ss{} das, an mehreren Stellen gleichzeitig zu arbeiten. Ich musste die Screens sinnvoll verbinden, gemeinsame UI-Bausteine bauen, Datenmodelle f\"ur Karten, Decks und Lernzust\"ande pflegen und daf\"ur sorgen, dass die Zust\"ande sauber zwischen Oberfl\"ache, ViewModel und Datenhaltung weitergegeben werden. Dazu kamen Einstellungen wie Themes, Audio und \"Ubersetzungshilfen sowie kleinere gestalterische Aufgaben wie Hintergr\"unde und das App-Icon.
+
+\subsection{T\"atigkeiten und Arbeitsergebnisse}
+
+Am Commit-Verlauf sieht man gut, dass das Projekt mit einer groben Grundstruktur und ersten Ansichten angefangen hat. Sp\"ater wurde die App deutlich weiter ausgebaut. Ein wichtiger Schritt war die Umstellung von einer Fake-Repository-L\"osung auf eine lokale Speicherung mit SQLite beziehungsweise Room. Erst dadurch konnte die App Fortschritt, Kartenzust\"ande und Lernprotokolle wirklich speichern und \"uber mehrere Sitzungen hinweg mit echten Daten arbeiten.
+
+Sp\"ater habe ich die Struktur des Projekts noch einmal st\"arker \"uberarbeitet. Im aktuellen Stand sind die Klassen klar in UI, Domain und Datenlogik aufgeteilt. In der Domain-Schicht liegen Modelle und Use Cases f\"ur Kartenauswahl, Bewertung und Statistik. In der Daten-Schicht liegen Entities, DAOs, Mapper und die Repository-Implementierung. Diese Trennung war f\"ur die weitere Arbeit hilfreich, weil der Code dadurch lesbarer wurde und sich leichter testen lie\ss{}.
+
+Praktisch habe ich an mehreren Ebenen gleichzeitig gearbeitet. Auf der UI-Seite musste die Navigation zwischen Kategorienansicht, Deckliste, Lernsitzung, Mixed Study und Statistik aufgebaut und \"ubersichtlich gehalten werden. Dazu kamen gemeinsame Komponenten wie Statistikleisten, Dialoge und das seitliche Men\"u f\"ur Einstellungen. Der Ablauf f\"ur die Nutzer sollte einfach bleiben, obwohl im Hintergrund schon mehrere Bereiche zusammenspielten.
+
+Viel Arbeit steckte im eigentlichen Lernablauf. Neue und f\"allige Karten werden unterschiedlich behandelt, und f\"ur neue Karten gibt es ein Tageslimit. Die Z\"ahler f\"ur Due und New werden direkt aus Datenbank und Lernprotokoll berechnet. Auch die n\"achste Karte wird nicht einfach starr ausgegeben, sondern aus einer kleinen Kandidatenmenge ausgew\"ahlt. F\"ur gemischte Lernsitzungen lassen sich mehrere Kategorien und Lernstufen kombinieren. Daran merkt man gut, dass es bei der App nicht nur um Screens ging, sondern genauso um die Logik dahinter.
+
+Ein weiterer Arbeitsbereich war die Zustandsverwaltung. Der aktuelle Lernstatus, Lade- und Abschlusszust\"ande einer Sitzung sowie Einstellungen wie Theme, Audio und zus\"atzliche \"Ubersetzungen mussten nicht nur angezeigt, sondern auch \"uber einen Neustart der App hinweg behalten werden. Diese Werte werden lokal gespeichert und \"uber ViewModels wieder in die Oberfl\"ache gegeben. Dadurch war die Entwicklung st\"andig eine Mischung aus UI, Zustand und Datenhaltung.
+
+Auch der Inhalt der App war Teil der Arbeit. Die Seed-Datei legt beim ersten Start mehrere Themenbereiche mit verschiedenen Lernstufen an. Dazu geh\"oren unter anderem Core Words, \"Ubersetzungen, Nomen, S\"atze und Kasus\"ubungen. So war die App nicht nur ein technisches Ger\"ust, sondern direkt mit Lernmaterial gef\"ullt.
+
+Schwierig war vor allem, dass manche Probleme erst in Randf\"allen sichtbar werden. Beim ersten Start muss die App Daten anlegen, leere oder abgeschlossene Sitzungen brauchen einen sinnvollen Zustand, und die Lernlogik darf keine widerspr\"uchlichen Z\"ahler erzeugen. Zur Arbeit geh\"orte deshalb nicht nur das Erg\"anzen neuer Teile, sondern auch das \"Uberarbeiten und Korrigieren bestehender Logik. Dass die App mehrfach umgebaut und einzelne Probleme im Lernablauf gezielt behoben wurden, passt gut zu einem Projekt, das nach und nach gewachsen ist.
+
+Zum Projekt geh\"orten auch kleinere, aber sichtbare Arbeiten. Dazu z\"ahlen Themes mit eigenen Hintergrundgrafiken, Ressourcen f\"ur das Launcher-Icon und die schriftliche Dokumentation im README und im technischen Bericht. Solche Schritte wirken vielleicht klein, tragen aber dazu bei, dass aus einem Entwicklungsstand eine stimmige App wird.
+
+\subsection{Fachspezifische Reflexion \"uber das Praktikum}
+
+Aus fachlicher Sicht war das Projekt eine Mischung aus mobiler Anwendungsentwicklung und Datenlogik. Auf der Oberfl\"achenseite habe ich mit Compose, Navigation und ViewModels gearbeitet. Gleichzeitig hing fast jede sichtbare Funktion von der Struktur im Hintergrund ab. Decks, Karten, ReviewState und StudyLog sind getrennt modelliert, damit Inhalte, Lernstand und Auswertung nicht vermischt werden.
+
+Spannend fand ich auch, was das Projekt bewusst nicht enth\"alt. Es gibt keinen Serverteil, keine Anmeldung und keine Synchronisierung mit einem entfernten Dienst. Die Schwierigkeit lag also nicht in Netzwerkanfragen oder Benutzerverwaltung, sondern darin, lokale Zust\"ande und Daten sauber zu verarbeiten. F\"ur diese App passt das gut, weil der eigentliche Schwerpunkt auf der Lernlogik und der mobilen Bedienung liegt.
+
+Gerade bei solchen Projekten merkt man, dass viele kleine UI-Details nur dann funktionieren, wenn der Datenfluss stimmt. Ob ein Deck noch neue Karten anzeigen darf, ob eine Karte wieder f\"allig ist, ob die Statistik aktualisiert wird oder welche Einstellung nach dem Neustart wieder erscheint, wird nicht an einer einzigen Stelle entschieden. Es setzt sich aus Datenbankabfragen, Use Cases und StateFlows zusammen. Daran habe ich gut gesehen, wie wichtig saubere Zustandsverwaltung und testbare Logik in mobilen Anwendungen sind.
+
+Aus dem Studium konnte ich dabei vor allem Kenntnisse zu objektorientierter Programmierung, Datenstrukturen, Datenbanken und Softwarearchitektur einbringen. Im Praktikum wurde das aber viel greifbarer, weil ich diese Themen nicht getrennt voneinander betrachtet habe, sondern innerhalb einer zusammenh\"angenden Anwendung umsetzen musste. Gerade die Verbindung aus Build-Konfiguration, Ressourcen, Datenhaltung und Oberfl\"ache war in dieser Form n\"aher an echter Entwicklungsarbeit als im Studium.
+
+\renewcommand{\thesection}{\Roman{section}}
+
+\section{Fazit und Bewertung}
+
+Aus meiner Sicht zeigt das Projekt gut, wie aus einem kleinen Lernprojekt schrittweise eine ernst zu nehmende App werden kann. Im Repository ist sichtbar, dass nicht nur Oberfl\"achen gebaut wurden, sondern auch Persistenz, Lernlogik, Statistik, Tests und Dokumentation. Besonders positiv finde ich, dass die App offline funktioniert und dass der eigentliche Lernablauf technisch durchg\"angig umgesetzt wurde.
+
+Die Verbindung von Theorie und Praxis war in diesem Projekt sehr direkt. Themen wie Datenmodellierung, SQL-Abfragen, Zustandsverwaltung, Architekturmuster und Tests waren nicht nur theoretische Inhalte, sondern Teil konkreter Entscheidungen im Code. Gerade die Arbeit an Room, den Review-Zust\"anden und den Z\"ahlern hat mir gezeigt, wie schnell kleine fachliche Regeln Auswirkungen auf die gesamte Anwendung haben k\"onnen.
+
+Gleichzeitig sieht man im Repo auch, dass das Projekt noch nicht abgeschlossen ist. Einige Texte sind noch hart kodiert, Funktionen wie das Bearbeiten eigener Inhalte oder Import und Export fehlen noch, und manche Stellen wirken noch wie ein laufendes Arbeitsprojekt. Gerade das macht den Stand aber f\"ur mich glaubw\"urdig. Es ist keine fertige Produktversion, sondern eine nachvollziehbar gewachsene Anwendung, an der man Entwicklungsschritte und Lernerfolge gut erkennen kann.
+
+% TODO: Aussagen zur Zusammenarbeit mit Mitarbeitenden, zu organisatorischen Praktikumsbedingungen und zu pers\"onlichen Rahmenbedingungen bei Bedarf manuell erg\"anzen.
+
+\newpage
+
+\section{Anhang}
+
+\begin{itemize}
+
+\item Kopie des Praktikumszeugnisses und ggf. Kopie von Arbeitsproben
+
+\item Best\"atigung der Teilnahme am Praktikum mit Stempel und Unterschrift der Institution.
+
+\end{itemize}
+
+\newpage
+
+\section{Literaturverzeichnis}
+
+Literaturverzeichnisse lassen sich ebenfalls mit \LaTeX erstellen, dies ist jedoch eine komplexe Angelegenheit. Eine M\"oglichkeit besteht in der Einbindung von Literaturdaten in ein \LaTeX-Dokument \"uber die Pakete "`BibTeX" bzw. "`BiblaTeX"' BibTeX ist in fast allen Distributionen von \LaTeX enthalten. BiblaTeX ist mit einer sehr ausf\"uhrlichen englischen Dokumentation unter folgendem Link zu finden: \url{http://www.ctan.org/pkg/biblatex}
+
+Zus\"atzlich empfiehlt sich die Verwendung einer Literaturverwaltung wie \textit{JabRef}, die ebenfalls frei verf\"ugbar ist und unter diesem Link zum Download bereitsteht: \url{http://jabref.sourceforge.net/}
+
+Literaturverzeichnisse lassen sich weiterhin auch - wie im folgenden Beispiel - manuell einbinden. Ab der zweiten Zeile erfolgt eine Einr\"uckung um 1cm.
+
+\begin{description} % Absatzumgebung mit h\"angendem Einzug.
+
+\item Franck, Norbert / Stary, Joachim (Hrsg.) (2006): Die Technik wissenschaftlichen Arbeitens. Eine praktische Anleitung. 13. Auflage. Paderborn: Sch\"onigh
+
+\end{description}
+
+\newpage
+
+\section{Eidesstattliche Versicherung}
+
+Ich versichere eidesstattlich durch eigenh\"andige Unterschrift, dass ich die Arbeit selbstst\"andig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Alle Stellen, die w\"ortlich oder sinngem\"\ss{} aus Ver\"offentlichungen entnommen sind, habe ich als solche kenntlich gemacht. Die Arbeit ist noch nicht ver\"offentlicht und ist in gleicher oder \"ahnlicher Weise noch nicht als Studienleistung zur Anerkennung oder Bewertung vorgelegt worden. Ich wei\ss{}, dass bei Abgabe einer falschen Versicherung die Pr\"ufung als nicht bestanden zu gelten hat.
+
+\vspace*{1cm}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{3cm} p{4cm} p{0.5cm} p{6cm}}
+Rostock & & &\\[0.5cm]
+\cline{2-2} \cline{4-4}
+& (Abgabedatum) & & (Vollst\"andige Unterschrift)\\
+\end{tabular}
+\end{table}
+
+\end{document}

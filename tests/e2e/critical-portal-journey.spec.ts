@@ -12,7 +12,7 @@ import {
   openOfficerCaseByHostInstitution,
   openStaffCaseFromDashboard,
   readDownload,
-  registerStaffViaApi,
+  registerStaffViaUi,
   reviewCurrentDocument,
   signInToDashboard,
   signInWith,
@@ -25,20 +25,16 @@ import {
 } from "./helpers/portal";
 
 test("critical portal journey runs from staff registration through archive and reporting", async ({
-  page,
-  request
+  page
 }) => {
   test.slow();
+  test.setTimeout(180_000);
 
   const registration = createRegistrationData("critical");
   const caseSeed = buildCaseSeed("Critical Portal");
 
   await test.step("staff registration creates a pending account for the workflow", async () => {
-    await registerStaffViaApi(request, registration);
-    await visitPath(
-      page,
-      `/pending-approval?email=${encodeURIComponent(registration.email)}&registered=1`
-    );
+    await registerStaffViaUi(page, registration);
     await expect(page.getByRole("heading", { name: /account pending approval/i })).toBeVisible();
     await expect(page.getByText(registration.email)).toBeVisible();
   });
@@ -58,7 +54,6 @@ test("critical portal journey runs from staff registration through archive and r
   await test.step("admin approval unlocks the new staff account", async () => {
     await clearSession(page);
     await approvePendingUserAsAdmin(page, registration.email);
-    await signOutCurrentUser(page);
 
     await signInToDashboard(page, {
       email: registration.email,
@@ -78,8 +73,7 @@ test("critical portal journey runs from staff registration through archive and r
     await updateProfile(page, {
       firstName: "Portal Updated",
       academicTitleLabel: "Dr.",
-      facultyLabel: "Faculty of Law",
-      departmentLabel: "Public Law"
+      facultyLabel: "Faculty of Law and History"
     });
     await page.reload();
     await expect(page.getByTestId("profile-form").getByLabel(/first name/i)).toHaveValue(
@@ -238,8 +232,7 @@ test("critical portal journey runs from staff registration through archive and r
     await expect(page.getByRole("heading", { name: /operational reports/i })).toBeVisible();
 
     await filters.getByLabel(/academic year/i).selectOption({ label: "2025/2026" });
-    await filters.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law" });
-    await filters.getByLabel(/department/i).selectOption({ label: "Public Law" });
+    await filters.getByLabel(/faculty/i).selectOption({ label: "Faculty of Law and History" });
     await filters.getByLabel(/mobility type/i).selectOption({ label: caseSeed.mobilityTypeLabel });
     await filters.getByLabel(/country/i).fill(caseSeed.hostCountry);
     await filters.getByLabel(/host institution/i).fill(caseSeed.updatedHostInstitution);

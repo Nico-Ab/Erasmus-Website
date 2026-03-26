@@ -10,7 +10,7 @@ const envSchema = z.object({
   STORAGE_DRIVER: z.string().default("local"),
   STORAGE_LOCAL_ROOT: z.string().default("./storage"),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().int().positive().default(15),
-  ALLOWED_UPLOAD_EXTENSIONS: z.string().default("pdf,doc,docx"),
+  ALLOWED_UPLOAD_EXTENSIONS: z.string().default("pdf,docx"),
   DEFAULT_LOCALE: z.string().default("en")
 });
 

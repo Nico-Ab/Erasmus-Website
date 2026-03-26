@@ -2,6 +2,7 @@ import { UserApprovalStatus, UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { uploadDocumentVersionForStaff } from "@/lib/documents/service";
+import { env } from "@/lib/env";
 import { documentTypeKeySchema } from "@/lib/validation/documents";
 
 export const runtime = "nodejs";
@@ -23,6 +24,25 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json(
       { message: "Only approved staff users can upload case documents." },
       { status: 403 }
+    );
+  }
+
+  const contentType = request.headers.get("content-type") ?? "";
+
+  if (!contentType.toLowerCase().startsWith("multipart/form-data")) {
+    return NextResponse.json(
+      { message: "Upload request must use multipart form data." },
+      { status: 400 }
+    );
+  }
+
+  const contentLength = Number(request.headers.get("content-length") ?? "");
+  const hardUploadLimitBytes = env.MAX_UPLOAD_SIZE_MB * 1024 * 1024 + 128 * 1024;
+
+  if (Number.isFinite(contentLength) && contentLength > hardUploadLimitBytes) {
+    return NextResponse.json(
+      { message: `Upload requests must be ${env.MAX_UPLOAD_SIZE_MB} MB or smaller.` },
+      { status: 413 }
     );
   }
 

@@ -1,4 +1,8 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
+import { useAppLocale } from "@/components/app/locale-provider";
+import { formatDocumentReviewLabel } from "@/lib/i18n/format";
 
 type DocumentReviewBadgeProps = {
   label: string;
@@ -13,13 +17,15 @@ const reviewStateVariantByKey = {
 } as const;
 
 export function DocumentReviewBadge({ label, reviewStateKey }: DocumentReviewBadgeProps) {
+  const { locale } = useAppLocale();
+  const localizedLabel = formatDocumentReviewLabel(reviewStateKey, label, locale);
+
   return (
     <Badge
-      aria-label={`Document review state: ${label}`}
-      className="uppercase"
+      aria-label={`Document review state: ${localizedLabel}`}
       variant={reviewStateVariantByKey[reviewStateKey as keyof typeof reviewStateVariantByKey] ?? "muted"}
     >
-      {label}
+      {localizedLabel}
     </Badge>
   );
 }

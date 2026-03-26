@@ -37,3 +37,9 @@ This document records what the current v1 portal already supports for future hos
 
 ## Honest scope boundary
 This repository is ready as a locally runnable v1 portal baseline. These notes exist to reduce future hosting uncertainty, not to claim that hosted production rollout work is already complete.
+
+## Short-term external sharing
+- If you only need to let someone external open the portal briefly, do not treat that as full hosting.
+- The current single-machine setup can be exposed temporarily through a public tunnel while the app is running locally.
+- For this repo, temporary public sharing should use the production app process on your machine plus the existing local PostgreSQL and local storage setup.
+- See [docs/external-sharing.md](/C:/Users/Nico/Documents/Erasmus%20Website/docs/external-sharing.md) for the short-term no-cost sharing runbook.

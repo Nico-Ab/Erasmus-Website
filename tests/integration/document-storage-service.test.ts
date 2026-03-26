@@ -56,7 +56,40 @@ vi.mock("@/lib/prisma", () => ({
   prisma: prismaMock
 }));
 
+function buildUploadBytes(fileName: string, contents: string) {
+  const extension = fileName.split(".").pop()?.toLowerCase();
+  const contentBytes = new TextEncoder().encode(contents);
+
+  if (extension === "pdf") {
+    return new TextEncoder().encode(`%PDF-1.4\n${contents}\n%%EOF`);
+  }
+
+  if (extension === "docx") {
+    return new TextEncoder().encode(`PK\u0003\u0004[Content_Types].xml word/document.xml ${contents}`);
+  }
+
+  if (extension === "doc") {
+    return Buffer.concat([
+      Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]),
+      Buffer.from(contentBytes)
+    ]);
+  }
+
+  return contentBytes;
+}
+
 function createUploadFile(fileName: string, contents: string, mimeType = "application/pdf") {
+  const bytes = buildUploadBytes(fileName, contents);
+  const file = new File([bytes], fileName, { type: mimeType }) as File & {
+    arrayBuffer: () => Promise<ArrayBuffer>;
+  };
+
+  file.arrayBuffer = async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+
+  return file;
+}
+
+function createRawUploadFile(fileName: string, contents: string, mimeType = "application/pdf") {
   const bytes = new TextEncoder().encode(contents);
   const file = new File([bytes], fileName, { type: mimeType }) as File & {
     arrayBuffer: () => Promise<ArrayBuffer>;
@@ -222,8 +255,40 @@ describe("document storage and metadata handling", () => {
       prismaMock.__transaction.mobilityCaseDocumentVersion.create.mock.calls[0][0].data.storageKey;
 
     await expect(readFile(path.join(storageRoot, storageKey))).resolves.toEqual(
-      Buffer.from("agreement-v1")
+      Buffer.from(buildUploadBytes("agreement-v1.pdf", "agreement-v1"))
     );
+  });
+
+  it("rejects disguised uploads before any storage or metadata write happens", async () => {
+    prismaMock.mobilityCase.findFirst.mockResolvedValue({
+      id: "case_invalid",
+      statusDefinitionId: "status_submitted",
+      statusDefinition: {
+        key: "submitted"
+      }
+    });
+    prismaMock.caseStatusDefinition.findFirst.mockResolvedValue({
+      id: "status_agreement_uploaded",
+      key: "agreement_uploaded",
+      label: "Agreement Uploaded"
+    });
+
+    const storage = new LocalFileStorage(storageRoot);
+    const result = await uploadDocumentVersionForStaff(
+      "staff_user",
+      "case_invalid",
+      "mobility_agreement",
+      createRawUploadFile("agreement.pdf", "MZ fake executable"),
+      storage
+    );
+
+    expect(result).toEqual({
+      status: "invalid_file",
+      message: "The uploaded file content does not match a PDF document."
+    });
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    expect(prismaMock.__transaction.mobilityCaseDocumentVersion.create).not.toHaveBeenCalled();
+    await expect(listStoredFiles(storageRoot)).resolves.toEqual([]);
   });
 
   it("preserves prior versions and moves the current version marker forward", async () => {

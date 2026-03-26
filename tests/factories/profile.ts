@@ -23,28 +23,36 @@ export function createProfileReferenceData() {
         id: "faculty_econ",
         code: "ECON",
         name: "Faculty of Economics",
+        isLegacy: false,
         departments: [
           {
             id: "department_intl",
             code: "INTL_RELATIONS",
             name: "International Relations",
-            facultyId: "faculty_econ"
+            facultyId: "faculty_econ",
+            isLegacy: false
           }
         ]
       },
       {
-        id: "faculty_law",
-        code: "LAW",
-        name: "Faculty of Law",
+        id: "faculty_law_history",
+        code: "LAW_HISTORY",
+        name: "Faculty of Law and History",
+        isLegacy: false,
         departments: [
           {
             id: "department_public",
             code: "PUBLIC_LAW",
             name: "Public Law",
-            facultyId: "faculty_law"
+            facultyId: "faculty_law_history",
+            isLegacy: false
           }
         ]
       }
-    ]
+    ],
+    legacySelection: {
+      hasLegacyFaculty: false,
+      hasLegacyDepartment: false
+    }
   };
 }

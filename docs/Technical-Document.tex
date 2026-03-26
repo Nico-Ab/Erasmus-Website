@@ -1,0 +1,653 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{verbatim}
+
+\definecolor{swured}{HTML}{8B1E2D}
+\definecolor{swudark}{HTML}{2F3440}
+\definecolor{swuline}{HTML}{D7DCE2}
+\definecolor{swusurface}{HTML}{F7F8FA}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=black,
+  pdftitle={SWU Erasmus Staff Mobility Portal Technical Document},
+  pdfauthor={SWU Erasmus Staff Mobility Portal Project}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\setlength{\headheight}{14pt}
+\setlist[itemize]{leftmargin=1.5em}
+\setlist[enumerate]{leftmargin=1.7em}
+\renewcommand{\arraystretch}{1.2}
+\arrayrulecolor{swuline}
+
+\titleformat{\section}
+  {\Large\bfseries\color{swured}}
+  {}
+  {0pt}
+  {}
+
+\titleformat{\subsection}
+  {\large\bfseries\color{swudark}}
+  {}
+  {0pt}
+  {}
+
+\titlespacing*{\section}{0pt}{1.7em}{0.7em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.35em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{swudark}{\footnotesize SWU Erasmus Staff Mobility Portal}}
+\fancyhead[R]{\textcolor{swudark}{\footnotesize Technical Document}}
+\fancyfoot[C]{\textcolor{swudark}{\footnotesize \thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand{\doctitle}[1]{{\Huge\bfseries\color{swudark} #1\par}}
+\newcommand{\docsubtitle}[1]{{\Large\color{swured} #1\par}}
+\newcommand{\code}[1]{{\small\path{#1}}}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\thispagestyle{empty}
+\vspace*{1.5cm}
+{\color{swured}\rule{\textwidth}{1.4pt}}
+\vspace{1.1cm}
+\doctitle{SWU Erasmus Staff Mobility Portal}
+\vspace{0.2cm}
+\docsubtitle{Technical Document}
+\vspace{0.45cm}
+{\large Plain technical handoff for local engineering use\par}
+\vspace{1.6cm}
+
+\begin{tabular}{@{}p{3.2cm}p{9.3cm}@{}}
+\textbf{Document} & Technical system and deployment guide \\
+\textbf{Audience} & Local engineers, technical reviewers, and maintainers \\
+\textbf{Scope} & Current repository state and current deployment path \\
+\textbf{Version} & March 2026 \\
+\end{tabular}
+
+\vfill
+{\color{swured}\rule{\textwidth}{1.4pt}}
+\newpage
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+\tableofcontents
+\newpage
+
+\section{Purpose of this document}
+This document explains the current Erasmus staff mobility portal from an engineering point of view. It is meant for a local engineer who needs to understand what the website does, how the code is organised, how the main workflows work, and how to run or deploy the system on another machine inside the university.
+
+The document is based on the current repository. It describes what is implemented now. It does not claim that later hosting work, broader integrations, or future workflow extensions are already complete.
+
+\section{System summary}
+The portal is an internal web application for Erasmus staff mobility administration. It supports three user roles:
+
+\begin{itemize}
+  \item staff users, who maintain their own profile, create and submit mobility cases, upload required documents, and follow review results
+  \item officers, who review submitted cases, add comments, review documents, change case status, archive completed cases, and use reports
+  \item admins, who manage users, approvals, master data, settings, and the audit log
+\end{itemize}
+
+The application is local-first. It runs as a Next.js application with a PostgreSQL database and a private local file store for uploaded documents. Authentication is credentials-based. Data access is handled through Prisma. Automated tests cover the main application layers and the critical cross-role workflow.
+
+\section{Technology stack}
+\begin{longtable}{>{\raggedright\arraybackslash}p{3.9cm} >{\raggedright\arraybackslash}p{9.4cm}}
+\rowcolor{swusurface}\textbf{Area} & \textbf{Current choice} \\
+\midrule
+Frontend framework & Next.js App Router \\
+Language & TypeScript \\
+UI layer & React, Tailwind CSS, local UI components under \code{src/components/ui} \\
+Forms & React Hook Form with Zod validation \\
+Authentication & Auth.js with credentials provider and Prisma adapter \\
+Database & PostgreSQL \\
+ORM & Prisma \\
+Document storage & Local filesystem through a storage abstraction \\
+Unit and integration tests & Vitest and React Testing Library \\
+Browser tests & Playwright \\
+\end{longtable}
+
+The main package and script definitions are in \code{package.json}. Prisma configuration is in \code{prisma.config.ts}. Local database startup uses \code{docker-compose.yml}.
+
+\section{Repository layout}
+The repository is split into application code, schema and seed files, tests, and operational documentation.
+
+\subsection{Main folders}
+\begin{longtable}{>{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{9.5cm}}
+\rowcolor{swusurface}\textbf{Path} & \textbf{Purpose} \\
+\midrule
+\code{src/app} & Next.js pages, layouts, and API routes \\
+\code{src/components} & UI building blocks and feature-specific components \\
+\code{src/lib} & Application services, validation, auth helpers, reporting, review logic, storage, and shared utilities \\
+\code{prisma} & Prisma schema, migrations, and seed script \\
+\code{tests} & Unit, integration, component, and end-to-end tests \\
+\code{docs} & Startup, testing, storage, deployment, progress, and user-facing documentation \\
+\end{longtable}
+
+\subsection{Important application subfolders}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{8.9cm}}
+\rowcolor{swusurface}\textbf{Path} & \textbf{Purpose} \\
+\midrule
+\code{src/components/auth} & Login, registration, and sign-out UI \\
+\code{src/components/cases} & Case forms, case tables, status badges, and document panels \\
+\code{src/components/review} & Officer review filters, review forms, and review tables \\
+\code{src/components/reports} & Reporting filters, summary tables, export actions, and case lists \\
+\code{src/lib/auth} & Authentication, approval, guards, and auth navigation logic \\
+\code{src/lib/profile} & Staff profile read and update logic \\
+\code{src/lib/mobility-case} & Staff case creation, editing, submission, and detail logic \\
+\code{src/lib/documents} & Upload policy, version handling, and download authorization \\
+\code{src/lib/review-workflow} & Officer case list, case detail, comments, document review, and status changes \\
+\code{src/lib/reporting} & Server-side report aggregation and CSV export generation \\
+\code{src/lib/storage} & Storage abstraction and local file driver \\
+\code{src/lib/validation} & Zod schemas and validation helpers \\
+\end{longtable}
+
+\section{Application layout and navigation}
+\subsection{Public area}
+The public area is defined by the root layout in \code{src/app/layout.tsx}. It includes the top bar, public navigation, language toggle, and footer. The public navigation currently exposes:
+
+\begin{itemize}
+  \item \code{/}
+  \item \code{/status}
+  \item \code{/login}
+  \item \code{/register}
+\end{itemize}
+
+When a user is already signed in, the public layout also exposes \code{/dashboard}.
+
+\subsection{Protected workspace}
+The protected workspace is defined in \code{src/app/dashboard/layout.tsx}. That layout does four things:
+
+\begin{itemize}
+  \item requires approved authentication before rendering the dashboard surface
+  \item shows a role-aware left navigation
+  \item shows signed-in account context, role, and approval state
+  \item provides a shared header with language toggle and sign-out
+\end{itemize}
+
+Navigation is generated in \code{src/lib/navigation.ts}. The role filter is explicit. Staff, officer, and admin users do not see the same pages.
+
+\subsection{Main page routes}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{5.4cm}}
+\rowcolor{swusurface}\textbf{Route} & \textbf{Access} & \textbf{Purpose} \\
+\midrule
+\code{/} & Public & Home page and entry point \\
+\code{/login} & Public & Credentials login \\
+\code{/register} & Public & Staff self-registration \\
+\code{/pending-approval} & Public & Pending-account holding page \\
+\code{/status} & Public & Local status page \\
+\code{/dashboard} & Approved users & Common protected landing page \\
+\code{/dashboard/profile} & Approved users & Personal profile editing \\
+\code{/dashboard/staff} & Staff & Staff dashboard \\
+\code{/dashboard/staff/cases/new} & Staff & New case form \\
+\code{/dashboard/staff/cases/[caseId]} & Staff owner only & Staff case detail page \\
+\code{/dashboard/officer} & Officer, Admin & Officer dashboard \\
+\code{/dashboard/officer/cases} & Officer, Admin & Review register \\
+\code{/dashboard/officer/cases/[caseId]} & Officer, Admin & Review detail page \\
+\code{/dashboard/reports} & Officer, Admin & Reporting and CSV exports \\
+\code{/dashboard/admin} & Admin & Admin dashboard \\
+\code{/dashboard/admin/users} & Admin & User lifecycle management \\
+\code{/dashboard/admin/master-data} & Admin & Master data and settings \\
+\code{/dashboard/admin/audit-log} & Admin & Audit log viewer \\
+\end{longtable}
+
+\subsection{API route groups}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.7cm} >{\raggedright\arraybackslash}p{7.8cm}}
+\rowcolor{swusurface}\textbf{Route group} & \textbf{Purpose} \\
+\midrule
+\code{/api/auth/[...nextauth]} & Auth.js handlers \\
+\code{/api/register} & Staff registration \\
+\code{/api/profile} & Profile updates \\
+\code{/api/staff/cases} & Staff case creation and list actions \\
+\code{/api/staff/cases/[caseId]} & Staff case update actions \\
+\code{/api/staff/cases/[caseId]/documents} & Staff document uploads \\
+\code{/api/review/cases/[caseId]/comments} & Officer comments \\
+\code{/api/review/cases/[caseId]/documents/review} & Officer document review actions \\
+\code{/api/review/cases/[caseId]/missing-documents} & Officer missing-document actions \\
+\code{/api/review/cases/[caseId]/status} & Officer case status transitions \\
+\code{/api/admin/users/[userId]} & Admin approval, role, and account actions \\
+\code{/api/admin/master-data} & Admin master-data and settings updates \\
+\code{/api/reports/export/...} & CSV export endpoints \\
+\code{/api/documents/versions/[versionId]/download} & Private document download route \\
+\code{/api/health} & Technical health checks \\
+\code{/api/locale} & Language cookie updates \\
+\end{longtable}
+
+\section{User roles and access model}
+\subsection{Role model}
+User roles are defined in the Prisma schema as \code{STAFF}, \code{OFFICER}, and \code{ADMIN}. User approval state is separate and includes \code{PENDING}, \code{APPROVED}, \code{REJECTED}, and \code{DEACTIVATED}.
+
+This separation is important because role alone is not enough. A user can have the \code{STAFF} role and still be unable to use the protected area until the account is approved.
+
+\subsection{Authentication flow}
+Auth.js is configured in \code{src/auth.ts}. The credentials provider validates incoming credentials, delegates the actual credential check to \code{src/lib/auth/service.ts}, and then enriches the session token with role and approval state.
+
+The authentication service performs:
+
+\begin{itemize}
+  \item email normalisation
+  \item password hash comparison with \code{bcryptjs}
+  \item approval-state checks
+  \item explicit return codes for invalid credentials, pending approval, rejected account, and deactivated account
+\end{itemize}
+
+\subsection{Authorisation model}
+Protected actions are not left to the frontend. The current system uses:
+
+\begin{itemize}
+  \item dashboard-level guards
+  \item role-aware navigation
+  \item server-side checks in protected API routes
+  \item ownership checks for staff-owned cases and documents
+\end{itemize}
+
+This means that staff users cannot access another staff user's case or private file just by changing a URL.
+
+\section{Main functional areas}
+\subsection{Registration and account approval}
+Staff registration is handled through \code{/register} and \code{/api/register}. The service in \code{src/lib/auth/service.ts} creates a pending staff account and records an audit entry.
+
+Admin approval and rejection are handled from \code{/dashboard/admin/users}. The same service layer updates approval state and writes audit records for those decisions.
+
+\subsection{Profile management}
+Profile handling is implemented in \code{src/lib/profile/service.ts}. The profile model links the user to:
+
+\begin{itemize}
+  \item academic title
+  \item faculty
+  \item department
+\end{itemize}
+
+The profile service loads valid selections, preserves legacy values safely if needed, and validates faculty and department consistency during updates.
+
+\subsection{Mobility case management}
+Staff case logic is implemented in \code{src/lib/mobility-case/service.ts}. A case can be:
+
+\begin{itemize}
+  \item created as a draft
+  \item reopened and edited later
+  \item submitted once required fields are complete
+\end{itemize}
+
+The service writes explicit status-history records. Draft and submit flows are intentionally separate. A draft can be incomplete. Submission requires a valid academic year, mobility type, and date range.
+
+\subsection{Document handling}
+Document handling is implemented in \code{src/lib/documents/service.ts} and \code{src/lib/validation/documents.ts}.
+
+The current business document types are:
+
+\begin{itemize}
+  \item Mobility Agreement
+  \item Final Certificate of Attendance
+\end{itemize}
+
+Each upload is stored as a new version. The system preserves old versions, stores original filename and metadata, and tracks which version is current.
+
+\subsection{Officer review workflow}
+Officer review logic is implemented in \code{src/lib/review-workflow/service.ts}. Officers can:
+
+\begin{itemize}
+  \item view all cases
+  \item search and combine filters
+  \item open case detail pages
+  \item add comments
+  \item review current document versions
+  \item mark missing documents
+  \item change case status
+  \item archive completed cases
+\end{itemize}
+
+Document review state and case workflow state remain separate on purpose. Rejecting a document does not automatically change the whole case status.
+
+\subsection{Reporting and CSV export}
+Reporting is handled in \code{src/lib/reporting/service.ts}, \code{src/lib/reporting/csv.ts}, and the export routes under \code{src/app/api/reports/export}.
+
+Current reporting supports:
+
+\begin{itemize}
+  \item mobility count by academic year
+  \item by faculty
+  \item by department
+  \item by mobility type
+  \item by host country
+  \item by host institution
+  \item by status
+  \item open versus completed
+  \item cases without mobility agreement
+  \item cases without final certificate
+\end{itemize}
+
+\subsection{Audit logging}
+Important protected actions are stored explicitly in the \code{AuditLog} model. This includes user lifecycle actions, case creation and submission, document events, review actions, status changes, and settings changes.
+
+\section{Data model overview}
+\subsection{Core entities}
+The main schema lives in \code{prisma/schema.prisma}. The most important models are:
+
+\begin{itemize}
+  \item \code{User}
+  \item \code{Faculty}
+  \item \code{Department}
+  \item \code{AcademicYear}
+  \item \code{CaseStatusDefinition}
+  \item \code{SelectOption}
+  \item \code{MobilityCase}
+  \item \code{MobilityCaseComment}
+  \item \code{MobilityCaseStatusHistory}
+  \item \code{MobilityCaseDocument}
+  \item \code{MobilityCaseDocumentVersion}
+  \item \code{AuditLog}
+  \item \code{UploadSetting}
+  \item \code{ReportSetting}
+\end{itemize}
+
+\subsection{Important design choices}
+\begin{itemize}
+  \item User role and approval state are separate.
+  \item Faculty and department are relational, not free-text.
+  \item Case status history is stored explicitly.
+  \item Document review state is separate from case status.
+  \item Document versions are stored explicitly with a current-version pointer.
+  \item Audit records are explicit rows, not inferred only from timestamps.
+\end{itemize}
+
+\section{Document storage and private downloads}
+The storage abstraction is in \code{src/lib/storage/driver.ts}. The current concrete implementation is \code{src/lib/storage/local-driver.ts}.
+
+The local driver:
+
+\begin{itemize}
+  \item writes files under the configured private storage root
+  \item blocks path traversal by resolving and checking the target path
+  \item keeps files outside the public web root
+\end{itemize}
+
+The download route \code{/api/documents/versions/[versionId]/download} performs permission checks before reading a file. That means a document is never exposed as a direct public static URL.
+
+\section{Validation and security model}
+\subsection{Validation}
+The repository uses Zod schemas under \code{src/lib/validation}. Validation exists for:
+
+\begin{itemize}
+  \item login and registration
+  \item profile updates
+  \item master data
+  \item mobility cases
+  \item review actions
+  \item document uploads
+\end{itemize}
+
+\subsection{Current security controls}
+Current security-related controls include:
+
+\begin{itemize}
+  \item server-side role and approval checks
+  \item ownership checks for staff case and document access
+  \item password hashing
+  \item private document storage
+  \item guarded download routes
+  \item upload validation for extension, size, declared MIME type, and basic file signatures
+  \item blocking of risky PDF active-content markers
+  \item blocking of unsafe DOCX markers such as macro and embedded-object indicators
+  \item CSV formula neutralisation for exports
+  \item audit logging of protected actions
+\end{itemize}
+
+\subsection{Current security limits}
+The current repository does not yet include:
+
+\begin{itemize}
+  \item full antivirus or sandbox-based malware scanning
+  \item password reset or email verification
+  \item infrastructure monitoring and alerting
+  \item multi-instance shared storage
+\end{itemize}
+
+\section{Testing and quality}
+Testing strategy is documented in \code{docs/testing-strategy.md}. The repository currently includes:
+
+\begin{itemize}
+  \item unit tests for pure validation and helper logic
+  \item integration tests for services and form behaviour
+  \item component tests for visible UI behaviour
+  \item Playwright browser tests for the main role-based workflows
+\end{itemize}
+
+The most important browser reference is \code{tests/e2e/critical-portal-journey.spec.ts}. That file exercises the main cross-role workflow from registration through archive and reporting.
+
+Current quality commands:
+
+\begin{verbatim}
+npm run lint
+npm run typecheck
+npm run test
+npm run test:e2e
+npm run build
+\end{verbatim}
+
+\section{Local installation on another machine}
+\subsection{Prerequisites}
+The current local setup expects:
+
+\begin{itemize}
+  \item Node.js 24 or newer
+  \item npm
+  \item Docker Desktop or another Docker runtime
+  \item a machine that can expose PostgreSQL on port 5432
+\end{itemize}
+
+\subsection{Configuration files}
+Relevant startup files:
+
+\begin{itemize}
+  \item \code{.env.example}
+  \item \code{docker-compose.yml}
+  \item \code{prisma.config.ts}
+  \item \code{docs/local-startup.md}
+\end{itemize}
+
+\subsection{First-time local startup}
+For a fresh local machine:
+
+\begin{verbatim}
+docker compose up -d
+npm install
+npm run db:migrate
+npm run seed
+npm run dev
+\end{verbatim}
+
+Then open:
+
+\begin{verbatim}
+http://127.0.0.1:3000
+\end{verbatim}
+
+Useful local checks:
+
+\begin{verbatim}
+http://127.0.0.1:3000/status
+http://127.0.0.1:3000/api/health
+\end{verbatim}
+
+\subsection{Important environment values}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}p{7.7cm}}
+\rowcolor{swusurface}\textbf{Variable} & \textbf{Purpose} \\
+\midrule
+\code{APP_URL} & Base app URL \\
+\code{DATABASE_URL} & PostgreSQL connection string \\
+\code{AUTH_SECRET} & Auth.js secret, must be strong in real use \\
+\code{AUTH_TRUST_HOST} & Host trust setting for Auth.js \\
+\code{STORAGE_DRIVER} & Current storage backend, local by default \\
+\code{STORAGE_LOCAL_ROOT} & Private storage root for uploaded files \\
+\code{MAX_UPLOAD_SIZE_MB} & Upload size limit \\
+\code{ALLOWED_UPLOAD_EXTENSIONS} & Allowed upload extensions \\
+\code{DEFAULT_LOCALE} & Default interface language \\
+\end{longtable}
+
+\subsection{Seed data}
+The seed script is in \code{prisma/seed.ts}. It upserts:
+
+\begin{itemize}
+  \item demo admin, officer, and staff accounts
+  \item pending, rejected, and deactivated account examples
+  \item faculties, departments, academic years, statuses, and select options
+  \item upload and report settings
+  \item sample draft and submitted cases
+\end{itemize}
+
+For technical review and testing, running \code{npm run seed} is useful. For a real internal rollout with real data, it should be used carefully.
+
+\section{Deployment process on another internal system}
+\subsection{What the repository already supports}
+The repository is already structured for a production-like single-host deployment. It has:
+
+\begin{itemize}
+  \item environment-based configuration
+  \item committed Prisma migrations
+  \item a deployment-style migration command
+  \item a build command
+  \item a production start command
+  \item server-side protected actions
+\end{itemize}
+
+\subsection{Current recommended deployment model}
+The current supported deployment model is a single internal machine with:
+
+\begin{itemize}
+  \item PostgreSQL
+  \item the Next.js app process
+  \item private document storage on local disk
+\end{itemize}
+
+This is the same model already used locally, just run in production mode instead of development mode.
+
+\subsection{Deployment sequence}
+For a clean deployment on another internal machine:
+
+\begin{enumerate}
+  \item Install Node.js and Docker.
+  \item Copy the repository.
+  \item Create a real \code{.env} from \code{.env.example}.
+  \item Set a strong \code{AUTH_SECRET}.
+  \item Set \code{DATABASE_URL} for the target PostgreSQL instance.
+  \item Set \code{STORAGE_LOCAL_ROOT} to a private directory on disk.
+  \item Start the database.
+  \item Install dependencies with \code{npm install}.
+  \item Apply committed migrations with \code{npm run db:migrate:deploy}.
+  \item Run \code{npm run build}.
+  \item Start the application with \code{npm run start}.
+\end{enumerate}
+
+\subsection{Production-like commands}
+\begin{verbatim}
+docker compose up -d
+npm install
+npm run db:migrate:deploy
+npm run build
+npm run start
+\end{verbatim}
+
+\subsection{Optional demo setup}
+If the engineering team wants a seeded demonstration instance first:
+
+\begin{verbatim}
+npm run seed
+\end{verbatim}
+
+That is suitable for local testing or a demo server. It should not be confused with a clean production rollout.
+
+\subsection{What is not yet included in the repository}
+The repository does not currently include:
+
+\begin{itemize}
+  \item reverse proxy configuration
+  \item TLS certificate management
+  \item service manager files such as systemd units
+  \item backup scheduling
+  \item central log shipping
+  \item monitoring and alerting setup
+\end{itemize}
+
+An internal engineer can still deploy the application on a single machine, but those operational layers need to be added outside the application repository.
+
+\section{Operational notes for maintainers}
+\subsection{Database}
+Database schema is managed through Prisma migrations. For future changes, the repository already supports:
+
+\begin{itemize}
+  \item development migrations with \code{npm run db:migrate}
+  \item deployment migrations with \code{npm run db:migrate:deploy}
+  \item schema push with \code{npm run db:push}
+\end{itemize}
+
+\subsection{Storage}
+Uploaded files are stored privately on local disk. The current implementation is suitable for:
+
+\begin{itemize}
+  \item local development
+  \item local evaluation
+  \item single-host internal deployment
+\end{itemize}
+
+For future multi-host deployment, storage should move to a shared persistent backend. The abstraction is already in place for that change.
+
+\subsection{External temporary access}
+If temporary public access is needed without paid hosting, the repository already documents tunnel-based sharing in \code{docs/external-sharing.md}. That is suitable for review sessions, not for permanent hosting.
+
+\section{Current limitations and scope boundaries}
+The repository is intentionally limited in a few areas. Current boundaries include:
+
+\begin{itemize}
+  \item no EWP integration
+  \item no public Erasmus portal
+  \item no digital-signature workflow
+  \item no password reset or account recovery
+  \item no bulk officer actions
+  \item no saved views or pagination for large queues
+  \item no non-CSV export formats
+  \item no full malware scanning
+\end{itemize}
+
+\section{Recommended technical demo flow}
+For a technical presentation to local staff, the clearest route through the system is:
+
+\begin{enumerate}
+  \item show the public home page and language toggle
+  \item show registration and the pending approval path
+  \item show admin approval of the new account
+  \item show the staff profile page
+  \item create a draft case and then submit it
+  \item upload a mobility agreement
+  \item switch to the officer role and review the case
+  \item reject and then accept a document version
+  \item move the case through status changes
+  \item show reporting and CSV export
+  \item finish on the audit log
+\end{enumerate}
+
+That sequence matches the way the application is structured and also matches the critical end-to-end test flow already present in the repository.
+
+\section{Conclusion}
+The current repository is a complete local v1 baseline for an internal Erasmus staff mobility portal. It contains the full application structure, protected role-based workflows, data model, validation, private document handling, reporting, audit logging, and a deployment path for another internal machine.
+
+For a local engineer, the important conclusion is simple: the system is ready to run on another machine with Node.js, PostgreSQL, Docker, environment configuration, Prisma migrations, and a private storage directory. The current codebase is also organised clearly enough to be maintained and extended without needing a full redesign first.
+
+\end{document}

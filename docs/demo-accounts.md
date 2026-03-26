@@ -23,3 +23,4 @@ These seeded accounts support local demos, manual QA, and automated tests.
 ## Notes
 - The seed script uses upserts so these records can be refreshed with `npm run seed`.
 - The demo accounts are for local development only and must not be used outside local or controlled test environments.
+- For short external review sessions, prefer sharing a staff or officer account instead of the admin account unless admin access is truly needed.

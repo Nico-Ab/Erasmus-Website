@@ -30,7 +30,7 @@ describe("LoginForm", () => {
   it("shows validation feedback before calling signIn", async () => {
     const { user } = renderWithUser(<LoginForm />);
 
-    await user.click(screen.getByRole("button", { name: /sign in/i }));
+  await user.click(await screen.findByRole("button", { name: /sign in/i }));
 
     expect(await screen.findByText("Email is required")).toBeInTheDocument();
     expect(await screen.findByText("Password is required")).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe("LoginForm", () => {
 
     await user.type(screen.getByLabelText(/email/i), credentials.email);
     await user.type(screen.getByLabelText(/password/i), credentials.password);
-    await user.click(screen.getByRole("button", { name: /sign in/i }));
+  await user.click(await screen.findByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(signInMock).toHaveBeenCalledWith("credentials", {
@@ -69,7 +69,7 @@ describe("LoginForm", () => {
 
     await user.type(screen.getByLabelText(/email/i), credentials.email);
     await user.type(screen.getByLabelText(/password/i), credentials.password);
-    await user.click(screen.getByRole("button", { name: /sign in/i }));
+  await user.click(await screen.findByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(router.push).toHaveBeenCalledWith(
@@ -113,5 +113,14 @@ describe("LoginForm", () => {
       await screen.findByText(/sign in could not be completed right now\. please try again\./i)
     ).toBeInTheDocument();
     expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it("renders Bulgarian labels when the locale is switched", async () => {
+    renderWithUser(<LoginForm />, { locale: "bg" });
+
+    expect(await screen.findByText(/сигурен вход/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/имейл/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/парола/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /вход/i })).toBeInTheDocument();
   });
 });

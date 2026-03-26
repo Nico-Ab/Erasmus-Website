@@ -52,7 +52,7 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)"
       },
       boxShadow: {
-        panel: "0 20px 45px -28px rgba(15, 23, 42, 0.28)"
+        panel: "0 10px 24px -22px rgba(15, 23, 42, 0.2)"
       },
       fontFamily: {
         sans: ["Segoe UI", "Calibri", "Candara", "Arial", "sans-serif"]

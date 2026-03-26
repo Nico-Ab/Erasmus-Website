@@ -27,17 +27,17 @@ export function PageHeader({
   actions
 }: PageHeaderProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white/95 px-5 py-5 shadow-panel sm:px-6">
+    <section className="rounded-[1.2rem] border border-slate-200 bg-white px-5 py-5 sm:px-6">
       {breadcrumbs.length > 0 ? (
         <nav aria-label="Breadcrumb" className="mb-4">
-          <ol className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+          <ol className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
             {breadcrumbs.map((item, index) => {
               const isLast = index === breadcrumbs.length - 1;
 
               return (
                 <li className="flex items-center gap-1.5" key={`${item.label}-${index}`}>
                   {item.href && !isLast ? (
-                    <Link className="transition-colors hover:text-slate-700" href={item.href}>
+                    <Link className="transition-colors hover:text-primary" href={item.href}>
                       {item.label}
                     </Link>
                   ) : (
@@ -54,10 +54,10 @@ export function PageHeader({
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 space-y-3">
           {eyebrow ? (
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">{eyebrow}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">{eyebrow}</p>
           ) : null}
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-[1.9rem]">{title}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-[1.85rem]">{title}</h1>
             {badges}
           </div>
           <p className="max-w-3xl text-sm leading-6 text-slate-600">{description}</p>

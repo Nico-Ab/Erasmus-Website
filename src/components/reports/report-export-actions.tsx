@@ -46,11 +46,11 @@ export function ReportExportActions({ queryString }: ReportExportActionsProps) {
   ];
 
   return (
-    <Card className="border-slate-200 bg-white/95" data-testid="report-export-actions">
+    <Card className="border-slate-200 bg-white" data-testid="report-export-actions">
       <CardHeader>
         <CardTitle>CSV exports</CardTitle>
         <CardDescription>
-          Download protected reporting views in a format that remains suitable for administrative review, archiving, and follow-up work.
+          Download protected reporting views for administrative review and follow-up work.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3 lg:grid-cols-3">

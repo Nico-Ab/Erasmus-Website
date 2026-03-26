@@ -1,9 +1,12 @@
 import { UserRole } from "@prisma/client";
 import Link from "next/link";
+import { PageHeader } from "@/components/app/page-header";
 import { OverviewMetric } from "@/components/app/overview-metric";
-import { SectionCard } from "@/components/app/section-card";
 import { Button } from "@/components/ui/button";
 import { requireApprovedAuth } from "@/lib/auth/guards";
+import { getMessages } from "@/lib/i18n/messages";
+import { getRequestLocale } from "@/lib/i18n/server";
+import { formatRoleLabel, formatStatusLabel } from "@/lib/utils";
 
 const nextDestinationByRole: Record<UserRole, string> = {
   STAFF: "/dashboard/staff",
@@ -13,65 +16,53 @@ const nextDestinationByRole: Record<UserRole, string> = {
 
 export default async function DashboardPage() {
   const session = await requireApprovedAuth();
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  const roleLabel = formatRoleLabel(session.user.role, locale);
+  const statusLabel = formatStatusLabel(session.user.status, locale);
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[{ label: messages.common.dashboard }]}
+        description={locale === "bg" ? "Отворете работното пространство, което съответства на текущата ви роля и задача." : "Open the workspace that matches your current role and task."}
+        eyebrow={locale === "bg" ? "Преглед на работното пространство" : "Workspace overview"}
+        title={locale === "bg" ? "Защитено табло" : "Protected dashboard"}
+      />
+
       <section className="grid gap-4 md:grid-cols-3">
         <OverviewMetric
-          title="Foundation phase"
-          value="M8"
-          description="Officer review, reporting, and CSV exports are now live in the current protected slice."
+          title={locale === "bg" ? "Текуща роля" : "Current role"}
+          value={roleLabel}
+          description={locale === "bg" ? "Навигацията и защитените действия следват зададената ви роля." : "Navigation and protected actions follow your assigned role."}
         />
         <OverviewMetric
-          title="Current role"
-          value={session.user.role}
-          description="Navigation and access remain role-aware across the protected area."
+          title={locale === "bg" ? "Статус на акаунта" : "Account status"}
+          value={statusLabel}
+          description={locale === "bg" ? "Само одобрени акаунти могат да влизат в защитените работни зони." : "Only approved accounts can enter protected work areas."}
         />
         <OverviewMetric
-          title="Next route"
+          title={locale === "bg" ? "Основен маршрут" : "Primary route"}
           value={nextDestinationByRole[session.user.role]}
-          description="Primary landing path for the signed-in role."
+          description={locale === "bg" ? "Препоръчителна следваща дестинация за вписаната роля." : "Recommended next destination for the signed-in role."}
         />
       </section>
-      <section className="grid gap-4 lg:grid-cols-2">
-        <SectionCard
-          title="What is live now"
-          description="This dashboard remains intentionally narrow and operationally focused."
-          points={[
-            "Credentials-based Auth.js login using Prisma-backed users.",
-            "Staff self-registration with admin approval gating.",
-            "Editable staff profiles tied to master data.",
-            "Staff-owned mobility case draft, submission, and private document workflows.",
-            "Officer review actions for comments, document decisions, status changes, archiving, and CSV-backed reporting."
-          ]}
-        />
-        <SectionCard
-          title="What comes next"
-          description="Major product workflows still remain intentionally incomplete at this stage."
-          points={[
-            "Broader admin lifecycle controls such as role changes and deactivation.",
-            "Officer-to-staff change-request refinement and richer review automation.",
-            "Longer-term storage hardening such as alternate drivers and retention controls.",
-            "Operational exports beyond the current filtered case, yearly, and faculty reporting surfaces."
-          ]}
-        />
-      </section>
-      <div className="rounded-xl border border-slate-200 bg-white/95 p-5">
-        <h2 className="text-lg font-semibold text-slate-950">Continue into your primary workspace</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          The role-specific pages now include real mobility case handling for staff plus active review, reporting, and CSV export operations for officer and admin users.
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-lg font-semibold text-slate-950">{locale === "bg" ? "Продължете" : "Continue"}</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          {locale === "bg" ? "Отворете основната си зона или преминете директно към защитена оперативна страница." : "Open your main area or move directly to a protected operational page."}
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Button asChild>
-            <Link href={nextDestinationByRole[session.user.role]}>Open my primary area</Link>
+            <Link href={nextDestinationByRole[session.user.role]}>{locale === "bg" ? "Отвори основната ми зона" : "Open my primary area"}</Link>
           </Button>
           {(session.user.role === UserRole.OFFICER || session.user.role === UserRole.ADMIN) ? (
             <>
               <Button asChild variant="outline">
-                <Link href="/dashboard/officer/cases">Open review register</Link>
+                <Link href="/dashboard/officer/cases">{locale === "bg" ? "Отвори регистъра за преглед" : "Open review register"}</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/dashboard/reports">Open reports</Link>
+                <Link href="/dashboard/reports">{messages.common.openReports}</Link>
               </Button>
             </>
           ) : null}

@@ -1,0 +1,11 @@
+\babel@toc {ngerman}{}\relax 
+\contentsline {section}{\numberline {I}Die Praktikumsstelle - Formale Bedingungen}{1}{section.1}%
+\contentsline {section}{\numberline {II}Aufgaben und T\"atigkeiten - Der Ablauf des Praktikums}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Umfeld der Praktikumst\"atigkeit}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Aufgabe und Ziel}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}T\"atigkeiten und Arbeitsergebnisse}{3}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Fachspezifische Reflexion \"uber das Praktikum}{7}{subsection.2.4}%
+\contentsline {section}{\numberline {III}Fazit und Bewertung}{8}{section.3}%
+\contentsline {section}{\numberline {IV}Anhang}{10}{section.4}%
+\contentsline {section}{\numberline {V}Literaturverzeichnis}{11}{section.5}%
+\contentsline {section}{\numberline {VI}Eidesstattliche Versicherung}{12}{section.6}%

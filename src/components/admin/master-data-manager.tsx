@@ -125,7 +125,7 @@ function SectionShell({
   sectionId: SectionKey;
 }) {
   return (
-    <Card className="border-slate-200 bg-white/95" data-section={sectionId}>
+    <Card className="border-slate-200 bg-white" data-section={sectionId}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -213,7 +213,7 @@ export function MasterDataManager({
     <div className="space-y-6">
       <SectionShell
         title="Faculties"
-        description="Manage the institutional faculty list used in staff profiles and later filtering surfaces."
+        description="Manage the official SWU faculty list used in staff profiles and later filtering surfaces. Avoid using this section for central administrative units."
         notice={notices.faculties}
         sectionId="faculties"
       >
@@ -290,7 +290,7 @@ export function MasterDataManager({
 
       <SectionShell
         title="Departments"
-        description="Department records stay linked to a faculty so profile data remains structurally consistent."
+        description="Department records stay linked to a faculty so profile data remains structurally consistent. In this version they remain admin-managed rather than synced from a verified public SWU dataset."
         notice={notices.departments}
         sectionId="departments"
       >

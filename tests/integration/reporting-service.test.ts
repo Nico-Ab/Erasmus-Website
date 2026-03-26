@@ -45,8 +45,8 @@ describe("reporting service", () => {
       { id: "year_2024", label: "2024/2025", sortOrder: 2, startYear: 2024 }
     ]);
     prismaMock.faculty.findMany.mockResolvedValue([
-      { id: "faculty_science", name: "Faculty of Science" },
-      { id: "faculty_law", name: "Faculty of Law" }
+      { id: "faculty_science", name: "Faculty of Mathematics and Natural Sciences" },
+      { id: "faculty_law", name: "Faculty of Law and History" }
     ]);
     prismaMock.department.findMany.mockResolvedValue([
       { id: "department_chemistry", name: "Chemistry", facultyId: "faculty_science" },
@@ -80,7 +80,7 @@ describe("reporting service", () => {
           firstName: "Elena",
           lastName: "Petrova",
           email: "elena@swu.local",
-          faculty: { name: "Faculty of Science" },
+          faculty: { name: "Faculty of Mathematics and Natural Sciences" },
           department: { name: "Chemistry" }
         },
         documents: []
@@ -99,7 +99,7 @@ describe("reporting service", () => {
           firstName: "Ivan",
           lastName: "Todorov",
           email: "ivan@swu.local",
-          faculty: { name: "Faculty of Law" },
+          faculty: { name: "Faculty of Law and History" },
           department: { name: "Public Law" }
         },
         documents: [
@@ -123,7 +123,7 @@ describe("reporting service", () => {
           firstName: "Mira",
           lastName: "Ivanova",
           email: "mira@swu.local",
-          faculty: { name: "Faculty of Law" },
+          faculty: { name: "Faculty of Law and History" },
           department: { name: "Public Law" }
         },
         documents: [
@@ -187,7 +187,7 @@ describe("reporting service", () => {
     });
     expect(data.summaries.byFaculty).toEqual([
       {
-        label: "Faculty of Science",
+        label: "Faculty of Mathematics and Natural Sciences",
         totalCount: 1,
         openCount: 1,
         completedCount: 0,
@@ -195,7 +195,7 @@ describe("reporting service", () => {
         missingFinalCertificateCount: 1
       },
       {
-        label: "Faculty of Law",
+        label: "Faculty of Law and History",
         totalCount: 2,
         openCount: 0,
         completedCount: 2,

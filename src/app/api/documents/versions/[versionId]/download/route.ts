@@ -42,9 +42,13 @@ export async function GET(_request: Request, context: RouteContext) {
       status: 200,
       headers: {
         "Cache-Control": "private, no-store",
+        "Content-Security-Policy": "default-src 'none'; sandbox",
         "Content-Disposition": buildContentDisposition(result.filename),
         "Content-Length": result.file.byteLength.toString(),
-        "Content-Type": result.mimeType ?? "application/octet-stream"
+        "Content-Type": result.mimeType ?? "application/octet-stream",
+        "Cross-Origin-Resource-Policy": "same-origin",
+        "Referrer-Policy": "no-referrer",
+        "X-Content-Type-Options": "nosniff"
       }
     });
   } catch (error) {

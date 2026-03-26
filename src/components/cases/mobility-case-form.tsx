@@ -5,6 +5,7 @@ import { FilePenLine, Save, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
+import { useAppLocale } from "@/components/app/locale-provider";
 import { CaseStatusBadge } from "@/components/cases/case-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,6 +89,7 @@ export function MobilityCaseForm({
   currentStatus
 }: MobilityCaseFormProps) {
   const router = useRouter();
+  const { locale } = useAppLocale();
   const [formError, setFormError] = useState<string | null>(null);
   const isHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const [isSaving, setIsSaving] = useState(false);
@@ -110,7 +112,7 @@ export function MobilityCaseForm({
 
     if (!draftValues.success) {
       applyFieldErrors(form, draftValues.error.flatten().fieldErrors);
-      setFormError("Review the case details and try again.");
+      setFormError(locale === "bg" ? "Прегледайте данните по случая и опитайте отново." : "Review the case details and try again.");
       return;
     }
 
@@ -119,7 +121,7 @@ export function MobilityCaseForm({
 
       if (!submitValues.success) {
         applyFieldErrors(form, submitValues.error.flatten().fieldErrors);
-        setFormError("Complete the required fields before submitting the case.");
+        setFormError(locale === "bg" ? "Попълнете задължителните полета преди подаване на случая." : "Complete the required fields before submitting the case.");
         return;
       }
     }
@@ -147,7 +149,7 @@ export function MobilityCaseForm({
 
     if (!response.ok) {
       applyFieldErrors(form, payload?.fieldErrors as Record<string, string[] | undefined> | undefined);
-      setFormError(payload?.message ?? "The case could not be saved.");
+      setFormError(payload?.message ?? (locale === "bg" ? "Случаят не можа да бъде запазен." : "The case could not be saved."));
       return;
     }
 
@@ -165,13 +167,13 @@ export function MobilityCaseForm({
   }
 
   return (
-    <Card className="border-slate-200 bg-white/95">
+    <Card className="border-slate-200 bg-white">
       <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <CardTitle>{caseId ? "Case record" : "Case details"}</CardTitle>
+            <CardTitle>{caseId ? (locale === "bg" ? "Запис на случая" : "Case record") : (locale === "bg" ? "Детайли по случая" : "Case details")}</CardTitle>
             <CardDescription className="leading-6">
-              Record the academic context, host institution, travel dates, and any supporting note needed for the case file.
+              {locale === "bg" ? "Запишете учебния контекст, институцията домакин, датите на пътуване и всяка допълнителна бележка за досието на случая." : "Record the academic context, host institution, travel dates, and any supporting note needed for the case file."}
             </CardDescription>
           </div>
           {currentStatus ? <CaseStatusBadge label={currentStatus.label} statusKey={currentStatus.key} /> : null}
@@ -184,16 +186,16 @@ export function MobilityCaseForm({
           data-testid={caseId ? "mobility-case-edit-form" : "mobility-case-create-form"}
           onSubmit={(event) => void handleSubmit(event)}
         >
-          <section className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+          <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Administrative context</h3>
-              <p className="mt-1 text-sm text-slate-600">Choose the academic year and mobility type that govern this staff mobility record.</p>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{locale === "bg" ? "Административен контекст" : "Administrative context"}</h3>
+              <p className="mt-1 text-sm text-slate-600">{locale === "bg" ? "Изберете учебната година и типа мобилност за този запис." : "Choose the academic year and mobility type for this record."}</p>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="academicYearId">Academic year</Label>
+                <Label htmlFor="academicYearId">{locale === "bg" ? "Учебна година" : "Academic year"}</Label>
                 <Select disabled={controlsDisabled} id="academicYearId" {...form.register("academicYearId")}>
-                  <option value="">Select academic year</option>
+                  <option value="">{locale === "bg" ? "Изберете учебна година" : "Select academic year"}</option>
                   {academicYears.map((academicYear) => (
                     <option key={academicYear.id} value={academicYear.id}>
                       {academicYear.label}
@@ -205,9 +207,9 @@ export function MobilityCaseForm({
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="mobilityTypeOptionId">Mobility type</Label>
+                <Label htmlFor="mobilityTypeOptionId">{locale === "bg" ? "Тип мобилност" : "Mobility type"}</Label>
                 <Select disabled={controlsDisabled} id="mobilityTypeOptionId" {...form.register("mobilityTypeOptionId")}>
-                  <option value="">Select mobility type</option>
+                  <option value="">{locale === "bg" ? "Изберете тип мобилност" : "Select mobility type"}</option>
                   {mobilityTypes.map((mobilityType) => (
                     <option key={mobilityType.id} value={mobilityType.id}>
                       {mobilityType.label}
@@ -223,26 +225,26 @@ export function MobilityCaseForm({
 
           <section className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Host institution</h3>
-              <p className="mt-1 text-sm text-slate-600">Record the destination institution and location exactly as they should appear in the case record.</p>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{locale === "bg" ? "Институция домакин" : "Host institution"}</h3>
+              <p className="mt-1 text-sm text-slate-600">{locale === "bg" ? "Запишете приемащата институция и местоположение така, както трябва да изглеждат в записа на случая." : "Record the destination institution and location as they should appear in the case record."}</p>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="hostInstitution">Host institution</Label>
+                <Label htmlFor="hostInstitution">{locale === "bg" ? "Институция домакин" : "Host institution"}</Label>
                 <Input disabled={controlsDisabled} id="hostInstitution" {...form.register("hostInstitution")} />
                 {form.formState.errors.hostInstitution ? (
                   <p className="text-sm text-destructive">{form.formState.errors.hostInstitution.message}</p>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="hostCountry">Host country</Label>
+                <Label htmlFor="hostCountry">{locale === "bg" ? "Държава домакин" : "Host country"}</Label>
                 <Input disabled={controlsDisabled} id="hostCountry" {...form.register("hostCountry")} />
                 {form.formState.errors.hostCountry ? (
                   <p className="text-sm text-destructive">{form.formState.errors.hostCountry.message}</p>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="hostCity">Host city</Label>
+                <Label htmlFor="hostCity">{locale === "bg" ? "Град домакин" : "Host city"}</Label>
                 <Input disabled={controlsDisabled} id="hostCity" {...form.register("hostCity")} />
                 {form.formState.errors.hostCity ? (
                   <p className="text-sm text-destructive">{form.formState.errors.hostCity.message}</p>
@@ -253,19 +255,19 @@ export function MobilityCaseForm({
 
           <section className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Travel period</h3>
-              <p className="mt-1 text-sm text-slate-600">Enter the planned mobility dates. The end date must not be earlier than the start date.</p>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{locale === "bg" ? "Период на пътуване" : "Travel period"}</h3>
+              <p className="mt-1 text-sm text-slate-600">{locale === "bg" ? "Въведете планираните дати на мобилността. Крайната дата не може да е преди началната." : "Enter the planned mobility dates. The end date cannot be earlier than the start date."}</p>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start date</Label>
+                <Label htmlFor="startDate">{locale === "bg" ? "Начална дата" : "Start date"}</Label>
                 <Input disabled={controlsDisabled} id="startDate" type="date" {...form.register("startDate")} />
                 {form.formState.errors.startDate ? (
                   <p className="text-sm text-destructive">{form.formState.errors.startDate.message}</p>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">End date</Label>
+                <Label htmlFor="endDate">{locale === "bg" ? "Крайна дата" : "End date"}</Label>
                 <Input disabled={controlsDisabled} id="endDate" type="date" {...form.register("endDate")} />
                 {form.formState.errors.endDate ? (
                   <p className="text-sm text-destructive">{form.formState.errors.endDate.message}</p>
@@ -276,11 +278,11 @@ export function MobilityCaseForm({
 
           <section className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Internal note</h3>
-              <p className="mt-1 text-sm text-slate-600">Use this optional field for context that should remain attached to the case record.</p>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{locale === "bg" ? "Вътрешна бележка" : "Internal note"}</h3>
+              <p className="mt-1 text-sm text-slate-600">{locale === "bg" ? "Използвайте това незадължително поле за контекст, който трябва да остане към записа на случая." : "Use this optional field for context that should stay attached to the case record."}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{locale === "bg" ? "Бележки" : "Notes"}</Label>
               <Textarea disabled={controlsDisabled} id="notes" rows={4} {...form.register("notes")} />
               {form.formState.errors.notes ? (
                 <p className="text-sm text-destructive">{form.formState.errors.notes.message}</p>
@@ -288,7 +290,7 @@ export function MobilityCaseForm({
             </div>
           </section>
 
-          {!isHydrated ? <p className="text-sm text-slate-500">Preparing case form...</p> : null}
+          {!isHydrated ? <p className="text-sm text-slate-500">{locale === "bg" ? "Подготвяне на формата..." : "Preparing case form..."}</p> : null}
 
           {formError ? (
             <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="alert">
@@ -299,11 +301,11 @@ export function MobilityCaseForm({
           <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
             <Button disabled={controlsDisabled} type="submit" value="saveDraft" variant="outline">
               <Save className="h-4 w-4" />
-              {isSaving ? "Saving draft..." : caseId ? "Save draft changes" : "Save draft"}
+              {isSaving ? (locale === "bg" ? "Запазване на черновата..." : "Saving draft...") : caseId ? (locale === "bg" ? "Запази промените по черновата" : "Save draft changes") : (locale === "bg" ? "Запази като чернова" : "Save draft")}
             </Button>
             <Button disabled={controlsDisabled} type="submit" value="submit">
               <Send className="h-4 w-4" />
-              {isSubmitting ? "Submitting..." : "Submit case"}
+              {isSubmitting ? (locale === "bg" ? "Подаване..." : "Submitting...") : (locale === "bg" ? "Подай случая" : "Submit case")}
             </Button>
           </div>
         </form>
@@ -313,17 +315,19 @@ export function MobilityCaseForm({
 }
 
 export function ReadOnlyCaseNotice() {
+  const { locale } = useAppLocale();
+
   return (
-    <Card className="border-slate-200 bg-white/95">
+    <Card className="border-slate-200 bg-white">
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="rounded-full bg-slate-100 p-3 text-slate-700">
             <FilePenLine className="h-5 w-5" />
           </div>
           <div>
-            <CardTitle>Case is currently read-only</CardTitle>
+            <CardTitle>{locale === "bg" ? "Случаят в момента е само за четене" : "Case is currently read-only"}</CardTitle>
             <CardDescription>
-              Submitted cases remain visible here. Editing will reopen only when the workflow returns the record for staff changes.
+              {locale === "bg" ? "Подадените случаи остават видими тук. Редакцията ще се отвори отново само когато процесът върне записа за staff корекции." : "Submitted cases remain visible here. Editing will reopen only when the workflow returns the record for staff changes."}
             </CardDescription>
           </div>
         </div>

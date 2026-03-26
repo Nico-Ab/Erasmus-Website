@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { loginSchema, registrationSchema } from "@/lib/validation/auth";
+import {
+  createLoginSchema,
+  createRegistrationSchema,
+  loginSchema,
+  registrationSchema
+} from "@/lib/validation/auth";
 import { createLoginInput, createRegistrationInput } from "../factories/auth";
 
 describe("loginSchema", () => {
@@ -21,6 +26,15 @@ describe("loginSchema", () => {
 
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe("Password must be at least 8 characters");
+  });
+
+  it("returns Bulgarian validation messages when requested", () => {
+    const result = createLoginSchema("bg").safeParse(
+      createLoginInput({ email: "invalid-email", password: "short" })
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Въведете валиден имейл адрес");
   });
 });
 
@@ -58,5 +72,14 @@ describe("registrationSchema", () => {
 
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe("Password must be at least 12 characters");
+  });
+
+  it("returns Bulgarian mismatch messages when requested", () => {
+    const result = createRegistrationSchema("bg").safeParse(
+      createRegistrationInput({ confirmPassword: "DifferentPass123!" })
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Паролите трябва да съвпадат");
   });
 });
