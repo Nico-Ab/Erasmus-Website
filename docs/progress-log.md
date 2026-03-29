@@ -129,7 +129,7 @@
 - Wired PostgreSQL through environment variables.
 - Added Auth.js credentials-based authentication with Prisma adapter.
 - Added formal institutional home, login, status, and protected dashboard shell pages.
-- Added staff, officer, and admin placeholder areas behind role-aware guards.
+- Added staff, officer, and admin placeholder areas behind role-based guards.
 - Added local observability via `/status` and `/api/health`.
 
 ## Testing foundation strengthened on March 12, 2026
@@ -235,7 +235,7 @@
 - Added formal filter controls for academic year, faculty, department, mobility type, country, host institution, and status.
 - Added CSV export routes for filtered case lists, yearly summaries, and faculty summaries under `/api/reports/export/...`.
 - Kept archived cases searchable and exportable by including them in the report workspace and filtered CSV exports whenever they match the selected scope.
-- Updated protected navigation and officer/admin entry points so reporting is reachable from the real app shell without bypassing role-aware guards.
+- Updated protected navigation and officer/admin entry points so reporting is reachable from the real app shell without bypassing role-based guards.
 - No Prisma schema change or seed update was required for this slice.
 - Added integration coverage for aggregation logic and CSV generation.
 - Added E2E coverage for opening report pages, applying filters, exporting CSV from filtered data, and reporting on cases with missing documents.

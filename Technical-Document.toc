@@ -31,22 +31,30 @@
 \contentsline {subsection}{\numberline {10.3}Current security limits}{11}{subsection.10.3}%
 \contentsline {section}{\numberline {11}Testing and quality}{11}{section.11}%
 \contentsline {section}{\numberline {12}Local installation on another machine}{12}{section.12}%
-\contentsline {subsection}{\numberline {12.1}Prerequisites}{12}{subsection.12.1}%
-\contentsline {subsection}{\numberline {12.2}Configuration files}{12}{subsection.12.2}%
-\contentsline {subsection}{\numberline {12.3}First-time local startup}{12}{subsection.12.3}%
-\contentsline {subsection}{\numberline {12.4}Important environment values}{12}{subsection.12.4}%
-\contentsline {subsection}{\numberline {12.5}Seed data}{13}{subsection.12.5}%
+\contentsline {subsection}{\numberline {12.1}Repository source}{12}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}Prerequisites}{12}{subsection.12.2}%
+\contentsline {subsection}{\numberline {12.3}Configuration files}{12}{subsection.12.3}%
+\contentsline {subsection}{\numberline {12.4}First-time local startup}{12}{subsection.12.4}%
+\contentsline {subsection}{\numberline {12.5}Important environment values}{13}{subsection.12.5}%
+\contentsline {subsection}{\numberline {12.6}Seed data}{13}{subsection.12.6}%
 \contentsline {section}{\numberline {13}Deployment process on another internal system}{13}{section.13}%
 \contentsline {subsection}{\numberline {13.1}What the repository already supports}{13}{subsection.13.1}%
-\contentsline {subsection}{\numberline {13.2}Current recommended deployment model}{13}{subsection.13.2}%
-\contentsline {subsection}{\numberline {13.3}Deployment sequence}{14}{subsection.13.3}%
-\contentsline {subsection}{\numberline {13.4}Production-like commands}{14}{subsection.13.4}%
-\contentsline {subsection}{\numberline {13.5}Optional demo setup}{14}{subsection.13.5}%
-\contentsline {subsection}{\numberline {13.6}What is not yet included in the repository}{14}{subsection.13.6}%
-\contentsline {section}{\numberline {14}Operational notes for maintainers}{15}{section.14}%
-\contentsline {subsection}{\numberline {14.1}Database}{15}{subsection.14.1}%
-\contentsline {subsection}{\numberline {14.2}Storage}{15}{subsection.14.2}%
-\contentsline {subsection}{\numberline {14.3}External temporary access}{15}{subsection.14.3}%
-\contentsline {section}{\numberline {15}Current limitations and scope boundaries}{15}{section.15}%
-\contentsline {section}{\numberline {16}Recommended technical demo flow}{16}{section.16}%
-\contentsline {section}{\numberline {17}Conclusion}{16}{section.17}%
+\contentsline {subsection}{\numberline {13.2}Current recommended deployment model}{14}{subsection.13.2}%
+\contentsline {subsection}{\numberline {13.3}Target deployment profile}{14}{subsection.13.3}%
+\contentsline {subsection}{\numberline {13.4}Important deployment notes before starting}{14}{subsection.13.4}%
+\contentsline {subsection}{\numberline {13.5}Deployment sequence}{14}{subsection.13.5}%
+\contentsline {subsection}{\numberline {13.6}Database preparation}{15}{subsection.13.6}%
+\contentsline {subsection}{\numberline {13.7}Storage preparation}{15}{subsection.13.7}%
+\contentsline {subsection}{\numberline {13.8}Production-like commands}{15}{subsection.13.8}%
+\contentsline {subsection}{\numberline {13.9}What to edit in the environment file}{16}{subsection.13.9}%
+\contentsline {subsection}{\numberline {13.10}Optional demo setup}{16}{subsection.13.10}%
+\contentsline {subsection}{\numberline {13.11}First checks after deployment}{16}{subsection.13.11}%
+\contentsline {subsection}{\numberline {13.12}Routine update process}{17}{subsection.13.12}%
+\contentsline {subsection}{\numberline {13.13}What the local engineer will still need to decide}{17}{subsection.13.13}%
+\contentsline {subsection}{\numberline {13.14}What is not yet included in the repository}{17}{subsection.13.14}%
+\contentsline {section}{\numberline {14}Operational notes for maintainers}{18}{section.14}%
+\contentsline {subsection}{\numberline {14.1}Database}{18}{subsection.14.1}%
+\contentsline {subsection}{\numberline {14.2}Storage}{18}{subsection.14.2}%
+\contentsline {subsection}{\numberline {14.3}External temporary access}{18}{subsection.14.3}%
+\contentsline {section}{\numberline {15}Current limitations and scope boundaries}{18}{section.15}%
+\contentsline {section}{\numberline {16}Conclusion}{19}{section.16}%

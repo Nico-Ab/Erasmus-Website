@@ -74,7 +74,7 @@
 \vspace{0.2cm}
 \docsubtitle{Technical Document}
 \vspace{0.45cm}
-{\large Plain technical handoff for local engineering use\par}
+{\large Technical guide for local engineering use\par}
 \vspace{1.6cm}
 
 \begin{tabular}{@{}p{3.2cm}p{9.3cm}@{}}
@@ -93,9 +93,9 @@
 \newpage
 
 \section{Purpose of this document}
-This document explains the current Erasmus staff mobility portal from an engineering point of view. It is meant for a local engineer who needs to understand what the website does, how the code is organised, how the main workflows work, and how to run or deploy the system on another machine inside the university.
+This document explains the Erasmus staff mobility portal from an engineering point of view. It is meant for a local engineer who needs to understand what the website does, how the code is organised, how the main workflows work, and how to run or deploy the system on another machine inside the university.
 
-The document is based on the current repository. It describes what is implemented now. It does not claim that later hosting work, broader integrations, or future workflow extensions are already complete.
+The document is based on the current repository and describes the system as it exists now. Later hosting work, broader integrations, and future workflow extensions are separate work.
 
 \section{System summary}
 The portal is an internal web application for Erasmus staff mobility administration. It supports three user roles:
@@ -106,7 +106,7 @@ The portal is an internal web application for Erasmus staff mobility administrat
   \item admins, who manage users, approvals, master data, settings, and the audit log
 \end{itemize}
 
-The application is local-first. It runs as a Next.js application with a PostgreSQL database and a private local file store for uploaded documents. Authentication is credentials-based. Data access is handled through Prisma. Automated tests cover the main application layers and the critical cross-role workflow.
+The application runs as a Next.js application with a PostgreSQL database and a private local file store for uploaded documents. Authentication is credentials-based. Data access is handled through Prisma. Automated tests cover the main application layers and the critical cross-role workflow.
 
 \section{Technology stack}
 \begin{longtable}{>{\raggedright\arraybackslash}p{3.9cm} >{\raggedright\arraybackslash}p{9.4cm}}
@@ -177,7 +177,7 @@ The protected workspace is defined in \code{src/app/dashboard/layout.tsx}. That 
 
 \begin{itemize}
   \item requires approved authentication before rendering the dashboard surface
-  \item shows a role-aware left navigation
+  \item shows a role-based left navigation
   \item shows signed-in account context, role, and approval state
   \item provides a shared header with language toggle and sign-out
 \end{itemize}
@@ -253,7 +253,7 @@ Protected actions are not left to the frontend. The current system uses:
 
 \begin{itemize}
   \item dashboard-level guards
-  \item role-aware navigation
+  \item role-based navigation
   \item server-side checks in protected API routes
   \item ownership checks for staff-owned cases and documents
 \end{itemize}
@@ -443,6 +443,20 @@ npm run build
 \end{verbatim}
 
 \section{Local installation on another machine}
+\subsection{Repository source}
+The current source repository is:
+
+\begin{verbatim}
+https://github.com/Nico-Ab/Erasmus-Website.git
+\end{verbatim}
+
+For a fresh machine, the normal starting point is:
+
+\begin{verbatim}
+git clone https://github.com/Nico-Ab/Erasmus-Website.git
+cd Erasmus-Website
+\end{verbatim}
+
 \subsection{Prerequisites}
 The current local setup expects:
 
@@ -539,31 +553,88 @@ The current supported deployment model is a single internal machine with:
 
 This is the same model already used locally, just run in production mode instead of development mode.
 
+\subsection{Target deployment profile}
+At the moment, the cleanest supported deployment is a single-machine internal installation. In practice that means:
+
+\begin{itemize}
+  \item one application host
+  \item one PostgreSQL database, either local through Docker or provided separately
+  \item one private storage directory on the same host for uploaded files
+\end{itemize}
+
+This fits the current codebase because document storage is local filesystem based, the application is started as one Next.js process, and the main operational docs are written around that model.
+
+\subsection{Important deployment notes before starting}
+There are two practical details in the current repository that an engineer should know before deployment.
+
+First, the checked-in Docker setup is fine for local development, but it uses an obvious default database password in \code{docker-compose.yml}. That file should not be copied into an internal environment unchanged.
+
+Second, the current \code{npm run start} script binds the Next.js server to \code{127.0.0.1:3000}. That is correct for local use and for temporary tunnel-based sharing from the same machine. For a server that must be reachable by other machines on an internal network, the final hosting layer needs to account for that. In practice this usually means either adjusting the start binding for the deployment target or placing the app behind a reverse proxy on the same host. The repository does not yet contain that outer hosting configuration.
+
 \subsection{Deployment sequence}
 For a clean deployment on another internal machine:
 
 \begin{enumerate}
-  \item Install Node.js and Docker.
-  \item Copy the repository.
+  \item Install Node.js and Docker on the target machine.
+  \item Clone the repository from GitHub.
   \item Create a real \code{.env} from \code{.env.example}.
   \item Set a strong \code{AUTH_SECRET}.
   \item Set \code{DATABASE_URL} for the target PostgreSQL instance.
-  \item Set \code{STORAGE_LOCAL_ROOT} to a private directory on disk.
-  \item Start the database.
+  \item Set \code{APP_URL} to the URL that users should open on that machine or host.
+  \item Set \code{STORAGE_LOCAL_ROOT} to a private directory on disk that will be kept between restarts and backups.
+  \item Prepare the database.
   \item Install dependencies with \code{npm install}.
   \item Apply committed migrations with \code{npm run db:migrate:deploy}.
+  \item If the target is a demo or evaluation system, optionally run \code{npm run seed}.
   \item Run \code{npm run build}.
   \item Start the application with \code{npm run start}.
 \end{enumerate}
 
+\subsection{Database preparation}
+The repository supports two realistic ways to prepare PostgreSQL on the target machine.
+
+The first option is to reuse the local Docker model from \code{docker-compose.yml}. That is the fastest way to get a working internal instance. If that path is chosen, the default database name, user, and password should be reviewed and changed before the system is treated as a real shared installation.
+
+The second option is to point \code{DATABASE_URL} at an existing PostgreSQL instance that the university already maintains. From the application side, that is enough as long as the target database is reachable and the Prisma migration command can run against it.
+
+\subsection{Storage preparation}
+Document storage is not optional in this system. Staff users upload document versions, and those files are stored outside the public web root. Before deployment, the engineer should decide where the private storage directory will live.
+
+The directory configured through \code{STORAGE_LOCAL_ROOT} should:
+
+\begin{itemize}
+  \item be writable by the application process
+  \item not sit under a public static web directory
+  \item remain available after application restarts
+  \item be included in backup planning together with the database
+\end{itemize}
+
+If that directory is lost, document metadata may still exist in the database while the underlying files are gone. For that reason, database backup alone is not enough.
+
 \subsection{Production-like commands}
 \begin{verbatim}
+git clone https://github.com/Nico-Ab/Erasmus-Website.git
+cd Erasmus-Website
+copy .env.example .env
 docker compose up -d
 npm install
 npm run db:migrate:deploy
 npm run build
 npm run start
 \end{verbatim}
+
+\subsection{What to edit in the environment file}
+The minimum changes before a real internal handoff are:
+
+\begin{itemize}
+  \item replace \code{AUTH_SECRET}
+  \item confirm \code{APP_URL}
+  \item confirm \code{DATABASE_URL}
+  \item confirm \code{STORAGE_LOCAL_ROOT}
+  \item review upload settings such as \code{MAX_UPLOAD_SIZE_MB} and \code{ALLOWED_UPLOAD_EXTENSIONS}
+\end{itemize}
+
+If the deployment is intended for Bulgarian-first use, the engineer can also change \code{DEFAULT_LOCALE} from \code{en} to \code{bg}.
 
 \subsection{Optional demo setup}
 If the engineering team wants a seeded demonstration instance first:
@@ -573,6 +644,45 @@ npm run seed
 \end{verbatim}
 
 That is suitable for local testing or a demo server. It should not be confused with a clean production rollout.
+
+\subsection{First checks after deployment}
+After the application has started, the first checks should be simple:
+
+\begin{enumerate}
+  \item open the configured base URL
+  \item open \code{/status}
+  \item open \code{/api/health}
+  \item sign in with a seeded or known account
+  \item open a protected dashboard page
+  \item if the system will be used for real workflows, upload and download one document through the protected flow
+\end{enumerate}
+
+This is enough to confirm that the application server, database, auth layer, and private storage are all working together.
+
+\subsection{Routine update process}
+For later updates on the same host, the basic sequence stays simple:
+
+\begin{enumerate}
+  \item pull the latest repository state
+  \item review any environment changes
+  \item run \code{npm install} if dependencies changed
+  \item run \code{npm run db:migrate:deploy}
+  \item run \code{npm run build}
+  \item restart the production application process
+\end{enumerate}
+
+If the update includes schema changes, the migration step should not be skipped.
+
+\subsection{What the local engineer will still need to decide}
+The repository brings the application itself, but an internal deployment still needs a few local decisions:
+
+\begin{itemize}
+  \item whether PostgreSQL is run through the included Docker setup or an existing university database
+  \item where the private storage directory will live
+  \item how the application process is kept running after restarts
+  \item whether the application is only for same-machine use, internal network use, or temporary public sharing
+  \item whether a reverse proxy and TLS are required for the target environment
+\end{itemize}
 
 \subsection{What is not yet included in the repository}
 The repository does not currently include:
@@ -613,7 +723,7 @@ For future multi-host deployment, storage should move to a shared persistent bac
 If temporary public access is needed without paid hosting, the repository already documents tunnel-based sharing in \code{docs/external-sharing.md}. That is suitable for review sessions, not for permanent hosting.
 
 \section{Current limitations and scope boundaries}
-The repository is intentionally limited in a few areas. Current boundaries include:
+The repository is still limited in a few areas. Current boundaries include:
 
 \begin{itemize}
   \item no EWP integration
@@ -626,27 +736,8 @@ The repository is intentionally limited in a few areas. Current boundaries inclu
   \item no full malware scanning
 \end{itemize}
 
-\section{Recommended technical demo flow}
-For a technical presentation to local staff, the clearest route through the system is:
-
-\begin{enumerate}
-  \item show the public home page and language toggle
-  \item show registration and the pending approval path
-  \item show admin approval of the new account
-  \item show the staff profile page
-  \item create a draft case and then submit it
-  \item upload a mobility agreement
-  \item switch to the officer role and review the case
-  \item reject and then accept a document version
-  \item move the case through status changes
-  \item show reporting and CSV export
-  \item finish on the audit log
-\end{enumerate}
-
-That sequence matches the way the application is structured and also matches the critical end-to-end test flow already present in the repository.
-
 \section{Conclusion}
-The current repository is a complete local v1 baseline for an internal Erasmus staff mobility portal. It contains the full application structure, protected role-based workflows, data model, validation, private document handling, reporting, audit logging, and a deployment path for another internal machine.
+The current repository is a working local v1 system for an internal Erasmus staff mobility portal. It contains the application structure, protected role-based workflows, data model, validation, private document handling, reporting, audit logging, and a deployment path for another internal machine.
 
 For a local engineer, the important conclusion is simple: the system is ready to run on another machine with Node.js, PostgreSQL, Docker, environment configuration, Prisma migrations, and a private storage directory. The current codebase is also organised clearly enough to be maintained and extended without needing a full redesign first.
 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.19)  26 MAR 2026 19:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.19)  27 MAR 2026 08:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -548,24 +548,23 @@ LaTeX Font Info:    External font `lmex10' loaded for size
  [3{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}]
  [4]
 ignored: Infinite glue shrinkage found in box being split
-[5] [6] [7] [8] [9] [10] [11]
-ignored: Infinite glue shrinkage found in box being split [
-12] [13] [14] [15] [16] (Technical-Document.aux)
+[5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19]
+(Technical-Document.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `Technical-Document.out' has not changed.
-(rerunfilecheck)             Checksum: D8A2F46F512254245FAC169F75395CE7;8935.
+(rerunfilecheck)             Checksum: C72750FFC2614FAE61E0035E26E7BB8A;10650.
  ) 
 Here is how much of TeX's memory you used:
- 12986 strings out of 467867
- 207206 string characters out of 5418818
- 680257 words of memory out of 5000000
- 41519 multiletter control sequences out of 15000+600000
- 685981 words of font info for 126 fonts, out of 8000000 for 9000
+ 13022 strings out of 467867
+ 207666 string characters out of 5418818
+ 680259 words of memory out of 5000000
+ 41527 multiletter control sequences out of 15000+600000
+ 686562 words of font info for 133 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,13n,83p,1022b,607s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,13n,83p,1022b,697s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb
 ><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb>
 <C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C
@@ -573,9 +572,9 @@ Here is how much of TeX's memory you used:
 Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Use
 rs/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb>
 Output written on "C:\Users\Nico\Documents\Erasmus Website\Technical-Document.p
-df" (17 pages, 258051 bytes).
+df" (20 pages, 270346 bytes).
 PDF statistics:
- 421 PDF objects out of 1000 (max. 8388607)
- 97 named destinations out of 1000 (max. 500000)
- 36257 words of extra memory for PDF output out of 42996 (max. 10000000)
+ 480 PDF objects out of 1000 (max. 8388607)
+ 111 named destinations out of 1000 (max. 500000)
+ 36321 words of extra memory for PDF output out of 42996 (max. 10000000)
 

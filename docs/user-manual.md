@@ -1,4 +1,4 @@
-# User Manual
+ï»¿# User Manual
 
 ## 1. Purpose of this manual
 This manual explains the complete functional scope of the SWU Erasmus Staff Mobility Portal in its current v1 form. It is written for all portal users, including staff members, officers, administrators, and local operators who need to understand the application structure, available actions, access rules, and normal workflows.
@@ -58,7 +58,7 @@ The public area is available before login.
 After successful login, approved users enter the protected workspace.
 
 The protected workspace includes:
-- a left-side navigation panel with role-aware links
+- a left-side navigation panel with links based on the signed-in role
 - a signed-in account panel showing the user name, email, role, and account status
 - a page header on each screen with the current title and breadcrumb trail
 - a sign-out button in the workspace header
@@ -303,7 +303,7 @@ Staff can download their own uploaded document versions from the case detail pag
 ### Important notes
 - downloads go through permission-checked routes
 - old versions remain available in the version history
-- staff cannot download documents belonging to another user’s case
+- staff cannot download documents belonging to another user's case
 
 ### 6.9 Reading comments and status history
 The case detail page contains:
@@ -457,7 +457,7 @@ The `User management` page is used for account decisions and access control.
 ### Main actions
 - approve a pending registration
 - reject a pending registration
-- change an approved user’s role
+- change an approved user's role
 - deactivate a user account
 
 ### Important safeguards
@@ -473,7 +473,7 @@ The `User management` page is used for account decisions and access control.
 
 ### Rejecting a registration
 1. Locate the pending account.
-2. Type the user’s email in the confirmation field.
+2. Type the user's email in the confirmation field.
 3. Select `Reject registration`.
 4. The account remains blocked from the protected workspace.
 
@@ -673,4 +673,5 @@ The following items are not part of the current v1 scope:
 
 ## 14. Conclusion
 The portal currently supports the full local v1 workflow for registration, approval, profile maintenance, mobility case handling, document versioning, officer review, reporting, and audit traceability. Users should work within the role boundaries described in this manual and rely on the page headers, breadcrumb trails, and left-side navigation to move through the system consistently.
+
 

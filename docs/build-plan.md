@@ -43,7 +43,7 @@ Required observability track:
 ## Milestone sequence
 | Milestone | Goal | Main outcome | Notes |
 | --- | --- | --- | --- |
-| M1 | Workspace bootstrap and viewable shell | Runnable Next.js + TypeScript app with lint/typecheck, base layout, health/status page, and placeholder role-aware navigation | First visible checkpoint |
+| M1 | Workspace bootstrap and viewable shell | Runnable Next.js + TypeScript app with lint/typecheck, base layout, health/status page, and placeholder role-based navigation | First visible checkpoint |
 | M2 | Data foundation | Prisma schema, initial migrations, seed strategy, storage abstraction contract, and core domain tables | No business workflow yet |
 | M3 | Authentication and access control | Registration, login, approval gating, session handling, and role-based server authorization | Protects all later work |
 | M4 | Staff identity and dashboard baseline | Profile management, approved staff dashboard, and case/task overview skeleton backed by real data | First end-user productivity slice |
@@ -73,7 +73,7 @@ Required observability track:
 ## M3: Authentication and access control
 - Implement secure registration and login flow.
 - Add approval gating for new staff accounts.
-- Add role-aware routing and server-side authorization checks.
+- Add role-based routing and server-side authorization checks.
 - Protect protected actions and downloads with server checks.
 - Add session handling and auth-related audit events.
 

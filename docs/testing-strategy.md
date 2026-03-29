@@ -122,7 +122,7 @@ Guidance:
 - mobility-case validation rules
 - review-workflow filter and action validation rules
 - document upload filename, extension, empty-file, declared MIME, size, signature, and active-content rules
-- role-aware navigation filtering
+- role-based navigation filtering
 - shared formatting and locale helpers
 
 ### Integration coverage
